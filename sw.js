@@ -1,9 +1,9 @@
 // Service worker: lets the app open offline.
 // App files: network first (so updates show straight away), falling back to the cache.
 // Weather and fonts are left to the network; the app keeps its own weather cache.
-const CACHE='garden-v2';
+const CACHE='garden-v3';
 const SHELL=['./','index.html','css/styles.css','manifest.webmanifest',
-  'js/data.js','js/state.js','js/ui.js','js/weather.js','js/tasks.js','js/plants-view.js','js/beds.js','js/settings.js','js/main.js',
+  'js/data.js','js/state.js','js/ui.js','js/weather.js','js/pests.js','js/tasks.js','js/month.js','js/plants-view.js','js/beds.js','js/settings.js','js/main.js',
   'icons/icon-192.png','icons/icon-512.png','icons/apple-touch-icon.png'];
 
 self.addEventListener('install',e=>{e.waitUntil(caches.open(CACHE).then(c=>c.addAll(SHELL)).then(()=>self.skipWaiting()));});

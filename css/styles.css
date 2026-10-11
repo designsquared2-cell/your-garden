@@ -272,3 +272,42 @@ button.task-cb-area:hover .task-cb{border-color:rgba(255,255,255,.4)}
 .cp{position:absolute;border-radius:50%;animation:cfall 1.2s ease-out forwards}
 @keyframes cfall{0%{transform:translateY(0) rotate(0deg) scale(1);opacity:1}100%{transform:translateY(320px) rotate(540deg) scale(.2);opacity:0}}
 button:focus-visible{outline:2px solid #FFD54F;outline-offset:2px}
+/* Jobs tab badge */
+.nav-icon{position:relative;display:inline-block}
+.nav-badge{position:absolute;top:-4px;right:-10px;min-width:16px;height:16px;padding:0 4px;border-radius:8px;background:#B85C38;color:#fff;font-size:9.5px;font-weight:900;line-height:16px;text-align:center;letter-spacing:0}
+.nav-badge[hidden]{display:none}
+.jobs-link{display:flex;justify-content:space-between;align-items:center;width:100%;margin-bottom:16px;background:#1E3212;border:1px solid #3A5C22;border-radius:10px;color:#C8F090;font-family:inherit;font-size:13px;font-weight:800;padding:11px 14px;cursor:pointer}
+/* Pests */
+.tc-pest{border-left-color:#8A6AC8}
+.peak-tag,.now-tag{display:inline-block;font-size:8.5px;font-weight:900;letter-spacing:.5px;text-transform:uppercase;padding:1px 6px;border-radius:6px;vertical-align:1px}
+.peak-tag{background:#5A2A10;color:#FFB48A}
+.now-tag{background:#2A3E14;color:#A0D870}
+.task-where{display:block;margin-top:3px;font-size:10.5px;color:#8BAA6B;font-weight:700}
+.task-detail b,.pest-txt b,.pest-fix b{color:#C8D8B0;font-weight:800}
+.pest-mini{background:rgba(255,255,255,.03);border-radius:8px;margin-bottom:12px;overflow:hidden}
+.pest-mini-row{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:7px 10px;font-size:11.5px;color:#7A9060;border-top:1px solid rgba(255,255,255,.04)}
+.pest-mini-row:first-child{border-top:none}
+.pest-mini-row.on{color:#F0E6CC}
+.pest-spot{flex-shrink:0;background:#3A2A50;color:#D8C8F8;border:1px solid #5A4A78;border-radius:8px;font-family:inherit;font-size:10.5px;font-weight:800;padding:4px 9px;cursor:pointer}
+.pest-card{background:#182210;border-radius:10px;padding:11px 13px;margin-bottom:8px;border-left:3px solid #5A4A78}
+.pest-card.peak{border-left-color:#C86A38}
+.pest-hdr{display:flex;gap:10px;align-items:center;margin-bottom:6px}
+.pest-e{font-size:24px;line-height:1}
+.pest-n{font-size:13px;font-weight:900}
+.pest-on{font-size:11px;color:#C49010;margin-top:1px}
+.pest-txt{font-size:11.5px;color:#8A9A70;line-height:1.5;margin-top:4px}
+.pest-fix{font-size:11.5px;color:#8A9A70;line-height:1.5;margin-top:12px;background:rgba(255,255,255,.04);border-radius:8px;padding:9px 11px}
+.bpc-pests{font-size:11px;color:#B8A0E8;margin:-2px 0 8px}
+.pest-guide{background:#182210;border-radius:10px;overflow:hidden}
+.pg{border-top:1px solid rgba(255,255,255,.05)}
+.pg:first-child{border-top:none}
+.pg summary{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:10px 12px;font-size:12px;font-weight:800;cursor:pointer;list-style:none}
+.pg summary::-webkit-details-marker{display:none}
+.pg summary::after{content:'›';color:#5A7040;font-size:15px;transition:transform .15s}
+.pg[open] summary::after{transform:rotate(90deg)}
+.pg summary>span:last-of-type{margin-left:auto;font-size:10px;white-space:nowrap}
+.pg-body{padding:0 12px 12px}
+.pg-note{font-size:10px;color:#4A6030;line-height:1.5;margin:8px 2px 0}
+.sow-chips{display:flex;flex-wrap:wrap;gap:5px}
+.sow-chip{background:#182210;border:1px solid rgba(255,255,255,.08);border-radius:14px;padding:4px 10px;font-size:11px;font-weight:700;color:#C8D8B0}
+.fm-help{font-size:10.5px;color:#5A7040;margin-top:4px;line-height:1.4}

@@ -38,11 +38,13 @@
     </div>
     <div class="beds-hint">Drag a plant to move it (on phones, press and hold first) · Tap Select to edit several at once</div>
   </section>
+  <section class="view" id="view-jobs"><div id="jobs-content"></div></section>
   <section class="view" id="view-month"><div id="month-content"></div></section>
   <section class="view" id="view-plants"><div id="plants-content"></div></section>
 </main>
 <nav class="nav" id="main-nav">
   <button class="nav-btn active" data-view="beds" onclick="setView('beds')"><span class="nav-icon">🌿</span>Beds</button>
+  <button class="nav-btn" data-view="jobs" onclick="setView('jobs')"><span class="nav-icon">🐝<span class="nav-badge" id="jobs-badge" hidden>0</span></span>Jobs</button>
   <button class="nav-btn" data-view="month" onclick="setView('month')"><span class="nav-icon">📅</span>This Month</button>
   <button class="nav-btn" data-view="plants" onclick="setView('plants')"><span class="nav-icon">🌱</span>Plants</button>
 </nav>
@@ -62,7 +64,9 @@
 <script src="js/state.js"></script>
 <script src="js/ui.js"></script>
 <script src="js/weather.js"></script>
+<script src="js/pests.js"></script>
 <script src="js/tasks.js"></script>
+<script src="js/month.js"></script>
 <script src="js/plants-view.js"></script>
 <script src="js/beds.js"></script>
 <script src="js/settings.js"></script>

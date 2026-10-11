@@ -156,6 +156,7 @@ function openCellSheet(bi,ri,ci){
       <button class="btn btn-seed${canPick?'':' btn-full'}" onclick="finishPlant(${a})">${cell.s==='done'?'🧹 Clear this spot':'✅ Finished'}</button>
     </div>
     <div class="sh-hint">${cell.s==='done'?'Finished plants stay until you clear them.':canPick&&keepsProducing(cell.p)?'Picking keeps the plant growing. Finished clears the spot.':'Finished logs the harvest and clears the spot.'}</div>
+    ${plantPestsHtml(cell.p,bi)}
     <div class="stat-lbl">Status</div>
     <div class="stat-grid">${STATUSES.map(s=>`<button class="stat-opt so-${s}${cell.s===s?' sel':''}" onclick="doUpdateStatus(${a},'${s}')">${STATUS_LBL[s]}</button>`).join('')}</div>
     <div class="btn-row">
@@ -236,6 +237,9 @@ function openNewPlant(editKey,bi,ri,ci){
     <div class="fm-2col"><div><div class="fm-lbl">Harvest window</div><input class="fm-in" id="np-h" maxlength="20" placeholder="e.g. Dec–Feb" value="${esc(c.h)}"></div>
     <div><div class="fm-lbl">Days to harvest</div><input class="fm-in" id="np-days" type="number" min="7" max="400" inputmode="numeric" placeholder="e.g. 60" value="${esc(c.days)}"></div></div>
     <label class="fm-check"><input type="checkbox" id="np-pick"${c.pick?' checked':''}> Keeps producing — pick from it repeatedly</label>
+    <div class="fm-lbl">Plant family (optional)</div>
+    <select class="fm-in" id="np-fam"><option value="">— Not sure —</option>${Object.entries(FAM_LBL).map(([k,l])=>`<option value="${k}"${c.fam===k?' selected':''}>${l[0].toUpperCase()+l.slice(1)}</option>`).join('')}</select>
+    <div class="fm-help">Used for pest checks and bed suggestions — e.g. kale and cabbage are brassicas.</div>
     <div class="fm-lbl">Growing tip</div><textarea class="fm-in" id="np-tip" rows="2" placeholder="Spacing, watering, when to pick…">${esc(c.tip)}</textarea>
     <div class="fm-lbl">When you harvest, try…</div><textarea class="fm-in" id="np-idea" rows="2" placeholder="Your favourite way to eat it">${esc(c.idea)}</textarea>
     <div class="fm-lbl">Plant next (optional)</div>
@@ -254,7 +258,7 @@ function saveNewPlant(){
   }
   let key=_np.key;
   if(!key){const base='c-'+(n.toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'')||'plant');key=base;let i=2;while(P[key])key=base+'-'+i++;}
-  ST.customPlants[key]={n,e:v('np-e')||'🌱',cat:_np.cat,h:v('np-h'),days:v('np-days'),pick:$('np-pick').checked,tip:v('np-tip'),idea:v('np-idea'),nx:v('np-nx')};
+  ST.customPlants[key]={n,e:v('np-e')||'🌱',cat:_np.cat,h:v('np-h'),days:v('np-days'),pick:$('np-pick').checked,fam:v('np-fam'),tip:v('np-tip'),idea:v('np-idea'),nx:v('np-nx')};
   saveState();applyCustomPlants();
   if(_np.key){const{bi,ri,ci}=_np;refreshAll();openCellSheet(bi,ri,ci);toast('Saved '+n);}
   else choosePlant(_np.bi,_np.ri,_np.ci,key);

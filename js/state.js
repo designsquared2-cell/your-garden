@@ -16,7 +16,7 @@ function plural(n,w){return `${n} ${w}${n===1?'':'s'}`;}
 // ── Load / save ──
 // Fill in fields added since older saves, so old data keeps working.
 function migrate(s){
-  s.beds??=[];s.customPlants??={};s.alertDone??={};s.log??=[];
+  s.beds??=[];s.customPlants??={};s.alertDone??={};s.log??=[];s.pestDone??={};s.pestReports??=[];
   delete s.taskState;
   s.beds.forEach(b=>{
     b.id??=newId();
@@ -67,8 +67,9 @@ function applyCustomPlants(){
       tip:esc(c.tip)||'Your own addition — add growing notes as you learn.',
       idea:esc(c.idea)||'Add a harvest idea by editing this plant.',custom:true};
     TIMING[k]={sow:CAT_SOW[c.cat]||ALL_YEAR,days:+c.days||null,pick:!!c.pick};
-    Object.values(CATS).forEach(a=>{const i=a.indexOf(k);if(i>-1)a.splice(i,1);});
+    [...Object.values(CATS),...Object.values(FAMILY)].forEach(a=>{const i=a.indexOf(k);if(i>-1)a.splice(i,1);});
     (CATS[c.cat]||COOL_VEG).push(k);
+    if(FAMILY[c.fam])FAMILY[c.fam].push(k); // drives pest checks and bed suggestions
   });
 }
 function plantName(k){return ST.customPlants[k]?.n??P[k]?.n??k;}

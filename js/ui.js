@@ -37,7 +37,7 @@ function setView(name){
   document.querySelectorAll('.nav-btn').forEach(b=>b.classList.toggle('active',b.dataset.view===name));
   renderView();window.scrollTo(0,0);
 }
-function renderView(){if(curView==='month')renderMonthly();if(curView==='plants')renderPlants();}
+function renderView(){({jobs:renderJobs,month:renderMonthly,plants:renderPlants})[curView]?.();}
 // Re-render everything that depends on state
 function refreshAll(){renderBeds();renderWeather();renderAlerts();renderView();}
 function updateHeader(){const d=new Date();$('hdr-sub').textContent=`${MONTHS[d.getMonth()]} ${d.getFullYear()} · saved on this device`;}

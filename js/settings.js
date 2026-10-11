@@ -36,7 +36,7 @@ function confirmStartFresh(){
 }
 function startFresh(){
   snapshot();
-  Object.keys(ST.customPlants).forEach(k=>{delete P[k];delete TIMING[k];Object.values(CATS).forEach(a=>{const i=a.indexOf(k);if(i>-1)a.splice(i,1);});});
+  Object.keys(ST.customPlants).forEach(k=>{delete P[k];delete TIMING[k];[...Object.values(CATS),...Object.values(FAMILY)].forEach(a=>{const i=a.indexOf(k);if(i>-1)a.splice(i,1);});});
   ST=freshState();saveState();
   try{localStorage.removeItem(WX_K);}catch(e){}
   WX=null;exitSelectMode();closeSheet();setView('beds');refreshAll();

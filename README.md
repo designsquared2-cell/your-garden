@@ -22,7 +22,9 @@ Then visit http://localhost:8080. (Opening `index.html` straight from disk also 
 | `js/state.js` | Saved state (localStorage key `gdn_v4`), migration, undo, cell & plant helpers |
 | `js/ui.js` | Sheet, toast (with Undo), confetti, tab switching |
 | `js/weather.js` | Open-Meteo forecast, watering verdict, location search |
-| `js/tasks.js` | One task list feeding **Needs attention** and **This Month**, generated from the beds, plant timing and weather |
+| `js/pests.js` | Pest & bug library (`PESTS`: plants/families affected, months, peak, what to look for, fix, prevention), pest-check jobs, "found some" reports |
+| `js/tasks.js` | Jobs tab: one list feeding **Needs attention** and **Jobs**, generated from the beds, plant timing, pests and weather |
+| `js/month.js` | This Month: pest watch, what to sow now, what's in the beds |
 | `js/plants-view.js` | Plants tab, bed-aware suggestions, harvest log |
 | `js/beds.js` | Bed grid, add/edit/resize beds, select mode, drag & drop, plant sheet, picker, custom plants |
 | `js/settings.js` | Location, backup export/import, start fresh |

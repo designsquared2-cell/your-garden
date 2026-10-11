@@ -31,7 +31,8 @@ function renderPlants(){
   $('plants-content').innerHTML=`${stories}
     ${guides?`<div class="pv-sec-title">🌿 What's in your beds</div>${guides}`:`<div class="pv-none">${ST.beds.length?'Nothing planted yet. Tap an empty spot in Beds to get started.':'No beds yet. Add one on the Beds tab to start planning.'}</div>`}
     ${empties?nudgeHtml(empties):''}
-    ${harvestLogHtml()}`;
+    ${harvestLogHtml()}
+    ${pestGuideHtml()}`;
 }
 
 function storyCardHtml(story,here){
@@ -59,7 +60,7 @@ function plantGuideHtml(k,td){
   const rank=c=>['ready','bolting'].includes(c.s)?0:c.s==='done'?3:expectedDate(c)&&expectedDate(c)<=td?1:2;
   const lead=cells.map(x=>x.cell).sort((a,b)=>rank(a)-rank(b)||(expectedDate(a)||'z').localeCompare(expectedDate(b)||'z'))[0];
   const when=readyLabel(lead);
-  return `<div class="bpc"><div class="bpc-top"><div class="bpc-emoji">${pl.e}</div><div><div class="bpc-name">${pl.n}</div><div class="bpc-hw">${when}${picks?` · 🧺 ${plural(picks,'pick')}`:''}</div></div></div><div class="bpc-body"><div class="bpc-tip">${pl.tip}</div><div class="bpc-harvest"><div class="bpc-harvest-lbl">When you harvest, try…</div><div class="bpc-harvest-txt">${pl.idea}</div></div></div></div>`;
+  return `<div class="bpc"><div class="bpc-top"><div class="bpc-emoji">${pl.e}</div><div><div class="bpc-name">${pl.n}</div><div class="bpc-hw">${when}${picks?` · 🧺 ${plural(picks,'pick')}`:''}</div></div></div><div class="bpc-body"><div class="bpc-tip">${pl.tip}</div>${(()=>{const ps=pestsFor(k).filter(p=>pestActive(p));return ps.length?`<div class="bpc-pests">🐛 Watch for now: ${ps.map(p=>p.n.toLowerCase()).join(', ')}</div>`:'';})()}<div class="bpc-harvest"><div class="bpc-harvest-lbl">When you harvest, try…</div><div class="bpc-harvest-txt">${pl.idea}</div></div></div></div>`;
 }
 function nudgeHtml(count){
   const rows=ST.beds.map((bed,bi)=>{

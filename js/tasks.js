@@ -20,7 +20,7 @@ function plantAlertItems(){
   return out;
 }
 function urgentItems(){
-  const out=plantAlertItems(),v=wxVerdict();
+  const out=[...plantAlertItems(),...treatItems()],v=wxVerdict();
   if(v?.lv==='r')out.push({kind:'water',id:'water',type:'urgent',cb:true,title:'💧 Water the beds today',detail:v.msg.replace(/^💧 Water today — /,'')+' Tick when done.'});
   return out;
 }
@@ -71,7 +71,7 @@ function tickItem(kind,id,btn){
   tickAway(btn,()=>{
     if(kind==='water'){logWatered();return;}
     snapshot();
-    const msg=kind==='plant'?harvestFromAlert(id):runAuto(id);
+    const msg=kind==='plant'?harvestFromAlert(id):kind==='pest'?tickPest(id):kind==='treat'?tickTreat(id):runAuto(id);
     saveState();refreshAll();toast(msg,{undo:true});
   });
 }
@@ -96,38 +96,27 @@ function runAuto(id){
 function renderAlerts(){
   const all=urgentItems(),al=all.filter(a=>a.kind!=='water');
   const pill=$('alert-pill');pill.textContent=all.length+' urgent';pill.style.display=all.length?'inline-block':'none';
+  const badge=$('jobs-badge');badge.textContent=all.length;badge.hidden=!all.length;
   $('alerts-wrap').innerHTML=al.length?`<div class="alerts"><div class="alerts-hdr">⚡ Needs attention</div>${al.map(a=>`<div class="alert-row"><button class="al-cb" aria-label="Mark done" onclick="tickItem('${a.kind}','${a.id}',this)">✓</button><div>${a.title}</div></div>`).join('')}</div>`:'';
 }
-function goToAlerts(){setView('month');}
+function goToAlerts(){setView('jobs');}
 
 function cardHtml(it){
-  const cls=['task-card',{urgent:'tc-urgent',soon:'tc-soon'}[it.type]||''].join(' ');
+  const cls=['task-card',{urgent:'tc-urgent',soon:'tc-soon',pest:'tc-pest'}[it.type]||''].join(' ');
   const lead=it.cb?`<button class="task-cb-area" aria-label="Mark done" onclick="tickItem('${it.kind}','${it.id}',this)"><div class="task-cb">○</div></button>`:`<div class="task-cb-area"><div class="task-ico">${it.icon||'•'}</div></div>`;
   return `<div class="${cls}">${lead}<div class="task-content"><div class="task-title">${it.title}</div><div class="task-detail">${it.detail||''}</div>${it.btn?`<button class="task-btn" onclick="${it.btn.js}">${it.btn.label}</button>`:''}</div></div>`;
 }
-function monthIntro(m){
-  const n=plantedCells().length,ready=plantedCells().filter(x=>x.cell.s==='ready').length;
-  const sow=[...COOL_VEG,...WARM_VEG].filter(k=>!P[k].custom&&inSeason(k,m)).slice(0,5).map(k=>P[k].n);
-  const lead=!ST.beds.length?'No beds yet — add one on the Beds tab to start planning.':n?`${plural(n,'plant')} in the ground${ready?`, ${ready} ready to pick`:''}.`:'Nothing planted yet.';
-  return `${lead}${sow.length?` In season to sow now: ${sow.join(', ')}.`:''}`;
-}
-function renderMonthly(){
+// Jobs tab: everything to do, grouped by urgency
+function jobSections(){
   const m=curMonth(),auto=autoItems(m);
-  const sec=(lbl,ts)=>ts.length?`<div class="task-section"><div class="task-sec-title">${lbl}</div>${ts.map(cardHtml).join('')}</div>`:'';
-  const tasksHtml=[sec('🔴 Do this week',urgentItems()),sec('🟡 This month',auto.filter(t=>t.type==='soon')),sec('🟢 Coming up',auto.filter(t=>t.type==='coming'))].join('')
-    ||(ST.beds.length?`<div class="all-done">All done for ${MONTHS[m]} 🌿<br><span>The garden is doing its thing.</span></div>`
-      :cardHtml({type:'soon',icon:'🌱',title:'Add your first bed',detail:'Tasks, harvest dates and watering advice appear here once you start planting.',btn:{label:'＋ Add a bed',js:"setView('beds');openBedEditor()"}}));
-  const recapHtml=ST.beds.map((bed,bi)=>{
-    const rows=[],seen=new Set();
-    plantedCells().filter(x=>x.bi===bi).forEach(({cell})=>{
-      const k=cell.p+':'+cell.s;if(seen.has(k))return;seen.add(k);
-      const pl=P[cell.p];
-      const hw={ready:'harvest now',bolting:'harvest now!',done:'clear when ready'}[cell.s]||readyLabel(cell);
-      rows.push(`<div class="recap-row"><div class="recap-ico">${pl.e}</div><div><div class="recap-nm">${pl.n}</div><div class="recap-st">${STLBL[cell.s]}</div></div><div class="recap-hw">${hw}</div></div>`);
-    });
-    const e=emptyCells(bi).length;
-    if(e)rows.push(`<div class="recap-row"><div class="recap-ico">▫️</div><div><div class="recap-nm">${plural(e,'empty spot')}</div><div class="recap-st">available to plant</div></div></div>`);
-    return `<div class="recap-block"><div class="recap-hdr rh${bi%3+1}">${esc(bed.name)}</div>${rows.join('')}</div>`;
-  }).join('');
-  $('month-content').innerHTML=`<div class="mv-heading">${MONTHS[m]}</div><div class="mv-intro">${monthIntro(m)}</div><div class="mv-section"><div class="mv-st">📋 Tasks</div>${tasksHtml}</div>${recapHtml?`<div class="mv-section"><div class="mv-st">🌱 What's in the beds</div>${recapHtml}</div>`:''}`;
+  return[['🔴 Do this week',urgentItems()],['🐛 Pest checks',pestCheckItems(m)],['🟡 This month',auto.filter(t=>t.type==='soon')],['🟢 Coming up',auto.filter(t=>t.type==='coming')]];
+}
+function jobCount(){const[[,u],[,p],[,s]]=jobSections();return u.length+p.length+s.filter(t=>t.cb).length;}
+function renderJobs(){
+  const m=curMonth(),secs=jobSections();
+  const body=secs.map(([lbl,ts])=>ts.length?`<div class="task-section"><div class="task-sec-title">${lbl}</div>${ts.map(cardHtml).join('')}</div>`:'').join('')
+    ||(ST.beds.length?`<div class="all-done">All done for now 🐝<br><span>The garden is doing its thing.</span></div>`
+      :cardHtml({type:'soon',icon:'🌱',title:'Add your first bed',detail:'Jobs, harvest dates, pest checks and watering advice appear here once you start planting.',btn:{label:'＋ Add a bed',js:"setView('beds');openBedEditor()"}}));
+  const n=jobCount();
+  $('jobs-content').innerHTML=`<div class="mv-heading">Jobs to do</div><div class="mv-intro">${n?`${plural(n,'job')} for ${MONTHS[m]}. Tick them off as you go.`:'Nothing needs doing right now.'}</div>${body}`;
 }
