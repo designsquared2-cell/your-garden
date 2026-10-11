@@ -71,7 +71,8 @@ body{font-family:'Nunito',system-ui,sans-serif;background:#0F1A08;color:#F0E6CC;
 .s-empty .cell-e{font-size:16px;opacity:.15}
 .s-seed .cell-e{font-size:13px}
 .s-done .cell-e{opacity:.25;font-size:16px}
-.cell-n{font-size:6.5px;font-weight:700;color:rgba(255,255,255,.58);text-align:center;line-height:1.1;max-width:98%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding:0 2px;margin-top:2px;pointer-events:none}
+.cell:focus-visible{outline:2px solid #FFD54F;outline-offset:1px}
+.cell-n{font-size:8px;font-weight:700;color:rgba(255,255,255,.58);text-align:center;line-height:1.1;max-width:98%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding:0 2px;margin-top:2px;pointer-events:none}
 .cell-pip{position:absolute;top:3px;right:3px;width:5px;height:5px;border-radius:50%;pointer-events:none}
 .pip-r{background:#FFD54F}.pip-b{background:#FF6B2B}.pip-d{background:#607D8B}
 .cell-chk{position:absolute;top:3px;left:3px;width:14px;height:14px;border-radius:3px;border:1.5px solid rgba(255,255,255,.35);display:none;align-items:center;justify-content:center;font-size:9px;background:rgba(0,0,0,.3);pointer-events:none}
@@ -202,7 +203,7 @@ body{font-family:'Nunito',system-ui,sans-serif;background:#0F1A08;color:#F0E6CC;
 .pick-item{background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.09);border-radius:9px;padding:9px 4px;text-align:center;cursor:pointer;transition:background .12s;font-family:inherit;color:inherit}
 .pick-item:active{background:#2E5E20}
 .pick-e{font-size:23px;margin-bottom:3px}
-.pick-n{font-size:8.5px;font-weight:700;color:#7A9060;line-height:1.2}
+.pick-n{font-size:9.5px;font-weight:700;color:#7A9060;line-height:1.2}
 .pick-search{width:100%;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:10px;padding:10px 12px;font-family:inherit;font-size:16px;color:#F0E6CC;margin-bottom:4px;outline:none}
 .pick-search:focus{border-color:#8BAA6B}
 .pick-search::placeholder{color:#5A7040}
@@ -326,7 +327,6 @@ const P={
   'dill':          {e:'🌿',n:'Dill',           h:'Cool season',nx:null,            tip:'Attracts beneficial insects. Bolts in heat.',                                                   idea:'Chop into yoghurt dressings, scatter over smoked salmon, mix into potato salad. Use fresh — it loses character when dried.'},
   'lemongrass':    {e:'🌾',n:'Lemongrass',     h:'Year-round',nx:null,             tip:'Grows 1m+. Keep watered in summer.',                                                            idea:'Bruise the stalk and add to curries, soups and broths. Make a tea. Freeze extra stalks for later.'},
   'chives':        {e:'🌾',n:'Chives',         h:'Year-round',nx:null,             tip:'Perennial. Regular cutting keeps them productive.',                                             idea:'Snip into scrambled eggs, soups, dressings. One of the most useful everyday herbs you can grow.'},
-  'marigold':      {e:'🌼',n:'Marigolds',      h:'Companion', nx:null,             tip:'Repels aphids, attracts beneficial insects.',                                                   idea:'Scatter petals over salads for colour. Mostly here for the garden though — doing a quiet job every day.'},
   'calendula':     {e:'🌸',n:'Calendula',      h:'Companion', nx:null,             tip:'Attracts pollinators. Edible flowers.',                                                         idea:'Scatter petals on salads. Steep in oil for a skin balm. Mostly here for the garden\'s benefit.'},
   'nasturtium':    {e:'🌺',n:'Nasturtium',     h:'Companion', nx:null,             tip:'Trap crop for aphids. Flowers and leaves are edible.',                                          idea:'The peppery flowers and leaves are brilliant in salads. The seed pods can be pickled like capers.'},
   'borage':        {e:'💙',n:'Borage',         h:'Companion', nx:null,             tip:'Attracts bees. Self-sows freely.',                                                              idea:'Float the blue flowers in drinks for something visually stunning. The leaves taste like cucumber — add to salads.'},
@@ -457,17 +457,19 @@ function getTaskState(m){if(!ST.taskState)ST.taskState={};if(!ST.taskState[m])ST
 let selectMode=false;
 const selected=new Set();
 function toggleSelectMode(){
-  selectMode=!selectMode;selected.clear();
+  selectMode=!selectMode;selected.clear();updateSelCount();
   const fab=document.getElementById('sel-fab'),bar=document.getElementById('sel-bar'),nav=document.getElementById('main-nav');
   if(selectMode){fab.classList.add('on');fab.textContent='✓ Selecting';bar.classList.add('on');nav.style.display='none';document.getElementById('beds-wrap').classList.add('sel-mode');}
   else{fab.classList.remove('on');fab.textContent='✓ Select';bar.classList.remove('on');nav.style.display='flex';document.getElementById('beds-wrap').classList.remove('sel-mode');}
   renderBeds();
 }
-function exitSelectMode(){selectMode=false;selected.clear();toggleSelectMode();}
-function toggleSelect(bi,ri,ci){const k=`${bi}-${ri}-${ci}`;if(selected.has(k))selected.delete(k);else selected.add(k);renderBeds();document.getElementById('sel-count').textContent=selected.size+' selected';}
-function openMultiStatus(){if(!selected.size)return;const opts=['seed','seedling','growing','ready','bolting','done'];const lbls={seed:'Seed',seedling:'Seedling',growing:'Growing',ready:'Ready',bolting:'Bolting',done:'Done'};document.getElementById('sh-content').innerHTML=`<div class="sh-body"><div class="sh-heading">Update ${selected.size} plants</div><div class="sh-sub">Set status for all selected cells</div><div class="stat-grid">${opts.map(s=>`<button class="stat-opt so-${s}" onclick="doMultiStatus('${s}')">${lbls[s]}</button>`).join('')}</div><button class="btn btn-cancel btn-full" onclick="closeSheet()">Cancel</button></div>`;showSheet();}
-function doMultiStatus(s){selected.forEach(k=>{const[bi,ri,ci]=k.split('-').map(Number);setCell(bi,ri,ci,{s});});renderBeds();renderAlerts();closeSheet();exitSelectMode();toast(`Updated ${selected.size} plants`);}
-function doMultiRemove(){if(!selected.size)return;if(!confirm(`Remove ${selected.size} selected plant(s)?`))return;selected.forEach(k=>{const[bi,ri,ci]=k.split('-').map(Number);setCell(bi,ri,ci,{p:null,s:'empty',d:null});});renderBeds();renderAlerts();exitSelectMode();toast(`Removed ${selected.size} plants`);}
+function exitSelectMode(){if(selectMode)toggleSelectMode();}
+function updateSelCount(){document.getElementById('sel-count').textContent=selected.size+' selected';}
+function toggleSelect(bi,ri,ci){const k=`${bi}-${ri}-${ci}`;if(selected.has(k))selected.delete(k);else selected.add(k);renderBeds();updateSelCount();}
+function selectedCells(){return[...selected].map(k=>k.split('-').map(Number)).filter(([bi,ri,ci])=>getCell(bi,ri,ci).p);}
+function openMultiStatus(){const n=selectedCells().length;if(!n){toast('Select some plants first');return;}document.getElementById('sh-content').innerHTML=`<div class="sh-body"><div class="sh-heading">Update ${n} plant${n>1?'s':''}</div><div class="sh-sub">Set status for all selected cells</div><div class="stat-grid">${STATUSES.map(s=>`<button class="stat-opt so-${s}" onclick="doMultiStatus('${s}')">${STATUS_LBL[s]}</button>`).join('')}</div><button class="btn btn-cancel btn-full" onclick="closeSheet()">Cancel</button></div>`;showSheet();}
+function doMultiStatus(s){const cs=selectedCells();cs.forEach(([bi,ri,ci])=>setCell(bi,ri,ci,{s}));closeSheet();exitSelectMode();renderAlerts();toast(`Updated ${cs.length} plant${cs.length>1?'s':''}`);}
+function doMultiRemove(){const cs=selectedCells();if(!cs.length){toast('Select some plants first');return;}if(!confirm(`Remove ${cs.length} selected plant${cs.length>1?'s':''}?`))return;cs.forEach(([bi,ri,ci])=>setCell(bi,ri,ci,{p:null,s:'empty',d:null}));exitSelectMode();renderAlerts();toast(`Removed ${cs.length} plant${cs.length>1?'s':''}`);}
 
 // Drag to move/swap. Mouse: drag starts after a small move. Touch: press-and-hold 300ms (so normal swipes still scroll).
 let DS=null,suppressClick=false;
@@ -524,6 +526,7 @@ document.addEventListener('pointercancel',endDrag);
 // Once a touch drag is live, stop the page from scrolling under the finger
 document.addEventListener('touchmove',e=>{if(DS?.active)e.preventDefault();},{passive:false});
 document.addEventListener('contextmenu',e=>{if(DS)e.preventDefault();});
+document.addEventListener('keydown',e=>{if(e.key==='Escape'&&document.getElementById('sheet').classList.contains('on'))closeSheet();});
 
 function renderBeds(){
   const w=document.getElementById('beds-wrap');
@@ -533,7 +536,7 @@ function renderBeds(){
 function renderCell(cell,bi,ri,ci){
   const pl=cell.p?P[cell.p]:null;const s=cell.s||'empty';const isSel=selectMode&&selected.has(`${bi}-${ri}-${ci}`);
   let pip='';if(s==='ready')pip='<div class="cell-pip pip-r"></div>';if(s==='bolting')pip='<div class="cell-pip pip-b"></div>';if(s==='done')pip='<div class="cell-pip pip-d"></div>';
-  return `<div class="cell s-${s}${isSel?' selected':''}" id="cell-${bi}-${ri}-${ci}" data-bi="${bi}" data-ri="${ri}" data-ci="${ci}" onpointerdown="cellPD(event,${bi},${ri},${ci})" onclick="cellClick(${bi},${ri},${ci})"><div class="cell-chk">${isSel?'✓':''}</div>${pip}<div class="cell-e">${pl?pl.e:'＋'}</div><div class="cell-n">${pl?pl.n:''}</div></div>`;
+  return `<div class="cell s-${s}${isSel?' selected':''}" id="cell-${bi}-${ri}-${ci}" data-bi="${bi}" data-ri="${ri}" data-ci="${ci}" role="button" tabindex="0" aria-label="${pl?pl.n+', '+(STATUS_LBL[s]||s):'Empty — tap to plant'}" onpointerdown="cellPD(event,${bi},${ri},${ci})" onclick="cellClick(${bi},${ri},${ci})" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();cellClick(${bi},${ri},${ci});}"><div class="cell-chk">${isSel?'✓':''}</div>${pip}<div class="cell-e">${pl?pl.e:'＋'}</div><div class="cell-n">${pl?pl.n:''}</div></div>`;
 }
 function cellClick(bi,ri,ci){if(suppressClick)return;if(selectMode)toggleSelect(bi,ri,ci);else handleTap(bi,ri,ci);}
 function handleTap(bi,ri,ci){const cell=getCell(bi,ri,ci);if(cell.s==='empty'||!cell.p)openPicker(bi,ri,ci);else openCellSheet(bi,ri,ci);}
@@ -584,6 +587,8 @@ function goToAlerts(){const b=document.querySelector('.nav-btn');setView('beds',
 const MONTHS=['January','February','March','April','May','June','July','August','September','October','November','December'];
 const MONTH_INTRO={9:'The big switchover month. Cool season finishing, warm season beginning. Hills nights still cold — be patient with new warm-season seedlings.',10:'Full summer mode. Most cool-season crops finishing. Big space opens as broad beans lift.',11:'Full summer. Garden should be producing well. Watering is the main job now.'};
 const STLBL={seed:'🌱 Seed',seedling:'🪴 Seedling',growing:'🌿 Growing',ready:'✨ Ready',bolting:'⚠️ Bolting',done:'✅ Done',empty:'▫️ Empty'};
+const STATUSES=['seed','seedling','growing','ready','bolting','done'];
+const STATUS_LBL={seed:'Seed',seedling:'Seedling',growing:'Growing',ready:'Ready',bolting:'Bolting!',done:'Done'};
 const STHW={ready:'harvest now',bolting:'harvest now!',done:'remove when ready'};
 
 function getPlantsInBeds(){
@@ -675,7 +680,7 @@ function renderPlants(){
 
 function storyCardHtml(story,inBeds){
   const hasPlants=story.checkBeds.some(k=>inBeds.has(k));
-  const badge=hasPlants&&story.trackTitle?'ON TRACK':'plant'===story.badgeType?story.badge:story.badge;
+  const badge=hasPlants&&story.trackTitle?'ON TRACK':story.badge;
   const bdCls=hasPlants?'sb-track':story.badgeType==='harvest'?'sb-harvest':'sb-plant';
   const title=hasPlants&&story.trackTitle?story.trackTitle:story.title;
   const txt=hasPlants&&story.trackStory?story.trackStory:story.story;
@@ -741,7 +746,7 @@ function nudgeHtml(count,inBeds){
 
 function openCellSheet(bi,ri,ci){
   const cell=getCell(bi,ri,ci);const pl=P[cell.p];const days=cell.d?Math.floor((Date.now()-new Date(cell.d))/86400000):null;
-  const stOpts=['seed','seedling','growing','ready','bolting','done'];const stLbl={seed:'Seed',seedling:'Seedling',growing:'Growing',ready:'Ready',bolting:'Bolting!',done:'Done'};
+  const stOpts=STATUSES,stLbl=STATUS_LBL;
   document.getElementById('sh-content').innerHTML=`<div class="sh-plant-hdr"><div class="sh-pe">${pl.e}</div><div><div class="sh-pn">${pl.n}</div><span class="sh-stag tg-${cell.s}">${stLbl[cell.s]||cell.s}</span></div></div><div class="sh-body"><div class="sh-chips"><div class="sh-chip"><div class="sh-cl">Harvest</div><div class="sh-cv" style="color:#C49010">${pl.h}</div></div><div class="sh-chip"><div class="sh-cl">In ground</div><div class="sh-cv">${days!==null?days+'d':'—'}</div></div><div class="sh-chip"><div class="sh-cl">Bed</div><div class="sh-cv">${bi+1}</div></div></div><div class="sh-tip">💡 ${pl.tip}</div>${pl.nx?`<div class="sh-next"><div class="sh-nl">→ Plant next</div><div class="sh-nv">${P[pl.nx].e} ${P[pl.nx].n} — ${P[pl.nx].h}</div></div>`:''}<div class="stat-lbl">Update status</div><div class="stat-grid">${stOpts.map(s=>`<button class="stat-opt so-${s}${cell.s===s?' sel':''}" onclick="doUpdateStatus(${bi},${ri},${ci},'${s}')">${stLbl[s]}</button>`).join('')}</div><div class="btn-row"><button class="btn btn-harvest" onclick="doHarvest(${bi},${ri},${ci})">🌾 Harvest</button><button class="btn btn-remove" onclick="doRemove(${bi},${ri},${ci})">🗑️ Remove</button>${pl.custom?`<button class="btn btn-cancel btn-full" onclick="openNewPlant('${cell.p}',${bi},${ri},${ci})">✏️ Edit plant info</button>`:''}<button class="btn btn-cancel btn-full" onclick="closeSheet()">Cancel</button></div></div>`;
   showSheet();
 }
@@ -818,7 +823,7 @@ function saveNewPlant(){
   else choosePlant(_np.bi,_np.ri,_np.ci,key);
 }
 function choosePlant(bi,ri,ci,key){_pend={bi,ri,ci,key};const pl=P[key];document.getElementById('sh-content').innerHTML=`<div class="sh-body"><div class="ptc-emoji">${pl.e}</div><div class="ptc-name">${pl.n}</div><div class="ptc-hw">Harvest: ${pl.h}</div><div class="ptc-q">How are you starting it?</div><div class="btn-row"><button class="btn btn-seed" onclick="confirmPlant('seed')">🌱 Direct seed</button><button class="btn btn-sdlng" onclick="confirmPlant('seedling')">🪴 Seedling</button></div><button class="btn btn-cancel btn-full" style="margin-top:8px" onclick="openPicker(${bi},${ri},${ci})">← Back</button></div>`;}
-function confirmPlant(startStatus){if(!_pend)return;const{bi,ri,ci,key}=_pend;_pend=null;setCell(bi,ri,ci,{p:key,s:startStatus,d:today()});renderBeds();renderAlerts();closeSheet();toast('🌱 Planted '+P[key].n);}
+function confirmPlant(startStatus){if(!_pend)return;const{bi,ri,ci,key}=_pend;_pend=null;setCell(bi,ri,ci,{p:key,s:startStatus,d:localDate()});renderBeds();renderAlerts();closeSheet();toast('🌱 Planted '+P[key].n);}
 
 function doUpdateStatus(bi,ri,ci,s){setCell(bi,ri,ci,{s});renderBeds();renderAlerts();closeSheet();toast('Updated');}
 function doHarvest(bi,ri,ci){
@@ -861,6 +866,9 @@ function wxLoc(){return ST.wx||DEFAULT_LOC;}
 function localDate(d=new Date()){return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;}
 function wxIcon(c){return c==null?'🌡️':c===0?'☀️':c<=2?'🌤️':c===3?'☁️':c<=48?'🌫️':c<=57?'🌦️':c<=67?'🌧️':c<=77?'❄️':c<=82?'🌦️':'⛈️';}
 function dayName(iso){const off=Math.round((new Date(iso+'T00:00')-new Date(localDate()+'T00:00'))/864e5);return off===-1?'yesterday':off===1?'tomorrow':off===0?'today':new Date(iso+'T00:00').toLocaleDateString('en-AU',{weekday:'long'});}
+// Index of "today" in the forecast. The API uses the garden's timezone; fall back to the
+// past_days offset (7) if the device's date differs, rather than refetching in a loop.
+function wxToday(d){const i=d.time.indexOf(localDate());return i>=0?i:Math.min(7,d.time.length-1);}
 async function loadWeather(force){
   const loc=wxLoc();let c=null;
   try{c=JSON.parse(localStorage.getItem(WX_K));}catch(e){}
@@ -876,7 +884,7 @@ async function loadWeather(force){
 }
 function wxVerdict(){
   if(!WX?.daily)return null;
-  const d=WX.daily,td=localDate(),ti=d.time.indexOf(td);if(ti<0)return null;
+  const d=WX.daily,td=localDate(),ti=wxToday(d);
   const rain=i=>d.precipitation_sum[i]||0,et=i=>d.et0_fao_evapotranspiration[i]||0;
   const tmax=d.temperature_2m_max[ti];
   const shallow=ST.beds.some(b=>b.rows.some(r=>r.some(c=>c.p&&(c.s==='seed'||c.s==='seedling'))));
@@ -900,8 +908,7 @@ function wxVerdict(){
 function renderWeather(){
   const w=document.getElementById('wx-wrap');if(!w)return;const loc=wxLoc();
   if(!WX?.daily){w.innerHTML=`<div class="wx"><div class="wx-top"><div class="wx-ico">🌡️</div><div><div class="wx-loc">${esc(loc.name)}</div><div class="wx-sum">${WX_ERR?'Couldn\'t reach the weather service — check your connection.':'Loading weather…'}</div></div></div></div>`;return;}
-  const d=WX.daily,ti=d.time.indexOf(localDate());
-  if(ti<0){w.innerHTML='';loadWeather(true);return;}
+  const d=WX.daily,ti=wxToday(d);
   const r3=[ti-3,ti-2,ti-1].reduce((s,i)=>s+(d.precipitation_sum[i]||0),0);
   const v=wxVerdict();const watered=ST.lastWatered===localDate();
   const heat=[ti+1,ti+2,ti+3].filter(i=>d.temperature_2m_max[i]>=35).map(i=>`${dayName(d.time[i])} ${Math.round(d.temperature_2m_max[i])}°`);
@@ -940,7 +947,6 @@ function useMyLoc(){
 }
 document.addEventListener('visibilitychange',()=>{if(!document.hidden)loadWeather();});
 
-function today(){return new Date().toISOString().slice(0,10);}
 function updateHeader(){const d=new Date();document.getElementById('hdr-sub').textContent=`${MONTHS[d.getMonth()]} ${d.getFullYear()} · auto-saved`;}
 
 loadState();applyCustomPlants();updateHeader();renderBeds();renderAlerts();loadWeather();
