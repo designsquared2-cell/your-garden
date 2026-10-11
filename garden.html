@@ -27,7 +27,21 @@ body{font-family:'Nunito',system-ui,sans-serif;background:#0F1A08;color:#F0E6CC;
 .alerts-hdr{background:#2A3E14;padding:7px 12px;font-size:10px;font-weight:800;letter-spacing:2px;text-transform:uppercase}
 .alert-row{padding:8px 12px;border-top:1px solid rgba(255,255,255,.05);font-size:12px;display:flex;align-items:flex-start;gap:8px;line-height:1.4}
 .adot{width:7px;height:7px;border-radius:50%;flex-shrink:0;margin-top:5px}
+.alert-row{align-items:center}
+.al-cb{width:20px;height:20px;border-radius:50%;border:2px solid rgba(255,255,255,.25);background:rgba(255,255,255,.04);color:transparent;font-size:10px;font-weight:900;cursor:pointer;flex-shrink:0;display:flex;align-items:center;justify-content:center;padding:0;font-family:inherit;transition:all .15s}
+.al-cb:hover{border-color:#8BAA6B;color:#8BAA6B}
+.alert-row.completing{animation:slideOut .35s ease-in forwards;pointer-events:none}
 .ar{background:#B85C38}.ay{background:#D4A017}.ag{background:#7AAA5A}
+.wx{background:#141E1C;border:1px solid #2A4A48;border-left:3px solid #4A9AB8;border-radius:10px;margin-bottom:12px;overflow:hidden}
+.wx-top{display:flex;align-items:center;gap:10px;padding:10px 12px 8px}
+.wx-ico{font-size:28px;line-height:1;flex-shrink:0}
+.wx-loc{font-size:12px;font-weight:800}
+.wx-sum{font-size:10.5px;color:#7AA0A8;margin-top:1px}
+.wx-btn{margin-left:auto;flex-shrink:0;background:#1E3A48;color:#9AD4EA;border:1px solid #2E5A6A;font-family:inherit;font-size:11px;font-weight:800;padding:6px 11px;border-radius:9px;cursor:pointer}
+.wx-btn.done{background:#163A2A;color:#8BD48B;border-color:#2A5A3A}
+.wx-row{padding:8px 12px;border-top:1px solid rgba(255,255,255,.05);font-size:12px;display:flex;align-items:flex-start;gap:8px;line-height:1.45}
+.wx-foot{padding:5px 12px 7px;font-size:9px;color:#4A6A68}
+.loc-res{display:block;width:100%;text-align:left;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.09);border-radius:8px;padding:9px 11px;margin-top:5px;font-family:inherit;font-size:12px;color:#F0E6CC;cursor:pointer}
 .bed-controls{display:flex;justify-content:flex-end;margin-bottom:8px}
 .sel-fab{display:flex;align-items:center;gap:5px;background:#182210;border:1px solid #3A5C22;color:#8BAA6B;font-family:inherit;font-size:11px;font-weight:800;padding:6px 13px;border-radius:14px;cursor:pointer}
 .sel-fab.on{background:rgba(212,160,23,.12);border-color:#D4A017;color:#D4A017}
@@ -36,12 +50,10 @@ body{font-family:'Nunito',system-ui,sans-serif;background:#0F1A08;color:#F0E6CC;
 .bed-top{padding:8px 12px;display:flex;justify-content:space-between;align-items:center}
 .bt1{background:#1E3212}.bt2{background:#253818}.bt3{background:#2C2E14}
 .bed-name{font-size:12px;font-weight:800}
-.bed-hint{font-size:9px;color:rgba(255,255,255,.35);margin-top:1px}
-.bed-dir{font-size:8px;color:rgba(255,255,255,.25);text-align:right;line-height:1.8}
 .grid-bg{padding:7px;background:#3A2208}
 .grid-row{display:flex;gap:4px;margin-bottom:4px}
 .grid-row:last-child{margin-bottom:0}
-.cell{flex:1;height:54px;border-radius:8px;display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;position:relative;border:2px solid transparent;min-width:0;overflow:hidden;user-select:none;-webkit-user-select:none;transition:transform .1s,border-color .15s,box-shadow .15s;touch-action:none}
+.cell{flex:1;height:54px;border-radius:8px;display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;position:relative;border:2px solid transparent;min-width:0;overflow:hidden;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none;transition:transform .1s,border-color .15s,box-shadow .15s;touch-action:manipulation}
 .cell:active{transform:scale(.86)}
 .cell.drag-over{border-color:#fff !important;box-shadow:0 0 10px rgba(255,255,255,.3)}
 .cell.dragging{opacity:.28}
@@ -139,6 +151,12 @@ body{font-family:'Nunito',system-ui,sans-serif;background:#0F1A08;color:#F0E6CC;
 .nudge-plant{text-align:center;font-size:9px;font-weight:700;color:#7A9060}
 .nudge-plant div:first-child{font-size:26px;margin-bottom:3px}
 .nudge-hint{font-size:10px;color:#4A6030}
+.nudge-bed{display:block;width:100%;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:9px;padding:9px 10px 6px;margin-bottom:8px;font-family:inherit;color:inherit;cursor:pointer;text-align:left}
+.nudge-bed:active{background:#2E5E20}
+.nudge-bed-top{display:flex;justify-content:space-between;font-size:11.5px;font-weight:800;margin-bottom:6px}
+.nudge-cnt{color:#A0D870}
+.nudge-why{font-size:8px;font-weight:600;color:#5A7040;margin-top:2px;max-width:90px;line-height:1.25}
+.pick-why{font-size:7.5px;color:#C49010;margin-top:2px;line-height:1.2}
 /* SHEET */
 .overlay{position:fixed;inset:0;background:rgba(0,0,0,.72);z-index:100;opacity:0;pointer-events:none;transition:opacity .2s}
 .overlay.on{opacity:1;pointer-events:all}
@@ -185,6 +203,23 @@ body{font-family:'Nunito',system-ui,sans-serif;background:#0F1A08;color:#F0E6CC;
 .pick-item:active{background:#2E5E20}
 .pick-e{font-size:23px;margin-bottom:3px}
 .pick-n{font-size:8.5px;font-weight:700;color:#7A9060;line-height:1.2}
+.pick-search{width:100%;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:10px;padding:10px 12px;font-family:inherit;font-size:16px;color:#F0E6CC;margin-bottom:4px;outline:none}
+.pick-search:focus{border-color:#8BAA6B}
+.pick-search::placeholder{color:#5A7040}
+.pick-new{border:1px dashed #4A7A2A;background:rgba(58,92,34,.15)}
+.pick-new .pick-n{color:#A0D870}
+.pick-empty{grid-column:1/-1;font-size:11.5px;color:#7A9060;text-align:center;padding:10px 0 2px}
+.fm-lbl{font-size:9.5px;font-weight:800;text-transform:uppercase;letter-spacing:1.5px;color:#5A7040;margin:12px 0 5px}
+.fm-in{width:100%;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:9px;padding:9px 11px;font-family:inherit;font-size:16px;color:#F0E6CC;outline:none;resize:vertical}
+.fm-in:focus{border-color:#8BAA6B}
+.fm-in::placeholder{color:#4A6030}
+.fm-emoji-row{display:flex;gap:6px;align-items:center}
+.fm-emoji-in{width:58px;text-align:center;font-size:22px;padding:5px;flex-shrink:0}
+.fm-emojis{display:flex;flex-wrap:wrap;gap:4px}
+.fm-emo{background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.09);border-radius:7px;font-size:17px;width:32px;height:32px;cursor:pointer;line-height:1}
+.fm-cats{display:grid;grid-template-columns:1fr 1fr;gap:5px}
+.fm-cat{background:rgba(255,255,255,.05);border:2px solid transparent;border-radius:8px;padding:8px 4px;font-family:inherit;font-size:11px;font-weight:700;color:#C8D8B0;cursor:pointer}
+.fm-cat.sel{border-color:#8BAA6B;background:rgba(58,92,34,.3)}
 .ptc-emoji{font-size:54px;text-align:center;padding:12px 0 4px}
 .ptc-name{font-size:19px;font-weight:900;text-align:center;margin-bottom:3px}
 .ptc-hw{font-size:12px;color:#C49010;text-align:center;margin-bottom:14px}
@@ -206,6 +241,7 @@ body{font-family:'Nunito',system-ui,sans-serif;background:#0F1A08;color:#F0E6CC;
 </header>
 <div class="scroll">
   <div class="view on" id="view-beds">
+    <div id="wx-wrap"></div>
     <div id="alerts-wrap"></div>
     <div class="bed-controls"><button class="sel-fab" id="sel-fab" onclick="toggleSelectMode()">✓ Select</button></div>
     <div id="beds-wrap"></div>
@@ -217,7 +253,7 @@ body{font-family:'Nunito',system-ui,sans-serif;background:#0F1A08;color:#F0E6CC;
       <div class="leg"><div class="leg-sq" style="background:#3A1200"></div>Bolting ⚠️</div>
       <div class="leg"><div class="leg-sq" style="background:#1A1A18"></div>Done</div>
     </div>
-    <div style="font-size:10px;color:#3A4A28;margin-top:7px;padding:0 2px">Hold & drag to move · Tap Select to edit multiple</div>
+    <div style="font-size:10px;color:#3A4A28;margin-top:7px;padding:0 2px">Drag a plant to move it (on phones, press and hold first) · Tap Select to edit multiple</div>
   </div>
   <div class="view" id="view-month"><div id="month-content"></div></div>
   <div class="view" id="view-plants"><div id="plants-content"></div></div>
@@ -299,6 +335,8 @@ const COOL_VEG=['broad-beans','snow-peas','garden-peas','kale','silverbeet','rai
 const WARM_VEG=['tomatoes','cherry-tomato','basil','zucchini','cucumber','capsicum','eggplant','climbing-beans','snake-beans','sweet-corn','pumpkin','chilli','sweet-potato'];
 const HERBS=['thyme','rosemary','sage','mint','oregano','dill','lemongrass','chives'];
 const COMPANIONS=['marigold','calendula','nasturtium','borage'];
+const CATS={cool:COOL_VEG,warm:WARM_VEG,herb:HERBS,comp:COMPANIONS};
+const CAT_LBL={cool:'Cool Season',warm:'Warm Season',herb:'Herbs',comp:'Companions'};
 
 const STORIES={
   9:[
@@ -343,31 +381,31 @@ const STORIES={
 
 const TASKS={
   9:[
-    {id:'oct-herbs',text:'Harvest coriander and parsley — this week',detail:'Both are shooting. Strip everything before flowers open. Once bolted, the flavour is gone and the plants are spent.',type:'urgent',
+    {id:'oct-herbs',plants:['coriander','parsley'],text:'Harvest coriander and parsley — this week',detail:'Both are shooting. Strip everything before flowers open. Once bolted, the flavour is gone and the plants are spent.',type:'urgent',
      followOn:{id:'oct-basil',text:'Get basil into the cleared herb spaces in Bed 1',detail:'The spot is warm and ready. Basil loves exactly this position. You\'ll have leaves within a few weeks.',type:'soon',followOn:null}},
-    {id:'oct-peas',text:'Pick snow peas every 2 days',detail:'Frequency of picking is what keeps them producing. Leave pods on the vine and the plant thinks its job is done.',type:'urgent',followOn:null},
+    {id:'oct-peas',plants:['snow-peas'],text:'Pick snow peas every 2 days',detail:'Frequency of picking is what keeps them producing. Leave pods on the vine and the plant thinks its job is done.',type:'urgent',followOn:null},
     {id:'oct-tomatoes',text:'Get tomato seedlings from the nursery mid-month',detail:'Cherry tomatoes are your best bet for a first season. Mid-October in the Hills — not before. The cold nights are still around early in the month.',type:'soon',
      followOn:{id:'oct-plant-tomatoes',text:'Plant tomatoes into Bed 1 as snow peas wind down',detail:'The trellis comes off, the tomatoes go on. The soil is primed from months of peas — they will love it.',type:'soon',followOn:null}},
     {id:'oct-aphids',text:'Quick aphid check under kale and chard',detail:'October is when they arrive. Check the underside of leaves. A blast of water knocks them off early — your marigolds are already helping but stay ahead of it.',type:'soon',followOn:null},
-    {id:'oct-beans-watch',text:'Watch broad beans for harvest — pods should be swelling',detail:'Pick when plump and green. Pull plants when done — roots and all. Those nitrogen-fixing roots are a gift to the next crop.',type:'coming',
+    {id:'oct-beans-watch',plants:['broad-beans'],text:'Watch broad beans for harvest — pods should be swelling',detail:'Pick when plump and green. Pull plants when done — roots and all. Those nitrogen-fixing roots are a gift to the next crop.',type:'coming',
      followOn:{id:'oct-rest-bed1',text:'Give Bed 1 a week\'s rest after the beans come out',detail:'Water it in, light mulch, leave it alone for a week before planting again. The soil has worked hard since July.',type:'rest',followOn:null}},
     {id:'oct-rest',text:'Take a week off from the garden',detail:'October is a big transition month and you\'ve done the work. Walk around, notice what\'s growing. The worms are working even when you\'re not.',type:'rest',followOn:null}
   ],
   10:[
-    {id:'nov-beans',text:'Harvest and pull the last broad beans',detail:'Pick remaining pods, then pull the whole plant roots and all. The nitrogen stays in the soil as a gift to whatever comes next.',type:'urgent',
+    {id:'nov-beans',plants:['broad-beans'],text:'Harvest and pull the last broad beans',detail:'Pick remaining pods, then pull the whole plant roots and all. The nitrogen stays in the soil as a gift to whatever comes next.',type:'urgent',
      followOn:{id:'nov-rest-bed',text:'Rest Bed 1 for a week before the next planting',detail:'Light mulch, a good soak, then leave it alone. One week is all it needs before tomatoes or zucchini go in.',type:'rest',followOn:null}},
-    {id:'nov-shallots',text:'Check shallots — lift when foliage falls over',detail:'That flopping over is the signal. Lift gently, brush off soil. Don\'t wash them.',type:'urgent',
+    {id:'nov-shallots',plants:['shallots'],text:'Check shallots — lift when foliage falls over',detail:'That flopping over is the signal. Lift gently, brush off soil. Don\'t wash them.',type:'urgent',
      followOn:{id:'nov-cure-shallots',text:'Cure shallots in a dry airy spot for 3–4 days',detail:'A wire rack in the shed, out of direct sun. The skins dry and they\'ll keep for months.',type:'soon',followOn:null}},
     {id:'nov-water',text:'Consistent watering — roots need it now',detail:'Inconsistent moisture at this stage means woody beetroot and forked carrots. Regular, even watering from here makes all the difference.',type:'urgent',followOn:null},
-    {id:'nov-basil',text:'Pinch out basil flower heads as they appear',detail:'Once basil flowers, the leaves lose their flavour. Pinch the tops weekly and it keeps producing for months.',type:'soon',followOn:null},
+    {id:'nov-basil',plants:['basil'],text:'Pinch out basil flower heads as they appear',detail:'Once basil flowers, the leaves lose their flavour. Pinch the tops weekly and it keeps producing for months.',type:'soon',followOn:null},
     {id:'nov-rest',text:'Step back and enjoy what\'s growing',detail:'November is when the summer garden comes alive. You don\'t always need to be doing something. Sometimes just watching is enough.',type:'rest',followOn:null}
   ],
   11:[
     {id:'dec-water',text:'Water every 2–3 days in the morning',detail:'December heat in the Hills is serious. Deep, infrequent watering beats shallow and often. Early morning means less evaporation.',type:'urgent',followOn:null},
-    {id:'dec-onions',text:'Lift onions when tops fall over naturally',detail:'That\'s the signal — don\'t rush it. Lifting early means smaller bulbs. Ease them out gently.',type:'urgent',
+    {id:'dec-onions',plants:['onions'],text:'Lift onions when tops fall over naturally',detail:'That\'s the signal — don\'t rush it. Lifting early means smaller bulbs. Ease them out gently.',type:'urgent',
      followOn:{id:'dec-cure-onions',text:'Cure onions in a cool dry place',detail:'Hang in a net bag in the shed. They\'ll last months and you\'ll reach for them every week.',type:'soon',followOn:null}},
-    {id:'dec-zucchini',text:'Harvest zucchini at 15–20cm — don\'t let them grow huge',detail:'A giant zucchini tastes of nothing and stresses the plant. Pick early and often and you\'ll have them all summer.',type:'soon',followOn:null},
-    {id:'dec-tomatoes',text:'First cherry tomatoes appearing — check daily',detail:'Once they start, they come fast. Pick fully coloured. Eat them in the garden before they make it inside.',type:'soon',followOn:null},
+    {id:'dec-zucchini',plants:['zucchini'],text:'Harvest zucchini at 15–20cm — don\'t let them grow huge',detail:'A giant zucchini tastes of nothing and stresses the plant. Pick early and often and you\'ll have them all summer.',type:'soon',followOn:null},
+    {id:'dec-tomatoes',plants:['cherry-tomato','tomatoes'],text:'First cherry tomatoes appearing — check daily',detail:'Once they start, they come fast. Pick fully coloured. Eat them in the garden before they make it inside.',type:'soon',followOn:null},
     {id:'dec-rest',text:'Take a proper break from the garden this week',detail:'It\'s December. The garden is producing. You\'ve done everything right. Eat the food, enjoy the season, rest.',type:'rest',followOn:null}
   ]
 };
@@ -398,6 +436,20 @@ let ST;
 function loadState(){try{const r=localStorage.getItem(SK);ST=r?JSON.parse(r):dc(DEFAULT);if(!r)saveState();}catch(e){ST=dc(DEFAULT);}}
 function saveState(){try{localStorage.setItem(SK,JSON.stringify(ST));}catch(e){}}
 function dc(o){return JSON.parse(JSON.stringify(o));}
+function esc(s){return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+// User-created plants live in ST.customPlants (raw text) and are merged into P (escaped) so every view picks them up.
+function applyCustomPlants(){
+  if(!ST.customPlants)ST.customPlants={};
+  const cp=ST.customPlants;
+  Object.entries(cp).forEach(([k,c])=>{
+    P[k]={e:esc(c.e)||'🌱',n:esc(c.n),h:esc(c.h)||'—',nx:c.nx&&(P[c.nx]||cp[c.nx])?c.nx:null,
+      tip:esc(c.tip)||'Your own addition — add growing notes as you learn.',
+      idea:esc(c.idea)||'Add a harvest idea by editing this plant.',custom:true};
+    Object.values(CATS).forEach(a=>{const i=a.indexOf(k);if(i>-1)a.splice(i,1);});
+    (CATS[c.cat]||COOL_VEG).push(k);
+  });
+}
+function plantName(k){return ST.customPlants?.[k]?.n??P[k].n;}
 function getCell(bi,ri,ci){return ST.beds[bi].rows[ri][ci];}
 function setCell(bi,ri,ci,d){Object.assign(ST.beds[bi].rows[ri][ci],d);saveState();}
 function getTaskState(m){if(!ST.taskState)ST.taskState={};if(!ST.taskState[m])ST.taskState[m]={done:[],revealed:[]};return ST.taskState[m];}
@@ -417,72 +469,115 @@ function openMultiStatus(){if(!selected.size)return;const opts=['seed','seedling
 function doMultiStatus(s){selected.forEach(k=>{const[bi,ri,ci]=k.split('-').map(Number);setCell(bi,ri,ci,{s});});renderBeds();renderAlerts();closeSheet();exitSelectMode();toast(`Updated ${selected.size} plants`);}
 function doMultiRemove(){if(!selected.size)return;if(!confirm(`Remove ${selected.size} selected plant(s)?`))return;selected.forEach(k=>{const[bi,ri,ci]=k.split('-').map(Number);setCell(bi,ri,ci,{p:null,s:'empty',d:null});});renderBeds();renderAlerts();exitSelectMode();toast(`Removed ${selected.size} plants`);}
 
-let DS={src:null,ghost:null,active:false,sx:0,sy:0};
-const THRESH=9;
-function cellTS(e,bi,ri,ci){if(selectMode)return;const cell=getCell(bi,ri,ci);if(!cell.p||cell.s==='empty')return;const t=e.touches[0];DS={src:{bi,ri,ci},ghost:null,active:false,sx:t.clientX,sy:t.clientY};}
-function docTM(e){
-  if(!DS.src&&!DS.active)return;
-  const t=e.touches[0];
-  if(!DS.active){
-    if(Math.abs(t.clientX-DS.startX)>12||Math.abs(t.clientY-DS.startY)>12){
-      clearTimeout(DS.timer);DS.timer=null;DS.src=null;
-    }
-    return;
-  }
-  if(DS.ghost){DS.ghost.style.left=(t.clientX-28)+'px';DS.ghost.style.top=(t.clientY-28)+'px';}
-  DS.ghost&&(DS.ghost.style.visibility='hidden');
-  const el=document.elementFromPoint(t.clientX,t.clientY);
-  DS.ghost&&(DS.ghost.style.visibility='visible');
-  document.querySelectorAll('.cell.drag-over').forEach(c=>c.classList.remove('drag-over'));
-  const tc=el?.closest?.('.cell[data-bi]');
-  if(tc&&DS.src){const sid='cell-'+DS.src.bi+'-'+DS.src.ri+'-'+DS.src.ci;if(tc.id!==sid)tc.classList.add('drag-over');}
-  e.preventDefault();
+// Drag to move/swap. Mouse: drag starts after a small move. Touch: press-and-hold 300ms (so normal swipes still scroll).
+let DS=null,suppressClick=false;
+function cellPD(e,bi,ri,ci){
+  if(selectMode||e.button>0)return;
+  const cell=getCell(bi,ri,ci);if(!cell.p||cell.s==='empty')return;
+  DS={src:{bi,ri,ci},x:e.clientX,y:e.clientY,active:false,ghost:null,touch:e.pointerType!=='mouse',timer:null};
+  if(DS.touch)DS.timer=setTimeout(()=>startDrag(DS.x,DS.y),300);
 }
-function docTE(e){
-  if(!DS.src&&!DS.active)return;
-  clearTimeout(DS.timer);
-  const wasActive=DS.active;const src=DS.src?{...DS.src}:null;
-  if(DS.ghost){DS.ghost.remove();DS.ghost=null;}
+function startDrag(x,y){
+  if(!DS||DS.active)return;
+  DS.active=true;const{bi,ri,ci}=DS.src;
+  const g=document.createElement('div');g.className='drag-ghost';g.textContent=P[getCell(bi,ri,ci).p].e;
+  g.style.left=(x-28)+'px';g.style.top=(y-28)+'px';document.body.appendChild(g);DS.ghost=g;
+  document.getElementById(`cell-${bi}-${ri}-${ci}`)?.classList.add('dragging');
+  navigator.vibrate?.(15);
+}
+function dropTarget(x,y){return document.elementFromPoint(x,y)?.closest?.('.cell[data-bi]')||null;}
+function endDrag(){
+  if(!DS)return;clearTimeout(DS.timer);DS.ghost?.remove();
   document.querySelectorAll('.cell.drag-over,.cell.dragging').forEach(c=>c.classList.remove('drag-over','dragging'));
-  DS={src:null,ghost:null,active:false,startX:0,startY:0,timer:null};
-  if(!src)return;
-  if(wasActive){
-    const t=e.changedTouches[0];const el=document.elementFromPoint(t.clientX,t.clientY);const tc=el?.closest?.('.cell[data-bi]');
-    if(tc){const tbi=parseInt(tc.dataset.bi),tri=parseInt(tc.dataset.ri),tci=parseInt(tc.dataset.ci);const sid='cell-'+src.bi+'-'+src.ri+'-'+src.ci;
-      if(tc.id!==sid&&!isNaN(tbi)){const s=dc(getCell(src.bi,src.ri,src.ci));const d=dc(getCell(tbi,tri,tci));setCell(src.bi,src.ri,src.ci,{p:d.p,s:d.s,d:d.d});setCell(tbi,tri,tci,{p:s.p,s:s.s,d:s.d});renderBeds();renderAlerts();toast('Plants swapped ↔');}}
-  }else{
-    if(selectMode)toggleSelect(src.bi,src.ri,src.ci);
-    else handleTap(src.bi,src.ri,src.ci);
-  }
-  e.preventDefault();
+  DS=null;
 }
-document.addEventListener('touchmove',docTM,{passive:false});
-document.addEventListener('touchend',docTE);
+document.addEventListener('pointermove',e=>{
+  if(!DS)return;
+  if(!DS.active){
+    if(Math.hypot(e.clientX-DS.x,e.clientY-DS.y)<8)return;
+    if(DS.touch){endDrag();return;} // moved before hold finished → it's a scroll
+    startDrag(e.clientX,e.clientY);
+  }
+  DS.x=e.clientX;DS.y=e.clientY;
+  DS.ghost.style.left=(e.clientX-28)+'px';DS.ghost.style.top=(e.clientY-28)+'px';
+  document.querySelectorAll('.cell.drag-over').forEach(c=>c.classList.remove('drag-over'));
+  const tc=dropTarget(e.clientX,e.clientY);const{bi,ri,ci}=DS.src;
+  if(tc&&tc.id!==`cell-${bi}-${ri}-${ci}`)tc.classList.add('drag-over');
+});
+document.addEventListener('pointerup',e=>{
+  if(!DS)return;
+  if(DS.active){
+    suppressClick=true;setTimeout(()=>suppressClick=false,0);
+    const src=DS.src,tc=dropTarget(e.clientX,e.clientY);
+    if(tc){
+      const tbi=+tc.dataset.bi,tri=+tc.dataset.ri,tci=+tc.dataset.ci;
+      if(!(tbi===src.bi&&tri===src.ri&&tci===src.ci)){
+        const s=dc(getCell(src.bi,src.ri,src.ci)),d=dc(getCell(tbi,tri,tci));
+        setCell(src.bi,src.ri,src.ci,{p:d.p,s:d.s,d:d.d});setCell(tbi,tri,tci,{p:s.p,s:s.s,d:s.d});
+        endDrag();renderBeds();renderAlerts();toast(d.p?'Plants swapped ↔':'Moved '+P[s.p].n);return;
+      }
+    }
+  }
+  endDrag();
+});
+document.addEventListener('pointercancel',endDrag);
+// Once a touch drag is live, stop the page from scrolling under the finger
+document.addEventListener('touchmove',e=>{if(DS?.active)e.preventDefault();},{passive:false});
+document.addEventListener('contextmenu',e=>{if(DS)e.preventDefault();});
 
 function renderBeds(){
   const w=document.getElementById('beds-wrap');
   if(selectMode)w.classList.add('sel-mode');else w.classList.remove('sel-mode');
-  w.innerHTML=ST.beds.map((bed,bi)=>`<div class="bed-wrap"><div class="bed-card"><div class="bed-top ${bed.cls}"><div><div class="bed-name">${bed.name}</div><div class="bed-hint">${bed.hint}</div></div><div class="bed-dir">${bed.dir}</div></div><div class="grid-bg">${bed.rows.map((row,ri)=>`<div class="grid-row">${row.map((cell,ci)=>renderCell(cell,bi,ri,ci)).join('')}</div>`).join('')}</div></div></div>`).join('');
+  w.innerHTML=ST.beds.map((bed,bi)=>`<div class="bed-wrap"><div class="bed-card"><div class="bed-top ${bed.cls}"><div class="bed-name">${bed.name}</div></div><div class="grid-bg">${bed.rows.map((row,ri)=>`<div class="grid-row">${row.map((cell,ci)=>renderCell(cell,bi,ri,ci)).join('')}</div>`).join('')}</div></div></div>`).join('');
 }
 function renderCell(cell,bi,ri,ci){
   const pl=cell.p?P[cell.p]:null;const s=cell.s||'empty';const isSel=selectMode&&selected.has(`${bi}-${ri}-${ci}`);
   let pip='';if(s==='ready')pip='<div class="cell-pip pip-r"></div>';if(s==='bolting')pip='<div class="cell-pip pip-b"></div>';if(s==='done')pip='<div class="cell-pip pip-d"></div>';
-  return `<div class="cell s-${s}${isSel?' selected':''}" id="cell-${bi}-${ri}-${ci}" data-bi="${bi}" data-ri="${ri}" data-ci="${ci}" ontouchstart="cellTS(event,${bi},${ri},${ci})" onclick="cellClick(${bi},${ri},${ci})"><div class="cell-chk">${isSel?'✓':''}</div>${pip}<div class="cell-e">${pl?pl.e:'＋'}</div><div class="cell-n">${pl?pl.n:''}</div></div>`;
+  return `<div class="cell s-${s}${isSel?' selected':''}" id="cell-${bi}-${ri}-${ci}" data-bi="${bi}" data-ri="${ri}" data-ci="${ci}" onpointerdown="cellPD(event,${bi},${ri},${ci})" onclick="cellClick(${bi},${ri},${ci})"><div class="cell-chk">${isSel?'✓':''}</div>${pip}<div class="cell-e">${pl?pl.e:'＋'}</div><div class="cell-n">${pl?pl.n:''}</div></div>`;
 }
-function cellClick(bi,ri,ci){if('ontouchstart' in window)return;if(selectMode)toggleSelect(bi,ri,ci);else handleTap(bi,ri,ci);}
+function cellClick(bi,ri,ci){if(suppressClick)return;if(selectMode)toggleSelect(bi,ri,ci);else handleTap(bi,ri,ci);}
 function handleTap(bi,ri,ci){const cell=getCell(bi,ri,ci);if(cell.s==='empty'||!cell.p)openPicker(bi,ri,ci);else openCellSheet(bi,ri,ci);}
 
 function renderAlerts(){
   const al=buildAlerts();const wrap=document.getElementById('alerts-wrap');const pill=document.getElementById('alert-pill');
-  if(!al.length){wrap.innerHTML='';pill.style.display='none';return;}
-  const urg=al.filter(a=>a.lv==='r').length;
+  const urg=al.length+(wxVerdict()?.lv==='r'?1:0);
   if(urg){pill.textContent=urg+' urgent';pill.style.display='inline-block';}else pill.style.display='none';
-  wrap.innerHTML=`<div class="alerts"><div class="alerts-hdr">⚡ Needs attention</div>${al.map(a=>`<div class="alert-row"><div class="adot a${a.lv}"></div><div>${a.msg}</div></div>`).join('')}</div>`;
+  wrap.innerHTML=al.length?`<div class="alerts"><div class="alerts-hdr">⚡ Needs attention</div>${al.map(a=>`<div class="alert-row"><button class="al-cb" title="Mark done" onclick="tickAlert('${a.kind}','${a.k}',this)">✓</button><div>${a.msg}</div></div>`).join('')}</div>`:'';
 }
+// Ticked plant alerts are snoozed for a few days, then come back if the plant still needs it.
+const ALERT_SNOOZE_DAYS=3;
+const ALERT_ST=['ready','bolting'];
+function alertDone(k){const d=ST.alertDone?.[k];return!!d&&(new Date(localDate()+'T00:00')-new Date(d+'T00:00'))/864e5<ALERT_SNOOZE_DAYS;}
+function plantHas(p,s){return ST.beds.some(b=>b.rows.some(r=>r.some(c=>c.p===p&&c.s===s)));}
+function plantAlerting(p){return ALERT_ST.some(s=>plantHas(p,s));}
+function plantCleared(p){return ALERT_ST.every(s=>!plantHas(p,s)||alertDone(`${p}:${s}`));}
+function monthTasks(m){const ts=getTaskState(m),out=[];(TASKS[m]||[]).forEach(t=>{out.push(t);if(t.followOn&&ts.revealed.includes(t.followOn.id))out.push(t.followOn);});return out;}
 function buildAlerts(){
   const out=[],seen=new Set();
-  ST.beds.forEach(bed=>{bed.rows.forEach(row=>{row.forEach(cell=>{if(!cell.p)return;const k=cell.s+':'+cell.p;if(seen.has(k))return;seen.add(k);const pl=P[cell.p];if(cell.s==='ready')out.push({lv:'r',msg:`🌾 ${pl.n} in ${bed.name} — ready to harvest`});if(cell.s==='bolting')out.push({lv:'r',msg:`⚠️ ${pl.n} in ${bed.name} — bolting, harvest now!`});});});});
+  ST.beds.forEach(bed=>{bed.rows.forEach(row=>{row.forEach(cell=>{
+    if(!cell.p||!ALERT_ST.includes(cell.s))return;const k=cell.p+':'+cell.s;if(seen.has(k))return;seen.add(k);
+    if(alertDone(k))return;const pl=P[cell.p];
+    out.push({kind:'plant',k,msg:cell.s==='ready'?`🌾 ${pl.n} in ${bed.name} — ready to harvest`:`⚠️ ${pl.n} in ${bed.name} — bolting, harvest now!`});
+  });});});
+  // This month's urgent tasks, unless a plant alert above already covers them
+  const m=new Date().getMonth(),done=getTaskState(m).done;
+  monthTasks(m).forEach(t=>{if(t.type==='urgent'&&!done.includes(t.id)&&!(t.plants||[]).some(plantAlerting))out.push({kind:'task',k:t.id,msg:`📋 ${t.text}`});});
   return out;
+}
+function tickAlert(kind,k,btn){
+  const row=btn.closest('.alert-row');const r=btn.getBoundingClientRect();
+  taskConfetti(r.left+r.width/2,r.top+r.height/2);row.classList.add('completing');
+  setTimeout(()=>{
+    const m=new Date().getMonth();let msg='✓ Done';
+    if(kind==='plant'){
+      if(!ST.alertDone)ST.alertDone={};ST.alertDone[k]=localDate();
+      const p=k.split(':')[0];
+      const closed=monthTasks(m).filter(t=>(t.plants||[]).includes(p)&&!getTaskState(m).done.includes(t.id)&&t.plants.every(plantCleared));
+      closed.forEach(t=>markTaskDone(m,t.id));
+      if(closed.length)msg=`✓ Ticked off “${closed[0].text}” in This Month`;
+    }else{markTaskDone(m,k);msg='✓ Done — This Month updated';}
+    saveState();renderAlerts();toast(msg);
+  },350);
 }
 function goToAlerts(){const b=document.querySelector('.nav-btn');setView('beds',b);setTimeout(()=>document.getElementById('alerts-wrap')?.scrollIntoView({behavior:'smooth'}),100);}
 
@@ -541,16 +636,23 @@ function taskCardHtml(t){
 function completeTask(taskId,m){
   const card=document.getElementById('task-'+taskId);if(!card)return;
   const cbRect=card.querySelector('.task-cb').getBoundingClientRect();
-  const task=findTask(m,taskId);if(!task)return;
-  const tState=getTaskState(m);
-  if(!tState.done.includes(taskId))tState.done.push(taskId);
-  if(task.followOn&&!tState.revealed.includes(task.followOn.id)){tState.revealed.push(task.followOn.id);_newlyRevealed.add(task.followOn.id);}
-  if(!ST.taskState)ST.taskState={};ST.taskState[m]=tState;saveState();
+  const task=markTaskDone(m,taskId);if(!task)return;
+  renderAlerts();
   if(task.type!=='rest')taskConfetti(cbRect.left+cbRect.width/2,cbRect.top+cbRect.height/2);
   card.classList.add('completing');
   setTimeout(()=>{renderMonthly();_newlyRevealed.clear();},380);
 }
 
+// Shared by This Month checkboxes and Needs attention ticks; also snoozes the plant alerts the task covers.
+function markTaskDone(m,taskId){
+  const task=findTask(m,taskId);if(!task)return null;
+  const ts=getTaskState(m);
+  if(!ts.done.includes(taskId))ts.done.push(taskId);
+  if(task.followOn&&!ts.revealed.includes(task.followOn.id)){ts.revealed.push(task.followOn.id);_newlyRevealed.add(task.followOn.id);}
+  if(!ST.alertDone)ST.alertDone={};
+  (task.plants||[]).forEach(p=>ALERT_ST.forEach(s=>{if(plantHas(p,s))ST.alertDone[`${p}:${s}`]=localDate();}));
+  saveState();return task;
+}
 function findTask(m,taskId){for(const task of TASKS[m]||[]){if(task.id===taskId)return task;if(task.followOn?.id===taskId)return task.followOn;}return null;}
 
 function taskConfetti(cx,cy){
@@ -585,26 +687,135 @@ function bedPlantCardHtml(k){
   return `<div class="bpc"><div class="bpc-top"><div class="bpc-emoji">${pl.e}</div><div><div class="bpc-name">${pl.n}</div><div class="bpc-hw">Harvest: ${pl.h}</div></div></div><div class="bpc-body"><div class="bpc-tip">${pl.tip}</div><div class="bpc-harvest"><div class="bpc-harvest-lbl">When you harvest, try…</div><div class="bpc-harvest-txt">${pl.idea}</div></div></div></div>`;
 }
 
+// ── BED-AWARE SUGGESTIONS ── scores in-season plants by what already grows in the same bed
+const FAMILY={
+  legume:['broad-beans','snow-peas','garden-peas','dwarf-beans','climbing-beans','snake-beans'],
+  brassica:['kale','red-cabbage','broccoli','cauliflower','bok-choy','asian-greens','turnip','radish'],
+  leafy:['silverbeet','rainbow-chard','cos-lettuce','spinach'],
+  allium:['onions','shallots','spring-onions','leek','garlic','garlic-chives','chives'],
+  root:['beetroot','carrots','potato','sweet-potato'],
+  nightshade:['tomatoes','cherry-tomato','capsicum','eggplant','chilli'],
+  cucurbit:['zucchini','cucumber','pumpkin'],
+};
+const FAM_LBL={legume:'beans & peas',brassica:'brassicas',leafy:'leafy greens',allium:'alliums',root:'root crops',nightshade:'tomato family',cucurbit:'cucurbits'};
+const TALL=['climbing-beans','snake-beans','sweet-corn','tomatoes','cherry-tomato','cucumber','broad-beans','snow-peas','garden-peas','lemongrass'];
+function familyOf(k){return Object.keys(FAMILY).find(f=>FAMILY[f].includes(k));}
+// Perth planting windows: warm crops Sep–Jan, cool crops Mar–Aug; herbs & companions any time
+function inSeason(k,m=new Date().getMonth()){
+  if(WARM_VEG.includes(k))return[8,9,10,11,0].includes(m);
+  if(COOL_VEG.includes(k))return m>=2&&m<=7;
+  return true;
+}
+function suggestForBed(bi,n=3){
+  const cells=ST.beds[bi].rows.flat().filter(c=>c.p&&c.s!=='empty'&&P[c.p]);
+  const here=[...new Set(cells.map(c=>c.p))];
+  const fams=new Set(here.map(familyOf).filter(Boolean));
+  const hasComp=here.some(k=>COMPANIONS.includes(k));
+  const sc={};
+  const lowOnly=/low/i.test(ST.beds[bi].hint||'');
+  const add=(k,pts,why)=>{if(!P[k]||!inSeason(k)||(lowOnly&&TALL.includes(k)))return;(sc[k]||(sc[k]={k,s:0,why:[]})).s+=pts;sc[k].why.push(why);};
+  here.forEach(k=>{if(P[k].nx)add(P[k].nx,3,`follows ${plantName(k)}`);});
+  Object.keys(P).forEach(k=>{const f=familyOf(k);if(f&&fams.has(f)&&!here.includes(k))add(k,2,`fits with the ${FAM_LBL[f]}`);});
+  here.forEach(k=>add(k,1,`matches the ${plantName(k)} already here`));
+  if(!hasComp)add('marigold',1,'companion to keep pests down');
+  return Object.values(sc).sort((a,b)=>b.s-a.s).slice(0,n).map(x=>({k:x.k,why:x.why[0]}));
+}
+function emptyCells(bi){const out=[];ST.beds[bi].rows.forEach((r,ri)=>r.forEach((c,ci)=>{if(!c.p||c.s==='empty')out.push({ri,ci});}));return out;}
+function goToEmpty(bi){
+  const e=emptyCells(bi)[0];if(!e)return;
+  setView('beds',document.querySelector('.nav-btn'));
+  const el=document.getElementById(`cell-${bi}-${e.ri}-${e.ci}`);
+  el?.scrollIntoView({behavior:'smooth',block:'center'});
+  el?.classList.add('selected');
+  setTimeout(()=>{el?.classList.remove('selected');openPicker(bi,e.ri,e.ci);},450);
+}
+
 function nudgeHtml(count,inBeds){
-  const m=new Date().getMonth();
-  const allPow=[...COOL_VEG,...WARM_VEG];
-  const sug=allPow.filter(k=>P[k]&&!inBeds.has(k)).slice(0,3);
-  if(!sug.length)return'';
-  return `<div class="nudge"><div class="nudge-title">You've got ${count} empty ${count===1?'cell':'cells'} 🌱</div><div class="nudge-sub">Good candidates for right now:</div><div class="nudge-plants">${sug.map(k=>`<div class="nudge-plant"><div>${P[k].e}</div><div>${P[k].n}</div></div>`).join('')}</div><div class="nudge-hint">Tap any empty cell in Beds to plant</div></div>`;
+  const rows=ST.beds.map((bed,bi)=>{
+    const n=emptyCells(bi).length;if(!n)return'';
+    const sug=suggestForBed(bi);
+    return `<button class="nudge-bed" onclick="goToEmpty(${bi})"><div class="nudge-bed-top"><span>${bed.name}</span><span class="nudge-cnt">${n} empty ›</span></div>${sug.length?`<div class="nudge-plants">${sug.map(s=>`<div class="nudge-plant"><div>${P[s.k].e}</div><div>${P[s.k].n}</div><div class="nudge-why">${esc(s.why)}</div></div>`).join('')}</div>`:''}</button>`;
+  }).join('');
+  return `<div class="nudge"><div class="nudge-title">You've got ${count} empty ${count===1?'cell':'cells'} 🌱</div><div class="nudge-sub">Suggestions based on what's already growing in each bed</div>${rows}<div class="nudge-hint">Tap a bed to jump to its empty cell</div></div>`;
 }
 
 function openCellSheet(bi,ri,ci){
   const cell=getCell(bi,ri,ci);const pl=P[cell.p];const days=cell.d?Math.floor((Date.now()-new Date(cell.d))/86400000):null;
   const stOpts=['seed','seedling','growing','ready','bolting','done'];const stLbl={seed:'Seed',seedling:'Seedling',growing:'Growing',ready:'Ready',bolting:'Bolting!',done:'Done'};
-  document.getElementById('sh-content').innerHTML=`<div class="sh-plant-hdr"><div class="sh-pe">${pl.e}</div><div><div class="sh-pn">${pl.n}</div><span class="sh-stag tg-${cell.s}">${stLbl[cell.s]||cell.s}</span></div></div><div class="sh-body"><div class="sh-chips"><div class="sh-chip"><div class="sh-cl">Harvest</div><div class="sh-cv" style="color:#C49010">${pl.h}</div></div><div class="sh-chip"><div class="sh-cl">In ground</div><div class="sh-cv">${days!==null?days+'d':'—'}</div></div><div class="sh-chip"><div class="sh-cl">Bed</div><div class="sh-cv">${bi+1}</div></div></div><div class="sh-tip">💡 ${pl.tip}</div>${pl.nx?`<div class="sh-next"><div class="sh-nl">→ Plant next</div><div class="sh-nv">${P[pl.nx].e} ${P[pl.nx].n} — ${P[pl.nx].h}</div></div>`:''}<div class="stat-lbl">Update status</div><div class="stat-grid">${stOpts.map(s=>`<button class="stat-opt so-${s}${cell.s===s?' sel':''}" onclick="doUpdateStatus(${bi},${ri},${ci},'${s}')">${stLbl[s]}</button>`).join('')}</div><div class="btn-row"><button class="btn btn-harvest" onclick="doHarvest(${bi},${ri},${ci})">🌾 Harvest</button><button class="btn btn-remove" onclick="doRemove(${bi},${ri},${ci})">🗑️ Remove</button><button class="btn btn-cancel btn-full" onclick="closeSheet()">Cancel</button></div></div>`;
+  document.getElementById('sh-content').innerHTML=`<div class="sh-plant-hdr"><div class="sh-pe">${pl.e}</div><div><div class="sh-pn">${pl.n}</div><span class="sh-stag tg-${cell.s}">${stLbl[cell.s]||cell.s}</span></div></div><div class="sh-body"><div class="sh-chips"><div class="sh-chip"><div class="sh-cl">Harvest</div><div class="sh-cv" style="color:#C49010">${pl.h}</div></div><div class="sh-chip"><div class="sh-cl">In ground</div><div class="sh-cv">${days!==null?days+'d':'—'}</div></div><div class="sh-chip"><div class="sh-cl">Bed</div><div class="sh-cv">${bi+1}</div></div></div><div class="sh-tip">💡 ${pl.tip}</div>${pl.nx?`<div class="sh-next"><div class="sh-nl">→ Plant next</div><div class="sh-nv">${P[pl.nx].e} ${P[pl.nx].n} — ${P[pl.nx].h}</div></div>`:''}<div class="stat-lbl">Update status</div><div class="stat-grid">${stOpts.map(s=>`<button class="stat-opt so-${s}${cell.s===s?' sel':''}" onclick="doUpdateStatus(${bi},${ri},${ci},'${s}')">${stLbl[s]}</button>`).join('')}</div><div class="btn-row"><button class="btn btn-harvest" onclick="doHarvest(${bi},${ri},${ci})">🌾 Harvest</button><button class="btn btn-remove" onclick="doRemove(${bi},${ri},${ci})">🗑️ Remove</button>${pl.custom?`<button class="btn btn-cancel btn-full" onclick="openNewPlant('${cell.p}',${bi},${ri},${ci})">✏️ Edit plant info</button>`:''}<button class="btn btn-cancel btn-full" onclick="closeSheet()">Cancel</button></div></div>`;
   showSheet();
 }
 
 let _pend=null;
-function openPicker(bi,ri,ci){
-  const pickItem=k=>`<div class="pick-item" onclick="choosePlant(${bi},${ri},${ci},'${k}')"><div class="pick-e">${P[k].e}</div><div class="pick-n">${P[k].n}</div></div>`;
-  document.getElementById('sh-content').innerHTML=`<div class="sh-body"><div class="sh-heading">🌱 Plant here</div><div class="sh-sub">${ST.beds[bi].name}</div><div class="picker-grid"><div class="picker-cat">Cool Season</div>${COOL_VEG.map(pickItem).join('')}<div class="picker-cat">Warm Season</div>${WARM_VEG.map(pickItem).join('')}<div class="picker-cat">Herbs</div>${HERBS.map(pickItem).join('')}<div class="picker-cat">Companions</div>${COMPANIONS.map(pickItem).join('')}</div><button class="btn btn-cancel btn-full" style="margin-top:14px" onclick="closeSheet()">Cancel</button></div>`;
+let _pk=null;
+function openPicker(bi,ri,ci,q=''){
+  _pk={bi,ri,ci};
+  document.getElementById('sh-content').innerHTML=`<div class="sh-body"><div class="sh-heading">🌱 Plant here</div><div class="sh-sub">${ST.beds[bi].name}</div><input class="pick-search" id="pick-q" type="search" placeholder="🔍 Search plants…" autocomplete="off" value="${esc(q)}" oninput="renderPickerGrid(this.value)" onkeydown="if(event.key==='Enter'){event.preventDefault();pickEnter();}"><div class="picker-grid" id="pick-grid"></div><button class="btn btn-cancel btn-full" style="margin-top:14px" onclick="closeSheet()">Cancel</button></div>`;
+  renderPickerGrid(q);
   showSheet();
+  if(!('ontouchstart' in window))setTimeout(()=>document.getElementById('pick-q')?.focus(),280);
+}
+function pickerMatches(q){
+  const t=q.trim().toLowerCase();
+  return Object.entries(CATS).map(([cat,keys])=>[cat,keys.filter(k=>P[k]&&(!t||plantName(k).toLowerCase().includes(t)))]);
+}
+function renderPickerGrid(q){
+  const{bi,ri,ci}=_pk;const t=q.trim();
+  const groups=pickerMatches(t);const total=groups.reduce((n,[,ks])=>n+ks.length,0);
+  const item=k=>`<div class="pick-item" onclick="choosePlant(${bi},${ri},${ci},'${k}')"><div class="pick-e">${P[k].e}</div><div class="pick-n">${P[k].n}</div></div>`;
+  let html=groups.filter(([,ks])=>ks.length).map(([cat,ks])=>`<div class="picker-cat">${CAT_LBL[cat]}</div>${ks.map(item).join('')}`).join('');
+  if(!t){const sug=suggestForBed(bi);if(sug.length)html=`<div class="picker-cat">✨ Suggested for this bed</div>${sug.map(s=>`<div class="pick-item" style="border-color:#5A4A10" onclick="choosePlant(${bi},${ri},${ci},'${s.k}')"><div class="pick-e">${P[s.k].e}</div><div class="pick-n">${P[s.k].n}</div><div class="pick-why">${esc(s.why)}</div></div>`).join('')}`+html;}
+  if(t&&!total)html=`<div class="pick-empty">No “${esc(t)}” in your list yet — add it below.</div>`;
+  const exact=groups.some(([,ks])=>ks.some(k=>plantName(k).toLowerCase()===t.toLowerCase()));
+  if(!exact)html+=`<div class="picker-cat">${total?'Not in the list?':'New plant'}</div><div class="pick-item pick-new" onclick="openNewPlant()"><div class="pick-e">＋</div><div class="pick-n">${t?`Add “${esc(t)}”`:'Add a new plant'}</div></div>`;
+  document.getElementById('pick-grid').innerHTML=html;
+}
+function pickEnter(){
+  const t=document.getElementById('pick-q').value.trim();if(!t)return;
+  const ks=pickerMatches(t).flatMap(([,k])=>k);
+  if(ks.length===1)choosePlant(_pk.bi,_pk.ri,_pk.ci,ks[0]);else if(!ks.length)openNewPlant();
+}
+
+// New / edit custom plant form
+const NP_EMOJI=['🌱','🌿','🥬','🥕','🍅','🫑','🌶️','🥒','🫘','🧅','🥔','🌽','🍓','🍉','🌸','🌻'];
+let _np=null;
+function openNewPlant(editKey,bi,ri,ci){
+  const q=document.getElementById('pick-q')?.value.trim()||'';
+  const m=new Date().getMonth();
+  const c=editKey?ST.customPlants[editKey]:{n:q,e:'',cat:(m>=8||m<=1)?'warm':'cool',h:'',tip:'',idea:'',nx:''};
+  _np=editKey?{key:editKey,bi,ri,ci,cat:c.cat}:{key:null,..._pk,cat:c.cat};
+  const nxOpts=Object.keys(P).filter(k=>k!==editKey).sort((a,b)=>plantName(a).localeCompare(plantName(b)));
+  document.getElementById('sh-content').innerHTML=`<div class="sh-body">
+    <div class="sh-heading">${editKey?'✏️ Edit plant':'＋ New plant'}</div>
+    <div class="sh-sub">${editKey?'Changes show everywhere this plant appears':'Saved to your plant list for next time'}</div>
+    <div class="fm-lbl">Name</div><input class="fm-in" id="np-n" maxlength="40" placeholder="e.g. Purple Sprouting Broccoli" value="${esc(c.n)}">
+    <div class="fm-lbl">Icon</div>
+    <div class="fm-emoji-row"><input class="fm-in fm-emoji-in" id="np-e" maxlength="8" placeholder="🌱" value="${esc(c.e)}"><div class="fm-emojis">${NP_EMOJI.map(e=>`<button class="fm-emo" onclick="document.getElementById('np-e').value='${e}'">${e}</button>`).join('')}</div></div>
+    <div class="fm-lbl">Type</div>
+    <div class="fm-cats">${Object.entries(CAT_LBL).map(([k,l])=>`<button class="fm-cat${c.cat===k?' sel':''}" data-cat="${k}" onclick="npCat('${k}')">${l}</button>`).join('')}</div>
+    <div class="fm-lbl">Harvest window</div><input class="fm-in" id="np-h" maxlength="20" placeholder="e.g. Dec–Feb" value="${esc(c.h)}">
+    <div class="fm-lbl">Growing tip</div><textarea class="fm-in" id="np-tip" rows="2" placeholder="Spacing, watering, when to pick…">${esc(c.tip)}</textarea>
+    <div class="fm-lbl">When you harvest, try…</div><textarea class="fm-in" id="np-idea" rows="2" placeholder="Your favourite way to eat it">${esc(c.idea)}</textarea>
+    <div class="fm-lbl">Plant next (optional)</div>
+    <select class="fm-in" id="np-nx"><option value="">— None —</option>${nxOpts.map(k=>`<option value="${k}"${c.nx===k?' selected':''}>${P[k].n}</option>`).join('')}</select>
+    <div class="btn-row" style="margin-top:16px"><button class="btn btn-cancel" onclick="${editKey?`openCellSheet(${bi},${ri},${ci})`:`openPicker(${_pk.bi},${_pk.ri},${_pk.ci},document.getElementById('np-n').value)`}">← Back</button><button class="btn btn-seed" onclick="saveNewPlant()">${editKey?'💾 Save':'🌱 Save & plant'}</button></div>
+  </div>`;
+  if(!editKey&&!('ontouchstart' in window))setTimeout(()=>{const el=document.getElementById(q?'np-h':'np-n');el?.focus();},50);
+}
+function npCat(k){_np.cat=k;document.querySelectorAll('.fm-cat').forEach(b=>b.classList.toggle('sel',b.dataset.cat===k));}
+function saveNewPlant(){
+  const v=id=>document.getElementById(id).value.trim();
+  const n=v('np-n');if(!n){toast('Give your plant a name');document.getElementById('np-n').focus();return;}
+  if(!_np.key){
+    const dup=Object.keys(P).find(k=>plantName(k).toLowerCase()===n.toLowerCase());
+    if(dup){toast(`${plantName(dup)} is already in your list`);choosePlant(_np.bi,_np.ri,_np.ci,dup);return;}
+  }
+  let key=_np.key;
+  if(!key){const base='c-'+(n.toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'')||'plant');key=base;let i=2;while(P[key])key=base+'-'+i++;}
+  ST.customPlants[key]={n,e:v('np-e')||'🌱',cat:_np.cat,h:v('np-h'),tip:v('np-tip'),idea:v('np-idea'),nx:v('np-nx')};
+  saveState();applyCustomPlants();
+  if(_np.key){const{bi,ri,ci}=_np;renderBeds();renderAlerts();openCellSheet(bi,ri,ci);toast('Saved '+n);}
+  else choosePlant(_np.bi,_np.ri,_np.ci,key);
 }
 function choosePlant(bi,ri,ci,key){_pend={bi,ri,ci,key};const pl=P[key];document.getElementById('sh-content').innerHTML=`<div class="sh-body"><div class="ptc-emoji">${pl.e}</div><div class="ptc-name">${pl.n}</div><div class="ptc-hw">Harvest: ${pl.h}</div><div class="ptc-q">How are you starting it?</div><div class="btn-row"><button class="btn btn-seed" onclick="confirmPlant('seed')">🌱 Direct seed</button><button class="btn btn-sdlng" onclick="confirmPlant('seedling')">🪴 Seedling</button></div><button class="btn btn-cancel btn-full" style="margin-top:8px" onclick="openPicker(${bi},${ri},${ci})">← Back</button></div>`;}
 function confirmPlant(startStatus){if(!_pend)return;const{bi,ri,ci,key}=_pend;_pend=null;setCell(bi,ri,ci,{p:key,s:startStatus,d:today()});renderBeds();renderAlerts();closeSheet();toast('🌱 Planted '+P[key].n);}
@@ -617,8 +828,8 @@ function doHarvest(bi,ri,ci){
 }
 function doRemove(bi,ri,ci){const pl=P[getCell(bi,ri,ci).p];setCell(bi,ri,ci,{p:null,s:'empty',d:null});renderBeds();renderAlerts();closeSheet();toast('Removed '+pl.n);}
 
-function openSettings(){document.getElementById('sh-content').innerHTML=`<div class="sh-body"><div class="sh-heading">⚙️ Settings</div><div style="font-size:12px;color:#5A7040;line-height:1.6;margin:10px 0 16px">Reset all beds back to the October 2026 starting state. Your current layout will be replaced.</div><button class="btn btn-reset btn-full" onclick="doReset()">🔄 Reset to October 2026 defaults</button><button class="btn btn-cancel btn-full" style="margin-top:8px" onclick="closeSheet()">Close</button></div>`;showSheet();}
-function doReset(){if(!confirm('Reset all beds to October 2026?'))return;ST=dc(DEFAULT);saveState();renderBeds();renderAlerts();closeSheet();toast('🔄 Reset to October 2026');}
+function openSettings(){document.getElementById('sh-content').innerHTML=`<div class="sh-body"><div class="sh-heading">⚙️ Settings</div><div class="fm-lbl">Weather location</div><div style="font-size:12px;color:#7A9060;margin-bottom:6px">Currently: <b>${esc(wxLoc().name)}</b></div><div class="fm-emoji-row"><input class="fm-in" id="loc-q" placeholder="Search a town or suburb" onkeydown="if(event.key==='Enter')searchLoc()"><button class="btn btn-seed" style="width:auto;padding:9px 14px" onclick="searchLoc()">Search</button></div><div id="loc-res"></div><button class="btn btn-cancel btn-full" style="margin-top:7px" onclick="useMyLoc()">📍 Use my current location</button><div class="fm-lbl" style="margin-top:18px">Beds</div><div style="font-size:12px;color:#5A7040;line-height:1.6;margin:0 0 12px">Reset all beds back to the October 2026 starting state. Your current layout will be replaced.</div><button class="btn btn-reset btn-full" onclick="doReset()">🔄 Reset to October 2026 defaults</button><button class="btn btn-cancel btn-full" style="margin-top:8px" onclick="closeSheet()">Close</button></div>`;showSheet();}
+function doReset(){if(!confirm('Reset all beds to October 2026?'))return;const keep={customPlants:ST.customPlants||{},wx:ST.wx,lastWatered:ST.lastWatered};ST=Object.assign(dc(DEFAULT),keep);saveState();renderWeather();renderBeds();renderAlerts();closeSheet();toast('🔄 Reset to October 2026');}
 
 function doSave(){saveState();const btn=document.getElementById('save-btn');btn.textContent='✓ Saved';btn.classList.add('ok');setTimeout(()=>{btn.textContent='💾 Save';btn.classList.remove('ok');},2000);}
 
@@ -629,7 +840,7 @@ function setView(name,btn){
   document.querySelectorAll('.view').forEach(v=>v.classList.remove('on'));
   document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));
   document.getElementById('view-'+name).classList.add('on');btn?.classList.add('active');
-  if(name==='month')renderMonthly();if(name==='plants')renderPlants();
+  if(name==='month'){renderMonthly();_newlyRevealed.clear();}if(name==='plants')renderPlants();
 }
 
 let _tt;
@@ -642,10 +853,97 @@ function celebrate(){
   setTimeout(()=>wrap.innerHTML='',2200);
 }
 
+// ── WEATHER & WATERING ── Open-Meteo (free, no key). Water balance = evaporation (ET₀) − effective rain since last soak.
+const WX_K='gdn_wx';
+const DEFAULT_LOC={name:'Kalamunda, WA',lat:-31.97,lon:116.06};
+let WX=null,WX_ERR=false;
+function wxLoc(){return ST.wx||DEFAULT_LOC;}
+function localDate(d=new Date()){return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;}
+function wxIcon(c){return c==null?'🌡️':c===0?'☀️':c<=2?'🌤️':c===3?'☁️':c<=48?'🌫️':c<=57?'🌦️':c<=67?'🌧️':c<=77?'❄️':c<=82?'🌦️':'⛈️';}
+function dayName(iso){const off=Math.round((new Date(iso+'T00:00')-new Date(localDate()+'T00:00'))/864e5);return off===-1?'yesterday':off===1?'tomorrow':off===0?'today':new Date(iso+'T00:00').toLocaleDateString('en-AU',{weekday:'long'});}
+async function loadWeather(force){
+  const loc=wxLoc();let c=null;
+  try{c=JSON.parse(localStorage.getItem(WX_K));}catch(e){}
+  const same=c&&c.lat===loc.lat&&c.lon===loc.lon;
+  if(same){WX=c;renderWeather();if(!force&&Date.now()-c.t<3600e3)return;}else{WX=null;renderWeather();}
+  try{
+    const u=`https://api.open-meteo.com/v1/forecast?latitude=${loc.lat}&longitude=${loc.lon}&daily=weather_code,temperature_2m_max,precipitation_sum,precipitation_probability_max,et0_fao_evapotranspiration&timezone=auto&past_days=7&forecast_days=4`;
+    const r=await fetch(u);if(!r.ok)throw new Error(r.status);
+    const j=await r.json();WX={t:Date.now(),lat:loc.lat,lon:loc.lon,daily:j.daily};WX_ERR=false;
+    try{localStorage.setItem(WX_K,JSON.stringify(WX));}catch(e){}
+  }catch(e){WX_ERR=true;}
+  renderWeather();renderAlerts();
+}
+function wxVerdict(){
+  if(!WX?.daily)return null;
+  const d=WX.daily,td=localDate(),ti=d.time.indexOf(td);if(ti<0)return null;
+  const rain=i=>d.precipitation_sum[i]||0,et=i=>d.et0_fao_evapotranspiration[i]||0;
+  const tmax=d.temperature_2m_max[ti];
+  const shallow=ST.beds.some(b=>b.rows.some(r=>r.some(c=>c.p&&(c.s==='seed'||c.s==='seedling'))));
+  const lw=ST.lastWatered;
+  if(lw===td)return{lv:'g',msg:'Watered today ✓ — nothing more to do.'};
+  // Start counting from the last watering, or the last soaking rain (≥10mm), whichever is later
+  let si=lw?d.time.indexOf(lw):-1;
+  if(si<0)si=lw&&lw>d.time[0]?ti-1:Math.max(0,ti-3);
+  let since=lw&&d.time.indexOf(lw)>=0?`since you watered ${dayName(lw)}`:lw?'since your last watering':'over the last 3 days';
+  for(let i=ti;i>si;i--)if(rain(i)>=10){si=i;since=`since ${Math.round(rain(i))}mm of rain ${i===ti?'today':dayName(d.time[i])}`;break;}
+  let lost=0,got=0;for(let i=si;i<=ti;i++){lost+=et(i);got+=Math.max(0,rain(i)-1);}
+  const def=Math.round(lost-got);
+  const hi=shallow?8:15,mid=shallow?4:8;
+  const tmrRain=rain(ti+1),tmrProb=d.precipitation_probability_max[ti+1]||0;
+  const sd=shallow?' Seeds and seedlings have shallow roots — they dry out first.':'';
+  if(def>=mid&&tmrRain>=6&&tmrProb>=70)return{lv:'y',msg:`Beds are drying (${def}mm short ${since}), but ${Math.round(tmrRain)}mm of rain is likely tomorrow — hold off.`};
+  if(def>=hi||(tmax>=35&&def>=mid))return{lv:'r',msg:`💧 Water today — about ${def}mm lost to evaporation ${since}${tmax>=35?`, and it's ${Math.round(tmax)}° today`:''}.${sd}`};
+  if(def>=mid)return{lv:'y',msg:`💧 Water tomorrow morning — beds are ${def}mm short ${since}.${sd}`};
+  return{lv:'g',msg:`Soil moisture looks fine ${since} (${Math.max(0,def)}mm short).`};
+}
+function renderWeather(){
+  const w=document.getElementById('wx-wrap');if(!w)return;const loc=wxLoc();
+  if(!WX?.daily){w.innerHTML=`<div class="wx"><div class="wx-top"><div class="wx-ico">🌡️</div><div><div class="wx-loc">${esc(loc.name)}</div><div class="wx-sum">${WX_ERR?'Couldn\'t reach the weather service — check your connection.':'Loading weather…'}</div></div></div></div>`;return;}
+  const d=WX.daily,ti=d.time.indexOf(localDate());
+  if(ti<0){w.innerHTML='';loadWeather(true);return;}
+  const r3=[ti-3,ti-2,ti-1].reduce((s,i)=>s+(d.precipitation_sum[i]||0),0);
+  const v=wxVerdict();const watered=ST.lastWatered===localDate();
+  const heat=[ti+1,ti+2,ti+3].filter(i=>d.temperature_2m_max[i]>=35).map(i=>`${dayName(d.time[i])} ${Math.round(d.temperature_2m_max[i])}°`);
+  const tmr=d.precipitation_sum[ti+1]||0;
+  const rows=[`<div class="wx-row"><div class="adot a${v.lv}"></div><div>${v.msg}</div></div>`];
+  if(heat.length)rows.push(`<div class="wx-row"><div class="adot ay"></div><div>🔥 Hot days ahead: ${heat.join(', ')}. Water deeply the morning before and mulch well.</div></div>`);
+  w.innerHTML=`<div class="wx"><div class="wx-top"><div class="wx-ico">${wxIcon(d.weather_code[ti])}</div><div><div class="wx-loc">${esc(loc.name)} · ${Math.round(d.temperature_2m_max[ti])}° today</div><div class="wx-sum">${r3.toFixed(1)}mm rain last 3 days · ${tmr>=1?`${Math.round(tmr)}mm`:'dry'} tomorrow</div></div><button class="wx-btn${watered?' done':''}" onclick="logWatered()">${watered?'✓ Watered':'💧 Watered'}</button></div>${rows.join('')}<div class="wx-foot">Updated ${new Date(WX.t).toLocaleTimeString('en-AU',{hour:'numeric',minute:'2-digit'})} · Open-Meteo</div></div>`;
+}
+function logWatered(){
+  const td=localDate();
+  if(ST.lastWatered===td){ST.lastWatered=ST.prevWatered||null;toast('Watering log undone');}
+  else{ST.prevWatered=ST.lastWatered||null;ST.lastWatered=td;toast('💧 Logged — clock reset');}
+  saveState();renderWeather();renderAlerts();
+}
+async function searchLoc(){
+  const q=document.getElementById('loc-q').value.trim();const out=document.getElementById('loc-res');if(!q)return;
+  out.innerHTML='<div class="sh-sub" style="margin-top:6px">Searching…</div>';
+  try{
+    const r=await fetch(`https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(q)}&count=5&language=en&format=json`);
+    const j=await r.json();const res=j.results||[];
+    window._locRes=res;
+    out.innerHTML=res.length?res.map((p,i)=>`<button class="loc-res" onclick="setLoc(${i})">📍 ${esc(p.name)}${p.admin1?', '+esc(p.admin1):''}${p.country_code?' · '+esc(p.country_code):''}</button>`).join(''):'<div class="sh-sub" style="margin-top:6px">No places found.</div>';
+  }catch(e){out.innerHTML='<div class="sh-sub" style="margin-top:6px">Couldn\'t search — check your connection.</div>';}
+}
+function setLoc(i){
+  const p=window._locRes[i];
+  ST.wx={name:p.name+(p.admin1?', '+p.admin1:''),lat:Math.round(p.latitude*100)/100,lon:Math.round(p.longitude*100)/100};
+  saveState();closeSheet();toast('📍 '+ST.wx.name);WX=null;renderWeather();loadWeather(true);
+}
+function useMyLoc(){
+  if(!navigator.geolocation){toast('Location not available');return;}
+  navigator.geolocation.getCurrentPosition(pos=>{
+    ST.wx={name:'My location',lat:Math.round(pos.coords.latitude*100)/100,lon:Math.round(pos.coords.longitude*100)/100};
+    saveState();closeSheet();toast('📍 Using your location');WX=null;renderWeather();loadWeather(true);
+  },()=>toast('Location permission denied'));
+}
+document.addEventListener('visibilitychange',()=>{if(!document.hidden)loadWeather();});
+
 function today(){return new Date().toISOString().slice(0,10);}
 function updateHeader(){const d=new Date();document.getElementById('hdr-sub').textContent=`${MONTHS[d.getMonth()]} ${d.getFullYear()} · auto-saved`;}
 
-loadState();updateHeader();renderBeds();renderAlerts();
+loadState();applyCustomPlants();updateHeader();renderBeds();renderAlerts();loadWeather();
 </script>
 </body>
 </html>
