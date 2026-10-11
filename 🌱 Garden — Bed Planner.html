@@ -1,0 +1,651 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>🌱 Garden</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+:root{box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+*,*::before,*::after{box-sizing:inherit;margin:0;padding:0}
+body{font-family:'Nunito',system-ui,sans-serif;background:#0F1A08;color:#F0E6CC;min-height:100vh;overflow-x:hidden;-webkit-tap-highlight-color:transparent}
+.hdr{background:#1A2D10;padding:9px 14px;padding-top:calc(9px + env(safe-area-inset-top,0px));position:sticky;top:0;z-index:50;border-bottom:2px solid #3A5C22;display:flex;justify-content:space-between;align-items:center}
+.hdr-title{font-size:18px;font-weight:900;letter-spacing:-.3px}
+.hdr-sub{font-size:9px;color:#6A9A4A;margin-top:1px}
+.hdr-right{display:flex;align-items:center;gap:7px}
+.alert-pill{background:#B85C38;color:#fff;font-size:10px;font-weight:800;padding:3px 9px;border-radius:10px;border:none;cursor:pointer;font-family:inherit;display:none}
+.save-btn{background:#2A5018;color:#A0D870;border:none;font-family:inherit;font-size:11px;font-weight:800;padding:5px 10px;border-radius:8px;cursor:pointer;transition:all .25s}
+.save-btn.ok{background:#3A7020;color:#C8F090}
+.settings-btn{background:none;border:none;color:#6A8050;font-size:18px;cursor:pointer;padding:3px;line-height:1}
+.nav{position:fixed;bottom:0;left:0;right:0;background:#1A2D10;border-top:1px solid #3A5C22;display:flex;z-index:50;padding-bottom:env(safe-area-inset-bottom,0px)}
+.nav-btn{flex:1;border:none;background:transparent;color:#4A6A3A;font-family:inherit;font-size:9.5px;font-weight:700;padding:9px 4px 10px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:2px;text-transform:uppercase;letter-spacing:.5px;transition:color .15s}
+.nav-btn.active{color:#8BAA6B}
+.nav-icon{font-size:20px;line-height:1}
+.scroll{padding:10px 11px 110px}
+.view{display:none}.view.on{display:block}
+.alerts{background:#182210;border:1px solid #3A5C22;border-radius:10px;overflow:hidden;margin-bottom:12px}
+.alerts-hdr{background:#2A3E14;padding:7px 12px;font-size:10px;font-weight:800;letter-spacing:2px;text-transform:uppercase}
+.alert-row{padding:8px 12px;border-top:1px solid rgba(255,255,255,.05);font-size:12px;display:flex;align-items:flex-start;gap:8px;line-height:1.4}
+.adot{width:7px;height:7px;border-radius:50%;flex-shrink:0;margin-top:5px}
+.ar{background:#B85C38}.ay{background:#D4A017}.ag{background:#7AAA5A}
+.bed-controls{display:flex;justify-content:flex-end;margin-bottom:8px}
+.sel-fab{display:flex;align-items:center;gap:5px;background:#182210;border:1px solid #3A5C22;color:#8BAA6B;font-family:inherit;font-size:11px;font-weight:800;padding:6px 13px;border-radius:14px;cursor:pointer}
+.sel-fab.on{background:rgba(212,160,23,.12);border-color:#D4A017;color:#D4A017}
+.bed-wrap{margin-bottom:12px}
+.bed-card{background:#182210;border-radius:12px;overflow:hidden;border:1px solid rgba(255,255,255,.07)}
+.bed-top{padding:8px 12px;display:flex;justify-content:space-between;align-items:center}
+.bt1{background:#1E3212}.bt2{background:#253818}.bt3{background:#2C2E14}
+.bed-name{font-size:12px;font-weight:800}
+.bed-hint{font-size:9px;color:rgba(255,255,255,.35);margin-top:1px}
+.bed-dir{font-size:8px;color:rgba(255,255,255,.25);text-align:right;line-height:1.8}
+.grid-bg{padding:7px;background:#3A2208}
+.grid-row{display:flex;gap:4px;margin-bottom:4px}
+.grid-row:last-child{margin-bottom:0}
+.cell{flex:1;height:54px;border-radius:8px;display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;position:relative;border:2px solid transparent;min-width:0;overflow:hidden;user-select:none;-webkit-user-select:none;transition:transform .1s,border-color .15s,box-shadow .15s;touch-action:none}
+.cell:active{transform:scale(.86)}
+.cell.drag-over{border-color:#fff !important;box-shadow:0 0 10px rgba(255,255,255,.3)}
+.cell.dragging{opacity:.28}
+.cell.selected{border-color:#FFD54F !important;box-shadow:0 0 6px rgba(255,213,79,.35)}
+.s-empty{background:#271508;border-color:rgba(255,255,255,.06)}
+.s-seed{background:#102A0C;border-color:#234A18}
+.s-seedling{background:#163A10;border-color:#2E5E20}
+.s-growing{background:#1A4A0E;border-color:#3A6E20}
+.s-ready{background:#402800;border-color:#C49010;animation:rdy 2s ease-in-out infinite}
+.s-bolting{background:#3A1200;border-color:#C04800;animation:blt 1.4s ease-in-out infinite}
+.s-done{background:#1A1A18;border-color:rgba(255,255,255,.08)}
+@keyframes rdy{0%,100%{box-shadow:none}50%{box-shadow:0 0 8px 2px rgba(196,144,16,.45)}}
+@keyframes blt{0%,100%{box-shadow:none}50%{box-shadow:0 0 8px 2px rgba(192,72,0,.5)}}
+.cell-e{font-size:22px;line-height:1;pointer-events:none;transition:font-size .2s}
+.s-empty .cell-e{font-size:16px;opacity:.15}
+.s-seed .cell-e{font-size:13px}
+.s-done .cell-e{opacity:.25;font-size:16px}
+.cell-n{font-size:6.5px;font-weight:700;color:rgba(255,255,255,.58);text-align:center;line-height:1.1;max-width:98%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding:0 2px;margin-top:2px;pointer-events:none}
+.cell-pip{position:absolute;top:3px;right:3px;width:5px;height:5px;border-radius:50%;pointer-events:none}
+.pip-r{background:#FFD54F}.pip-b{background:#FF6B2B}.pip-d{background:#607D8B}
+.cell-chk{position:absolute;top:3px;left:3px;width:14px;height:14px;border-radius:3px;border:1.5px solid rgba(255,255,255,.35);display:none;align-items:center;justify-content:center;font-size:9px;background:rgba(0,0,0,.3);pointer-events:none}
+.sel-mode .cell-chk{display:flex}
+.cell.selected .cell-chk{background:#FFD54F;border-color:#FFD54F;color:#000}
+.drag-ghost{position:fixed;pointer-events:none;z-index:1000;width:56px;height:56px;border-radius:10px;background:#1A4A0E;border:2px solid #8BAA6B;display:flex;flex-direction:column;align-items:center;justify-content:center;opacity:.88;transform:scale(1.12);box-shadow:0 8px 24px rgba(0,0,0,.55);font-size:22px}
+.legend{display:flex;flex-wrap:wrap;gap:5px;margin-top:8px}
+.leg{display:flex;align-items:center;gap:3px;font-size:9px;color:#5A7040}
+.leg-sq{width:9px;height:9px;border-radius:2px;flex-shrink:0}
+.sel-bar{position:fixed;bottom:0;left:0;right:0;background:#1E2E12;border-top:2px solid #D4A017;padding:10px 12px;padding-bottom:calc(10px + env(safe-area-inset-bottom,0px));z-index:60;display:none;align-items:center;gap:8px}
+.sel-bar.on{display:flex}
+.sel-count{font-size:13px;font-weight:800;color:#D4A017;flex:1}
+.sel-act{background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.15);color:#F0E6CC;border-radius:8px;font-family:inherit;font-size:12px;font-weight:700;padding:7px 12px;cursor:pointer}
+.sel-act.danger{background:#301010;color:#FF9090;border-color:#501A1A}
+.sel-done{background:#2E5E20;color:#fff;border:none;border-radius:8px;font-family:inherit;font-size:12px;font-weight:800;padding:7px 14px;cursor:pointer}
+/* MONTHLY */
+.mv-heading{font-size:20px;font-weight:900;margin-bottom:3px}
+.mv-intro{font-size:12px;color:#7AAA5A;line-height:1.5;margin-bottom:14px}
+.mv-section{margin-bottom:16px}
+.mv-st{font-size:10px;font-weight:800;letter-spacing:2px;text-transform:uppercase;color:#5A7040;margin-bottom:7px}
+.recap-block{background:#182210;border-radius:10px;overflow:hidden;margin-bottom:9px;border:1px solid rgba(255,255,255,.06)}
+.recap-hdr{padding:7px 12px;font-size:11px;font-weight:800}
+.rh1{background:#1E3212}.rh2{background:#253818}.rh3{background:#2C2E14}
+.recap-row{padding:7px 12px;border-top:1px solid rgba(255,255,255,.05);font-size:12px;display:flex;align-items:center;gap:8px}
+.recap-ico{font-size:14px;flex-shrink:0;width:20px;text-align:center}
+.recap-nm{flex:1;font-weight:700}
+.recap-hw{font-size:10px;color:#C49010;white-space:nowrap;flex-shrink:0}
+.recap-st{font-size:10px;color:#6A8050}
+/* TASKS */
+.task-section{margin-bottom:14px}
+.task-sec-title{font-size:10px;font-weight:800;letter-spacing:2px;text-transform:uppercase;color:#5A7040;margin-bottom:7px}
+.task-card{background:#182210;border-radius:10px;margin-bottom:7px;border-left:3px solid #3A5C22;display:flex;align-items:flex-start;overflow:hidden}
+.tc-urgent{border-left-color:#B85C38;background:#1C1008}
+.tc-soon{border-left-color:#C49010}
+.tc-rest{border-left-color:#2A5C1A;background:#141E0C;opacity:.85}
+.tc-followon{border-left-color:#7AAA5A;border-left-style:dashed}
+.task-cb-area{padding:13px 10px 13px 12px;cursor:pointer;flex-shrink:0}
+.task-cb{width:20px;height:20px;border-radius:50%;border:2px solid rgba(255,255,255,.22);background:rgba(255,255,255,.04);display:flex;align-items:center;justify-content:center;font-size:10px;transition:all .15s;color:transparent}
+.task-cb:hover{border-color:rgba(255,255,255,.4)}
+.task-content{padding:12px 14px 12px 0;flex:1}
+.task-title{font-size:12.5px;font-weight:800;margin-bottom:3px;line-height:1.3}
+.task-detail{font-size:11.5px;color:#7A9060;line-height:1.5}
+.task-card.completing{animation:slideOut .35s ease-in forwards;pointer-events:none}
+@keyframes slideOut{from{transform:translateX(0);opacity:1}to{transform:translateX(110%);opacity:0}}
+.task-card.appearing{animation:slideIn .4s ease-out}
+@keyframes slideIn{from{transform:translateY(-14px);opacity:0}to{transform:translateY(0);opacity:1}}
+.all-done{text-align:center;padding:24px 16px;color:#5A7040;font-size:13px;font-weight:700;line-height:1.7}
+.all-done span{font-size:11px;font-weight:400;color:#4A5A38}
+/* STORY CARDS */
+.story-card{background:#1E2A10;border:1px solid #3A5C22;border-radius:12px;padding:16px 14px;margin-bottom:10px;position:relative;overflow:hidden}
+.story-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(to right,#3A5C22,#C49010,#B85C38)}
+.story-badge{display:inline-block;font-size:8.5px;font-weight:800;letter-spacing:2px;text-transform:uppercase;padding:3px 9px;border-radius:7px;margin-bottom:8px}
+.sb-plant{background:#1A4A10;color:#8BAA6B}
+.sb-track{background:#402800;color:#FFD54F}
+.sb-harvest{background:#3A1A00;color:#FF9060}
+.story-emojis{font-size:28px;letter-spacing:4px;margin-bottom:8px;line-height:1}
+.story-title{font-size:15px;font-weight:900;margin-bottom:8px;color:#F0E6CC;line-height:1.3}
+.story-text{font-size:12px;color:#8A9A70;line-height:1.65;margin-bottom:10px}
+.story-harvest{background:rgba(196,144,16,.08);border:1px solid rgba(196,144,16,.2);border-radius:8px;padding:9px 12px;font-size:11.5px;color:#C49010;line-height:1.5;font-style:italic}
+/* BED PLANT CARDS */
+.pv-sec-title{font-size:10px;font-weight:800;letter-spacing:2px;text-transform:uppercase;color:#5A7040;margin-bottom:8px}
+.bpc{background:#182210;border-radius:10px;margin-bottom:8px;overflow:hidden}
+.bpc-top{display:flex;align-items:center;gap:12px;padding:12px 14px 8px}
+.bpc-emoji{font-size:28px;flex-shrink:0;line-height:1}
+.bpc-name{font-size:13px;font-weight:900;margin-bottom:2px}
+.bpc-hw{font-size:10.5px;color:#C49010}
+.bpc-body{padding:0 14px 12px}
+.bpc-tip{font-size:11.5px;color:#7A9060;line-height:1.5;margin-bottom:8px}
+.bpc-harvest{background:rgba(196,144,16,.07);border:1px solid rgba(196,144,16,.18);border-radius:8px;padding:9px 12px}
+.bpc-harvest-lbl{font-size:8.5px;font-weight:800;text-transform:uppercase;letter-spacing:1px;color:#9A7A40;margin-bottom:4px}
+.bpc-harvest-txt{font-size:11.5px;color:#C49010;line-height:1.5;font-style:italic}
+/* EMPTY NUDGE */
+.nudge{background:#182210;border:1px dashed #3A5C22;border-radius:10px;padding:14px;margin-top:14px;text-align:center}
+.nudge-title{font-size:13px;font-weight:800;margin-bottom:4px}
+.nudge-sub{font-size:11px;color:#7A9060;margin-bottom:10px}
+.nudge-plants{display:flex;justify-content:center;gap:12px;margin-bottom:10px}
+.nudge-plant{text-align:center;font-size:9px;font-weight:700;color:#7A9060}
+.nudge-plant div:first-child{font-size:26px;margin-bottom:3px}
+.nudge-hint{font-size:10px;color:#4A6030}
+/* SHEET */
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,.72);z-index:100;opacity:0;pointer-events:none;transition:opacity .2s}
+.overlay.on{opacity:1;pointer-events:all}
+.sheet{position:fixed;bottom:0;left:0;right:0;background:#1A2A10;border-radius:18px 18px 0 0;z-index:101;transform:translateY(110%);transition:transform .26s cubic-bezier(.32,.72,0,1);max-height:92vh;overflow-y:auto;padding-bottom:calc(20px + env(safe-area-inset-bottom,0px))}
+.sheet.on{transform:translateY(0)}
+.sh-handle{width:36px;height:4px;background:rgba(255,255,255,.15);border-radius:2px;margin:12px auto 0}
+.sh-body{padding:14px 18px}
+.sh-heading{font-size:16px;font-weight:900;margin-bottom:2px}
+.sh-sub{font-size:11px;color:#5A7040;margin-bottom:12px}
+.sh-plant-hdr{display:flex;align-items:center;gap:14px;padding:10px 18px 12px;border-bottom:1px solid rgba(255,255,255,.07)}
+.sh-pe{font-size:44px;line-height:1}
+.sh-pn{font-size:18px;font-weight:900}
+.sh-stag{display:inline-block;font-size:9.5px;font-weight:800;padding:3px 8px;border-radius:7px;margin-top:4px;text-transform:uppercase;letter-spacing:1px}
+.tg-seed{background:#102A0C;color:#5ABF5A}.tg-seedling{background:#163A10;color:#7AD47A}
+.tg-growing{background:#1A4A0E;color:#8BAA6B}.tg-ready{background:#402800;color:#FFD54F}
+.tg-bolting{background:#3A1200;color:#FF8C42}.tg-done{background:#1A1A18;color:#90A4AE}
+.sh-chips{display:flex;gap:7px;margin-bottom:11px}
+.sh-chip{flex:1;background:rgba(255,255,255,.06);border-radius:8px;padding:8px;text-align:center}
+.sh-cl{font-size:8.5px;font-weight:800;text-transform:uppercase;letter-spacing:1px;color:#5A7040;margin-bottom:2px}
+.sh-cv{font-size:12.5px;font-weight:800}
+.sh-tip{background:rgba(255,255,255,.04);border-radius:8px;padding:10px 12px;font-size:11.5px;color:#7A9060;line-height:1.5;margin-bottom:11px}
+.sh-next{background:rgba(58,92,34,.2);border:1px solid #2E4A1A;border-radius:8px;padding:9px 12px;margin-bottom:12px}
+.sh-nl{font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:1px;color:#7AAA5A;margin-bottom:3px}
+.sh-nv{font-size:12px;font-weight:700}
+.stat-lbl{font-size:9.5px;font-weight:800;text-transform:uppercase;letter-spacing:1.5px;color:#5A7040;margin-bottom:7px}
+.stat-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:5px;margin-bottom:12px}
+.stat-opt{padding:8px 4px;border-radius:7px;border:2px solid transparent;text-align:center;cursor:pointer;font-size:10px;font-weight:700;font-family:inherit;color:rgba(255,255,255,.8);transition:border-color .1s}
+.stat-opt.sel{border-color:#fff}
+.so-seed{background:#102A0C}.so-seedling{background:#163A10}.so-growing{background:#1A4A0E}
+.so-ready{background:#402800}.so-bolting{background:#3A1200}.so-done{background:#252522}
+.btn-row{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-bottom:7px}
+.btn-full{grid-column:1/-1}
+.btn{padding:13px 8px;border:none;border-radius:12px;font-family:inherit;font-size:13px;font-weight:800;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:5px;transition:transform .1s;width:100%}
+.btn:active{transform:scale(.95)}
+.btn-harvest{background:#C49010;color:#100800}
+.btn-remove{background:#301010;color:#FF9090;border:1px solid #501A1A}
+.btn-cancel{background:rgba(255,255,255,.07);color:#7A9060}
+.btn-seed{background:#163A10;color:#8BD48B;border:1px solid #2A5A1A}
+.btn-sdlng{background:#C49010;color:#100800}
+.btn-reset{background:#301010;color:#FF9090;border:1px solid #501A1A}
+.picker-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:7px}
+.picker-cat{grid-column:1/-1;font-size:9.5px;font-weight:800;letter-spacing:2px;text-transform:uppercase;color:#5A7040;margin-top:8px;margin-bottom:2px}
+.pick-item{background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.09);border-radius:9px;padding:9px 4px;text-align:center;cursor:pointer;transition:background .12s;font-family:inherit;color:inherit}
+.pick-item:active{background:#2E5E20}
+.pick-e{font-size:23px;margin-bottom:3px}
+.pick-n{font-size:8.5px;font-weight:700;color:#7A9060;line-height:1.2}
+.ptc-emoji{font-size:54px;text-align:center;padding:12px 0 4px}
+.ptc-name{font-size:19px;font-weight:900;text-align:center;margin-bottom:3px}
+.ptc-hw{font-size:12px;color:#C49010;text-align:center;margin-bottom:14px}
+.ptc-q{font-size:10.5px;font-weight:800;text-transform:uppercase;letter-spacing:1.5px;color:#5A7040;text-align:center;margin-bottom:11px}
+.toast{position:fixed;bottom:80px;left:50%;transform:translateX(-50%) translateY(8px);background:#1A2D10;border:1px solid #3A5C22;color:#F0E6CC;padding:9px 18px;border-radius:18px;font-size:13px;font-weight:700;z-index:300;opacity:0;transition:all .22s;white-space:nowrap;pointer-events:none;max-width:90vw;text-align:center}
+.toast.on{opacity:1;transform:translateX(-50%) translateY(0)}
+.cp{position:absolute;border-radius:50%;animation:cfall 1.2s ease-out forwards}
+@keyframes cfall{0%{transform:translateY(0) rotate(0deg) scale(1);opacity:1}100%{transform:translateY(320px) rotate(540deg) scale(.2);opacity:0}}
+</style>
+</head>
+<body>
+<header class="hdr">
+  <div><div class="hdr-title">🌱 Garden</div><div class="hdr-sub" id="hdr-sub">Loading…</div></div>
+  <div class="hdr-right">
+    <button class="alert-pill" id="alert-pill" onclick="goToAlerts()">0 urgent</button>
+    <button class="save-btn" id="save-btn" onclick="doSave()">💾 Save</button>
+    <button class="settings-btn" onclick="openSettings()">⚙️</button>
+  </div>
+</header>
+<div class="scroll">
+  <div class="view on" id="view-beds">
+    <div id="alerts-wrap"></div>
+    <div class="bed-controls"><button class="sel-fab" id="sel-fab" onclick="toggleSelectMode()">✓ Select</button></div>
+    <div id="beds-wrap"></div>
+    <div class="legend">
+      <div class="leg"><div class="leg-sq" style="background:#102A0C"></div>Seed</div>
+      <div class="leg"><div class="leg-sq" style="background:#163A10"></div>Seedling</div>
+      <div class="leg"><div class="leg-sq" style="background:#1A4A0E"></div>Growing</div>
+      <div class="leg"><div class="leg-sq" style="background:#402800"></div>Ready ✨</div>
+      <div class="leg"><div class="leg-sq" style="background:#3A1200"></div>Bolting ⚠️</div>
+      <div class="leg"><div class="leg-sq" style="background:#1A1A18"></div>Done</div>
+    </div>
+    <div style="font-size:10px;color:#3A4A28;margin-top:7px;padding:0 2px">Hold & drag to move · Tap Select to edit multiple</div>
+  </div>
+  <div class="view" id="view-month"><div id="month-content"></div></div>
+  <div class="view" id="view-plants"><div id="plants-content"></div></div>
+</div>
+<nav class="nav" id="main-nav">
+  <button class="nav-btn active" onclick="setView('beds',this)"><span class="nav-icon">🌿</span>Beds</button>
+  <button class="nav-btn" onclick="setView('month',this)"><span class="nav-icon">📅</span>This Month</button>
+  <button class="nav-btn" onclick="setView('plants',this)"><span class="nav-icon">🌱</span>Harvest</button>
+</nav>
+<div class="sel-bar" id="sel-bar">
+  <div class="sel-count" id="sel-count">0 selected</div>
+  <button class="sel-act" onclick="openMultiStatus()">Status ▾</button>
+  <button class="sel-act danger" onclick="doMultiRemove()">🗑️ Remove</button>
+  <button class="sel-done" onclick="exitSelectMode()">Done</button>
+</div>
+<div class="overlay" id="overlay" onclick="closeSheet()"></div>
+<div class="sheet" id="sheet"><div class="sh-handle"></div><div id="sh-content"></div></div>
+<div class="toast" id="toast"></div>
+<div id="confetti" style="position:fixed;inset:0;pointer-events:none;z-index:400;overflow:hidden"></div>
+<script>
+'use strict';
+const P={
+  'broad-beans':   {e:'🫘',n:'Broad Beans',    h:'Oct–Nov',   nx:'tomatoes',       tip:'Stake rows at 30cm. Fixes nitrogen — great handoff for next crop.',                          idea:'Blanch fresh pods for 2 minutes, butter generously and season with sea salt. Freeze a batch for winter soups. Eat them within hours of picking.'},
+  'snow-peas':     {e:'🫛',n:'Snow Peas',      h:'Sept–Oct',  nx:'climbing-beans', tip:'Pick every 2 days. Leaving pods on the vine stops production entirely.',                       idea:'Eat straight off the vine first — that sweetness is incomparable. The rest: a quick stir-fry with garlic and ginger, or tossed raw into salads.'},
+  'garden-peas':   {e:'🫛',n:'Garden Peas',    h:'Sept–Oct',  nx:null,             tip:'Shell peas need more water than snow peas. Pick pods when full and round.',                    idea:'Shell and boil briefly, eat with butter and salt. This is why people grow vegetables.'},
+  'kale':          {e:'🥬',n:'Tuscan Kale',    h:'Sept → on', nx:null,             tip:'Outer leaves only. Will run for months if you keep picking.',                                  idea:'Massage leaves with olive oil, lemon and salt for a winter salad that holds up. Or roast leaves at high heat until crispy — genuinely surprising as a snack.'},
+  'silverbeet':    {e:'🥬',n:'Silverbeet',     h:'Jul → on',  nx:null,             tip:'Tougher than chard in heat. Classic cut-and-come-again.',                                      idea:'Sauté with garlic and olive oil, finish with lemon. Piled onto toast with a fried egg, this is a perfect meal.'},
+  'rainbow-chard': {e:'🌈',n:'Rainbow Chard',  h:'Aug → on',  nx:null,             tip:'Cut outer leaves and it keeps producing. The beds workhorse.',                                 idea:'Sauté the coloured stems first, then add leaves. The stems hold up beautifully alongside eggs, pasta, or anything that needs a vegetable.'},
+  'cos-lettuce':   {e:'🥗',n:'Cos Lettuce',    h:'Aug–Sept',  nx:'basil',          tip:'Will bolt in Oct heat. Harvest everything you can and swap for basil.',                        idea:'Homegrown Caesar — tear leaves, add anchovies, parmesan and a proper dressing. You will never want bagged lettuce again.'},
+  'spinach':       {e:'🍃',n:'English Spinach', h:'Aug–Sept',  nx:'basil',          tip:'Bolt-prone in heat. Harvest everything this week.',                                             idea:'Wilt briefly with garlic for pasta, or use raw in salads while it lasts. Freeze excess in batches for winter smoothies.'},
+  'asian-greens':  {e:'🥬',n:'Asian Greens',   h:'Jul–Oct',   nx:'basil',          tip:'Fast growing in cool weather. Bok choy, pak choy, mizuna.',                                    idea:'Quick stir-fry with oyster sauce and a little sesame oil. Ready in 3 minutes. The freshness is the whole point.'},
+  'red-cabbage':   {e:'🫐',n:'Red Cabbage',    h:'Oct–Nov',   nx:'capsicum',       tip:'Needs 40cm space. Harvest when the head feels solid and firm.',                                idea:'Pickle it. Red cabbage pickles in 24 hours and lasts months in the fridge — brilliant alongside almost everything.'},
+  'broccoli':      {e:'🥦',n:'Broccoli',       h:'Jul–Sept',  nx:null,             tip:'Cut the main head, then wait for side shoots for weeks more harvest.',                         idea:'Roast in a hot oven with olive oil and garlic until the edges char. That bitterness and char is the best version of broccoli.'},
+  'cauliflower':   {e:'🥦',n:'Cauliflower',    h:'Aug–Oct',   nx:null,             tip:'Needs consistent water and nutrients. One big head per plant.',                                idea:'Whole roasted cauliflower with tahini and herbs makes a proper centrepiece. Worth the growing time.'},
+  'coriander':     {e:'🌿',n:'Coriander',      h:'Aug–Oct',   nx:'basil',          tip:'Harvest before flowers open — flavour goes bitter fast once it bolts.',                        idea:'Blitz with lime juice, garlic, chilli and olive oil for a salsa verde that lifts any grilled meat or fish. Use it this week.'},
+  'parsley':       {e:'🌱',n:'Parsley',         h:'Aug → on',  nx:null,             tip:'Strip what you want now. Bolting soon — flavour drops when it flowers.',                       idea:'Make a batch of gremolata — parsley, lemon zest, garlic. Keeps a week in the fridge and lifts everything from roasted veg to grilled fish.'},
+  'garlic-chives': {e:'🌾',n:'Garlic Chives',  h:'Aug → on',  nx:null,             tip:'Perennial. Trim regularly to keep productive.',                                                idea:'Chop into scrambled eggs, fold into dumplings, or finish a soup. Milder than regular chives with a gentle garlic note.'},
+  'bok-choy':      {e:'🥬',n:'Bok Choy',       h:'Sept–Oct',  nx:'basil',          tip:'When it starts to bolt, pull it out.',                                                          idea:'Halve and char in a screaming hot pan with sesame oil and soy. Two minutes. Done.'},
+  'marigold':      {e:'🌼',n:'Marigolds',      h:'Companion', nx:null,             tip:'Repels aphids, attracts beneficial insects. Leave them all season.',                           idea:'Scatter petals on salads for colour. Mostly here for the garden — keeping aphids off everything else.'},
+  'beetroot':      {e:'🟣',n:'Beetroot',       h:'Sept–Oct',  nx:'capsicum',       tip:'Needs 6–8 more weeks. Consistent water = no woody beet.',                                      idea:'Roast whole in foil for an hour, slip the skins, slice with goat\'s cheese and walnuts. Or pickle — they last months and go with everything.'},
+  'carrots':       {e:'🥕',n:'Carrots',        h:'Oct–Nov',   nx:null,             tip:'Slow grower. Don\'t disturb. Inconsistent water = forked roots.',                              idea:'Roast with honey and thyme. Homegrown carrots have a sweetness supermarket ones never match. Or grate into a carrot cake that\'ll be worth every week they took.'},
+  'turnip':        {e:'⬜',n:'Turnip',         h:'Aug–Oct',   nx:null,             tip:'Fast crop — 6–8 weeks.',                                                                        idea:'Roast with butter and thyme, or add to a winter soup. Often underrated — properly grown, they are genuinely delicious.'},
+  'potato':        {e:'🥔',n:'Potato',         h:'Nov–Dec',   nx:'basil',          tip:'Plant Jul–Aug. Mound soil up as stems grow.',                                                   idea:'New potatoes need nothing but butter and salt. Boil fresh from the ground and you will understand why people grow them.'},
+  'onions':        {e:'🧅',n:'Onion Sets',     h:'Dec–Jan',   nx:null,             tip:'Harvest when tops fall over naturally. Don\'t rush.',                                           idea:'Cure in a cool dry spot for a week after lifting. They will last months in a net bag and form the base of almost every dish you cook.'},
+  'shallots':      {e:'🧅',n:'Shallot Sets',   h:'Nov–Dec',   nx:null,             tip:'Lift when foliage yellows. Cure in a dry shed for a few days.',                                idea:'Finely slice into vinaigrettes and dressings. Or roast whole alongside a chicken. Far more complex flavour than onions.'},
+  'spring-onions': {e:'🌿',n:'Spring Onions',  h:'Sept',      nx:null,             tip:'Quick crop.',                                                                                   idea:'Slice into everything raw — noodle dishes, scrambled eggs, salads. Eat them while young and fresh.'},
+  'leek':          {e:'🧅',n:'Leek',           h:'Jun–Aug',   nx:null,             tip:'Long growing season. Start in March for June harvest.',                                         idea:'Braised leeks with white wine and butter. Or a proper winter potato and leek soup. They reward the patience.'},
+  'garlic':        {e:'🧄',n:'Garlic',         h:'Dec 2027',  nx:null,             tip:'DO NOT PLANT NOW. Anzac Day April 2027.',                                                       idea:'Cure for 2 weeks after lifting. Roast a whole head in olive oil and spread on crusty bread. You will have garlic for months.'},
+  'dwarf-beans':   {e:'🫘',n:'Dwarf Beans',    h:'Dec+',      nx:null,             tip:'October is perfect timing. Into the old radish strip.',                                         idea:'Blanch briefly and toss with olive oil, lemon and good salt. Or pickle in a brine for the fridge — brilliant alongside cheese.'},
+  'radish':        {e:'🔴',n:'Radish',         h:'Every 4wks',nx:'dwarf-beans',    tip:'Resow every 3–4 weeks for continuous quick harvests.',                                          idea:'Eat immediately — thinly sliced on good butter and bread. The freshness is the whole point.'},
+  'strawberry':    {e:'🍓',n:'Strawberry',     h:'Oct–Dec',   nx:null,             tip:'Keep mulched. Net against birds.',                                                              idea:'Eat in the garden, still warm. Macerate with a little sugar and pile onto yoghurt. Don\'t make jam until you have too many to eat fresh.'},
+  'tomatoes':      {e:'🍅',n:'Tomatoes',       h:'Dec–Feb',   nx:null,             tip:'Plant mid-Sept. Cherry varieties most reliable for first season.',                              idea:'Let them ripen fully on the vine. A rough sauce — tomatoes, garlic, basil, olive oil, nothing else. Freeze batches for winter.'},
+  'cherry-tomato': {e:'🍅',n:'Cherry Tomato',  h:'Dec–Feb',   nx:null,             tip:'Easier and more productive than full-size. Indeterminate — needs staking.',                   idea:'Roast in a tray with olive oil and garlic until they burst and caramelise. Toss through pasta with fresh basil. This is what the season was for.'},
+  'basil':         {e:'🌿',n:'Basil',          h:'Nov+',      nx:null,             tip:'Replaces bolted herbs. Pinch out flowers to keep leaves going.',                               idea:'Make pesto while you have it in abundance — freeze in ice cube trays and you will have summer in the middle of July. Or simply tear over tomatoes with good olive oil and salt flakes.'},
+  'zucchini':      {e:'🥒',n:'Zucchini',       h:'Dec+',      nx:null,             tip:'ONE plant only. Late Oct in the Hills, not before.',                                            idea:'Pick at 15–20cm for the best flavour. Slice thinly with lemon and mint for a raw salad, or roast halved with parmesan. Once it gets huge, stuff and bake it.'},
+  'cucumber':      {e:'🥒',n:'Cucumber',       h:'Dec+',      nx:null,             tip:'Late Sept earliest. Needs something to climb.',                                                 idea:'Thinly sliced with yoghurt, mint and garlic — tzatziki. Or smash roughly and dress with sesame and rice vinegar.'},
+  'capsicum':      {e:'🫑',n:'Capsicum',       h:'Jan+',      nx:null,             tip:'Oct planting gives Dec/Jan fruit. Slow starter but worth it.',                                 idea:'Roast whole over a flame until charred. Let steam in a bag, peel and dress with olive oil and garlic. One of the best things you can do in a kitchen.'},
+  'eggplant':      {e:'🍆',n:'Eggplant',       h:'Jan+',      nx:null,             tip:'Low-growing. Loves heat.',                                                                      idea:'Char directly over a gas flame until collapsed — the smoky flesh becomes baba ganoush with tahini, lemon and garlic.'},
+  'climbing-beans':{e:'🫘',n:'Climbing Beans', h:'Dec+',      nx:null,             tip:'Replace snow peas on the Bed 1 trellis in October.',                                            idea:'Pick young and often. Blanch and toss with butter and almonds. Or char in a hot pan with a little miso butter.'},
+  'snake-beans':   {e:'🫘',n:'Snake Beans',    h:'Dec–Feb',   nx:null,             tip:'Very productive in summer heat.',                                                               idea:'Stir-fry with chilli and garlic, or add to a Thai curry. Far more productive than regular beans in the summer heat.'},
+  'sweet-corn':    {e:'🌽',n:'Sweet Corn',     h:'Jan–Feb',   nx:null,             tip:'Plant in blocks of 4x4 for good pollination.',                                                  idea:'Eat the day it\'s picked — sugars convert to starch within hours. Grill in husks over coals for something properly good.'},
+  'pumpkin':       {e:'🎃',n:'Pumpkin',        h:'Feb–Apr',   nx:null,             tip:'Needs 2m+ spread. Plant Nov–Dec.',                                                              idea:'Roast with brown butter and sage. Cure for 2 weeks after picking to intensify the flavour.'},
+  'chilli':        {e:'🌶️',n:'Chilli',         h:'Jan–Mar',   nx:null,             tip:'Treat like capsicum. Loves heat.',                                                              idea:'Dry a batch — hang in a sunny spot. Make your own chilli flakes. Or ferment into a hot sauce that lasts all year.'},
+  'sweet-potato':  {e:'🍠',n:'Sweet Potato',   h:'Mar–May',   nx:null,             tip:'Needs a full summer. Plant Oct–Nov.',                                                           idea:'Roast whole until the skin crisps and the inside caramelises. Eat with butter and salt. No recipe needed.'},
+  'thyme':         {e:'🌿',n:'Thyme',          h:'Year-round',nx:null,             tip:'Perennial. Drought-tolerant. Thrives in the Hills.',                                            idea:'Add a bunch to roasting vegetables and meat. Strip leaves and mix into compound butter. It never really runs out.'},
+  'rosemary':      {e:'🌿',n:'Rosemary',       h:'Year-round',nx:null,             tip:'Perennial shrub. Very low water once established.',                                             idea:'Infuse in olive oil for a week. Use to roast potatoes, focaccia, lamb. Keeps in the pantry for months.'},
+  'sage':          {e:'🌿',n:'Sage',           h:'Year-round',nx:null,             tip:'Perennial. Great in the Hills. Repels some pests.',                                             idea:'Fry leaves in brown butter until crisp — pour over gnocchi, pumpkin or anything rich and starchy.'},
+  'mint':          {e:'🌿',n:'Mint',           h:'Year-round',nx:null,             tip:'KEEP IN A POT — it will take over your beds.',                                                  idea:'Muddle into drinks, chop into salads, steep for tea. Mint is endlessly useful. Keep it contained and it produces all year.'},
+  'oregano':       {e:'🌿',n:'Oregano',        h:'Year-round',nx:null,             tip:'Very hardy. Thrives on neglect.',                                                               idea:'Dry a bunch in summer for the fullest flavour. Crumble over pizza, pasta, roasted vegetables.'},
+  'dill':          {e:'🌿',n:'Dill',           h:'Cool season',nx:null,            tip:'Attracts beneficial insects. Bolts in heat.',                                                   idea:'Chop into yoghurt dressings, scatter over smoked salmon, mix into potato salad. Use fresh — it loses character when dried.'},
+  'lemongrass':    {e:'🌾',n:'Lemongrass',     h:'Year-round',nx:null,             tip:'Grows 1m+. Keep watered in summer.',                                                            idea:'Bruise the stalk and add to curries, soups and broths. Make a tea. Freeze extra stalks for later.'},
+  'chives':        {e:'🌾',n:'Chives',         h:'Year-round',nx:null,             tip:'Perennial. Regular cutting keeps them productive.',                                             idea:'Snip into scrambled eggs, soups, dressings. One of the most useful everyday herbs you can grow.'},
+  'marigold':      {e:'🌼',n:'Marigolds',      h:'Companion', nx:null,             tip:'Repels aphids, attracts beneficial insects.',                                                   idea:'Scatter petals over salads for colour. Mostly here for the garden though — doing a quiet job every day.'},
+  'calendula':     {e:'🌸',n:'Calendula',      h:'Companion', nx:null,             tip:'Attracts pollinators. Edible flowers.',                                                         idea:'Scatter petals on salads. Steep in oil for a skin balm. Mostly here for the garden\'s benefit.'},
+  'nasturtium':    {e:'🌺',n:'Nasturtium',     h:'Companion', nx:null,             tip:'Trap crop for aphids. Flowers and leaves are edible.',                                          idea:'The peppery flowers and leaves are brilliant in salads. The seed pods can be pickled like capers.'},
+  'borage':        {e:'💙',n:'Borage',         h:'Companion', nx:null,             tip:'Attracts bees. Self-sows freely.',                                                              idea:'Float the blue flowers in drinks for something visually stunning. The leaves taste like cucumber — add to salads.'},
+};
+const COOL_VEG=['broad-beans','snow-peas','garden-peas','kale','silverbeet','rainbow-chard','cos-lettuce','spinach','asian-greens','red-cabbage','broccoli','cauliflower','coriander','parsley','garlic-chives','bok-choy','beetroot','carrots','turnip','potato','onions','shallots','spring-onions','leek','garlic','dwarf-beans','radish','strawberry'];
+const WARM_VEG=['tomatoes','cherry-tomato','basil','zucchini','cucumber','capsicum','eggplant','climbing-beans','snake-beans','sweet-corn','pumpkin','chilli','sweet-potato'];
+const HERBS=['thyme','rosemary','sage','mint','oregano','dill','lemongrass','chives'];
+const COMPANIONS=['marigold','calendula','nasturtium','borage'];
+
+const STORIES={
+  9:[
+    {id:'oct-christmas',badge:'PLANT NOW',badgeType:'plant',emoji:'🍅 🌿 🥒',
+     title:'Your Christmas dinner starts this week',
+     story:'Get cherry tomatoes, basil and one zucchini plant in the ground this week. In 10–12 weeks they will all be producing at once — everything you need for a backyard pasta sauce that makes the whole season worthwhile.',
+     harvest:'🍝 Roast cherry tomatoes with garlic until they burst. Toss through pasta with torn fresh basil and sautéed zucchini. That\'s the dish the garden was built for.',
+     checkBeds:['cherry-tomato','tomatoes'],
+     trackTitle:'The Christmas trio is in 🎄',
+     trackStory:'Cherry tomatoes, basil and zucchini are all on their way. In 10–12 weeks you will have more produce than you can eat at once. Think pasta sauce, bruschetta, and a ratatouille that\'ll make the whole garden worthwhile.',
+    },
+    {id:'oct-coolseason',badge:'ENJOY NOW',badgeType:'harvest',emoji:'🫛 🫘',
+     title:'Cool season\'s last few weeks',
+     story:'Snow peas and broad beans are in their best weeks — pick snow peas every two days and eat them before they even make it inside. When the broad beans are done and pulled, those nitrogen-fixing roots quietly prepare the soil for summer. This is what the whole winter was for.',
+     harvest:'🧈 Broad beans blanched for 2 minutes, butter, sea salt. Snow peas raw, straight from the vine. Simple is exactly right here.',
+     checkBeds:['snow-peas','broad-beans'],
+     trackTitle:'Cool season\'s last hurrah 🫛',
+     trackStory:'Snow peas and broad beans are in their prime. Pick peas every 2 days. When the beans are done and pulled, the soil is already prepared for summer. This is what the whole winter was for.',
+    }
+  ],
+  10:[
+    {id:'nov-summer',badge:'BUILDING NOW',badgeType:'track',emoji:'🍅 🫑 🥒',
+     title:'The summer harvest is taking shape',
+     story:'If tomatoes, capsicum and zucchini are in the ground and growing, December is going to reward you properly. Keep watering consistently and feed tomatoes weekly — they are hungry plants.',
+     harvest:'🫑 Char capsicum over a flame, peel and dress with olive oil and garlic alongside fresh tomatoes. One of the best things you can eat in a Perth summer.',
+     checkBeds:['tomatoes','cherry-tomato','capsicum'],
+     trackTitle:'Summer is building nicely 🌞',
+     trackStory:'Your summer crops are establishing. The December harvest is coming — keep the water up and the tomatoes and capsicum will reward every week of waiting.',
+    }
+  ],
+  11:[
+    {id:'dec-peak',badge:'PEAK SEASON',badgeType:'harvest',emoji:'🍅 🥒 🫘',
+     title:'This is what all the work was for',
+     story:'Tomatoes, zucchini and beans producing at once — eat fresh every day. Make a big batch of passata to freeze and you will have summer in the middle of July.',
+     harvest:'🍅 Fill a big pot with cherry tomatoes, garlic and olive oil. Simmer down, blend, bottle. Freeze in portions — that\'s a year\'s worth of pasta sauce from one afternoon.',
+     checkBeds:['tomatoes','cherry-tomato'],
+     trackTitle:'Peak season — enjoy it 🌟',
+     trackStory:'Everything is producing at once. Eat fresh daily. Make passata. Freeze what you can\'t use. This is the whole point.',
+    }
+  ]
+};
+
+const TASKS={
+  9:[
+    {id:'oct-herbs',text:'Harvest coriander and parsley — this week',detail:'Both are shooting. Strip everything before flowers open. Once bolted, the flavour is gone and the plants are spent.',type:'urgent',
+     followOn:{id:'oct-basil',text:'Get basil into the cleared herb spaces in Bed 1',detail:'The spot is warm and ready. Basil loves exactly this position. You\'ll have leaves within a few weeks.',type:'soon',followOn:null}},
+    {id:'oct-peas',text:'Pick snow peas every 2 days',detail:'Frequency of picking is what keeps them producing. Leave pods on the vine and the plant thinks its job is done.',type:'urgent',followOn:null},
+    {id:'oct-tomatoes',text:'Get tomato seedlings from the nursery mid-month',detail:'Cherry tomatoes are your best bet for a first season. Mid-October in the Hills — not before. The cold nights are still around early in the month.',type:'soon',
+     followOn:{id:'oct-plant-tomatoes',text:'Plant tomatoes into Bed 1 as snow peas wind down',detail:'The trellis comes off, the tomatoes go on. The soil is primed from months of peas — they will love it.',type:'soon',followOn:null}},
+    {id:'oct-aphids',text:'Quick aphid check under kale and chard',detail:'October is when they arrive. Check the underside of leaves. A blast of water knocks them off early — your marigolds are already helping but stay ahead of it.',type:'soon',followOn:null},
+    {id:'oct-beans-watch',text:'Watch broad beans for harvest — pods should be swelling',detail:'Pick when plump and green. Pull plants when done — roots and all. Those nitrogen-fixing roots are a gift to the next crop.',type:'coming',
+     followOn:{id:'oct-rest-bed1',text:'Give Bed 1 a week\'s rest after the beans come out',detail:'Water it in, light mulch, leave it alone for a week before planting again. The soil has worked hard since July.',type:'rest',followOn:null}},
+    {id:'oct-rest',text:'Take a week off from the garden',detail:'October is a big transition month and you\'ve done the work. Walk around, notice what\'s growing. The worms are working even when you\'re not.',type:'rest',followOn:null}
+  ],
+  10:[
+    {id:'nov-beans',text:'Harvest and pull the last broad beans',detail:'Pick remaining pods, then pull the whole plant roots and all. The nitrogen stays in the soil as a gift to whatever comes next.',type:'urgent',
+     followOn:{id:'nov-rest-bed',text:'Rest Bed 1 for a week before the next planting',detail:'Light mulch, a good soak, then leave it alone. One week is all it needs before tomatoes or zucchini go in.',type:'rest',followOn:null}},
+    {id:'nov-shallots',text:'Check shallots — lift when foliage falls over',detail:'That flopping over is the signal. Lift gently, brush off soil. Don\'t wash them.',type:'urgent',
+     followOn:{id:'nov-cure-shallots',text:'Cure shallots in a dry airy spot for 3–4 days',detail:'A wire rack in the shed, out of direct sun. The skins dry and they\'ll keep for months.',type:'soon',followOn:null}},
+    {id:'nov-water',text:'Consistent watering — roots need it now',detail:'Inconsistent moisture at this stage means woody beetroot and forked carrots. Regular, even watering from here makes all the difference.',type:'urgent',followOn:null},
+    {id:'nov-basil',text:'Pinch out basil flower heads as they appear',detail:'Once basil flowers, the leaves lose their flavour. Pinch the tops weekly and it keeps producing for months.',type:'soon',followOn:null},
+    {id:'nov-rest',text:'Step back and enjoy what\'s growing',detail:'November is when the summer garden comes alive. You don\'t always need to be doing something. Sometimes just watching is enough.',type:'rest',followOn:null}
+  ],
+  11:[
+    {id:'dec-water',text:'Water every 2–3 days in the morning',detail:'December heat in the Hills is serious. Deep, infrequent watering beats shallow and often. Early morning means less evaporation.',type:'urgent',followOn:null},
+    {id:'dec-onions',text:'Lift onions when tops fall over naturally',detail:'That\'s the signal — don\'t rush it. Lifting early means smaller bulbs. Ease them out gently.',type:'urgent',
+     followOn:{id:'dec-cure-onions',text:'Cure onions in a cool dry place',detail:'Hang in a net bag in the shed. They\'ll last months and you\'ll reach for them every week.',type:'soon',followOn:null}},
+    {id:'dec-zucchini',text:'Harvest zucchini at 15–20cm — don\'t let them grow huge',detail:'A giant zucchini tastes of nothing and stresses the plant. Pick early and often and you\'ll have them all summer.',type:'soon',followOn:null},
+    {id:'dec-tomatoes',text:'First cherry tomatoes appearing — check daily',detail:'Once they start, they come fast. Pick fully coloured. Eat them in the garden before they make it inside.',type:'soon',followOn:null},
+    {id:'dec-rest',text:'Take a proper break from the garden this week',detail:'It\'s December. The garden is producing. You\'ve done everything right. Eat the food, enjoy the season, rest.',type:'rest',followOn:null}
+  ]
+};
+
+const DEFAULT={v:4,
+  beds:[
+    {id:'bed1',name:'Bed 1 — South',hint:'Tallest crops · Trellis south edge',dir:'N↑\nS↓',cls:'bt1',
+     rows:[
+      [{p:'coriander',s:'bolting',d:'2026-07-15'},{p:'coriander',s:'bolting',d:'2026-07-15'},{p:'parsley',s:'bolting',d:'2026-07-15'},{p:'parsley',s:'bolting',d:'2026-07-15'},{p:'marigold',s:'growing',d:'2026-07-15'},{p:'marigold',s:'growing',d:'2026-07-15'}],
+      [{p:'snow-peas',s:'ready',d:'2026-07-15'},{p:'snow-peas',s:'ready',d:'2026-07-15'},{p:'snow-peas',s:'ready',d:'2026-07-15'},{p:'broad-beans',s:'growing',d:'2026-07-15'},{p:'broad-beans',s:'growing',d:'2026-07-15'},{p:'broad-beans',s:'growing',d:'2026-07-15'}]
+     ]},
+    {id:'bed2',name:'Bed 2 — Middle',hint:'Leafy greens · North & south strips',dir:'N↑\nS↓',cls:'bt2',
+     rows:[
+      [{p:'cos-lettuce',s:'growing',d:'2026-07-15'},{p:'cos-lettuce',s:'growing',d:'2026-07-15'},{p:'spinach',s:'growing',d:'2026-07-15'},{p:'garlic-chives',s:'growing',d:'2026-07-15'},{p:'bok-choy',s:'done',d:'2026-07-15'},{p:null,s:'empty',d:null}],
+      [{p:'kale',s:'growing',d:'2026-07-15'},{p:'kale',s:'growing',d:'2026-07-15'},{p:'rainbow-chard',s:'growing',d:'2026-07-15'},{p:'rainbow-chard',s:'growing',d:'2026-07-15'},{p:'red-cabbage',s:'growing',d:'2026-07-15'},{p:'red-cabbage',s:'growing',d:'2026-07-15'}]
+     ]},
+    {id:'bed3',name:'Bed 3 — North',hint:'Low crops only · Alliums + roots',dir:'N↑\nS↓',cls:'bt3',
+     rows:[
+      [{p:'dwarf-beans',s:'seed',d:'2026-10-01'},{p:'dwarf-beans',s:'seed',d:'2026-10-01'},{p:'beetroot',s:'growing',d:'2026-07-15'},{p:'beetroot',s:'growing',d:'2026-07-15'},{p:null,s:'empty',d:null},{p:null,s:'empty',d:null}],
+      [{p:'carrots',s:'growing',d:'2026-07-15'},{p:'carrots',s:'growing',d:'2026-07-15'},{p:'onions',s:'growing',d:'2026-07-15'},{p:'onions',s:'growing',d:'2026-07-15'},{p:'shallots',s:'growing',d:'2026-07-15'},{p:'shallots',s:'growing',d:'2026-07-15'}]
+     ]}
+  ],
+  taskState:{}
+};
+
+const SK='gdn_v4';
+let ST;
+function loadState(){try{const r=localStorage.getItem(SK);ST=r?JSON.parse(r):dc(DEFAULT);if(!r)saveState();}catch(e){ST=dc(DEFAULT);}}
+function saveState(){try{localStorage.setItem(SK,JSON.stringify(ST));}catch(e){}}
+function dc(o){return JSON.parse(JSON.stringify(o));}
+function getCell(bi,ri,ci){return ST.beds[bi].rows[ri][ci];}
+function setCell(bi,ri,ci,d){Object.assign(ST.beds[bi].rows[ri][ci],d);saveState();}
+function getTaskState(m){if(!ST.taskState)ST.taskState={};if(!ST.taskState[m])ST.taskState[m]={done:[],revealed:[]};return ST.taskState[m];}
+
+let selectMode=false;
+const selected=new Set();
+function toggleSelectMode(){
+  selectMode=!selectMode;selected.clear();
+  const fab=document.getElementById('sel-fab'),bar=document.getElementById('sel-bar'),nav=document.getElementById('main-nav');
+  if(selectMode){fab.classList.add('on');fab.textContent='✓ Selecting';bar.classList.add('on');nav.style.display='none';document.getElementById('beds-wrap').classList.add('sel-mode');}
+  else{fab.classList.remove('on');fab.textContent='✓ Select';bar.classList.remove('on');nav.style.display='flex';document.getElementById('beds-wrap').classList.remove('sel-mode');}
+  renderBeds();
+}
+function exitSelectMode(){selectMode=false;selected.clear();toggleSelectMode();}
+function toggleSelect(bi,ri,ci){const k=`${bi}-${ri}-${ci}`;if(selected.has(k))selected.delete(k);else selected.add(k);renderBeds();document.getElementById('sel-count').textContent=selected.size+' selected';}
+function openMultiStatus(){if(!selected.size)return;const opts=['seed','seedling','growing','ready','bolting','done'];const lbls={seed:'Seed',seedling:'Seedling',growing:'Growing',ready:'Ready',bolting:'Bolting',done:'Done'};document.getElementById('sh-content').innerHTML=`<div class="sh-body"><div class="sh-heading">Update ${selected.size} plants</div><div class="sh-sub">Set status for all selected cells</div><div class="stat-grid">${opts.map(s=>`<button class="stat-opt so-${s}" onclick="doMultiStatus('${s}')">${lbls[s]}</button>`).join('')}</div><button class="btn btn-cancel btn-full" onclick="closeSheet()">Cancel</button></div>`;showSheet();}
+function doMultiStatus(s){selected.forEach(k=>{const[bi,ri,ci]=k.split('-').map(Number);setCell(bi,ri,ci,{s});});renderBeds();renderAlerts();closeSheet();exitSelectMode();toast(`Updated ${selected.size} plants`);}
+function doMultiRemove(){if(!selected.size)return;if(!confirm(`Remove ${selected.size} selected plant(s)?`))return;selected.forEach(k=>{const[bi,ri,ci]=k.split('-').map(Number);setCell(bi,ri,ci,{p:null,s:'empty',d:null});});renderBeds();renderAlerts();exitSelectMode();toast(`Removed ${selected.size} plants`);}
+
+let DS={src:null,ghost:null,active:false,sx:0,sy:0};
+const THRESH=9;
+function cellTS(e,bi,ri,ci){if(selectMode)return;const cell=getCell(bi,ri,ci);if(!cell.p||cell.s==='empty')return;const t=e.touches[0];DS={src:{bi,ri,ci},ghost:null,active:false,sx:t.clientX,sy:t.clientY};}
+function docTM(e){
+  if(!DS.src&&!DS.active)return;
+  const t=e.touches[0];
+  if(!DS.active){
+    if(Math.abs(t.clientX-DS.startX)>12||Math.abs(t.clientY-DS.startY)>12){
+      clearTimeout(DS.timer);DS.timer=null;DS.src=null;
+    }
+    return;
+  }
+  if(DS.ghost){DS.ghost.style.left=(t.clientX-28)+'px';DS.ghost.style.top=(t.clientY-28)+'px';}
+  DS.ghost&&(DS.ghost.style.visibility='hidden');
+  const el=document.elementFromPoint(t.clientX,t.clientY);
+  DS.ghost&&(DS.ghost.style.visibility='visible');
+  document.querySelectorAll('.cell.drag-over').forEach(c=>c.classList.remove('drag-over'));
+  const tc=el?.closest?.('.cell[data-bi]');
+  if(tc&&DS.src){const sid='cell-'+DS.src.bi+'-'+DS.src.ri+'-'+DS.src.ci;if(tc.id!==sid)tc.classList.add('drag-over');}
+  e.preventDefault();
+}
+function docTE(e){
+  if(!DS.src&&!DS.active)return;
+  clearTimeout(DS.timer);
+  const wasActive=DS.active;const src=DS.src?{...DS.src}:null;
+  if(DS.ghost){DS.ghost.remove();DS.ghost=null;}
+  document.querySelectorAll('.cell.drag-over,.cell.dragging').forEach(c=>c.classList.remove('drag-over','dragging'));
+  DS={src:null,ghost:null,active:false,startX:0,startY:0,timer:null};
+  if(!src)return;
+  if(wasActive){
+    const t=e.changedTouches[0];const el=document.elementFromPoint(t.clientX,t.clientY);const tc=el?.closest?.('.cell[data-bi]');
+    if(tc){const tbi=parseInt(tc.dataset.bi),tri=parseInt(tc.dataset.ri),tci=parseInt(tc.dataset.ci);const sid='cell-'+src.bi+'-'+src.ri+'-'+src.ci;
+      if(tc.id!==sid&&!isNaN(tbi)){const s=dc(getCell(src.bi,src.ri,src.ci));const d=dc(getCell(tbi,tri,tci));setCell(src.bi,src.ri,src.ci,{p:d.p,s:d.s,d:d.d});setCell(tbi,tri,tci,{p:s.p,s:s.s,d:s.d});renderBeds();renderAlerts();toast('Plants swapped ↔');}}
+  }else{
+    if(selectMode)toggleSelect(src.bi,src.ri,src.ci);
+    else handleTap(src.bi,src.ri,src.ci);
+  }
+  e.preventDefault();
+}
+document.addEventListener('touchmove',docTM,{passive:false});
+document.addEventListener('touchend',docTE);
+
+function renderBeds(){
+  const w=document.getElementById('beds-wrap');
+  if(selectMode)w.classList.add('sel-mode');else w.classList.remove('sel-mode');
+  w.innerHTML=ST.beds.map((bed,bi)=>`<div class="bed-wrap"><div class="bed-card"><div class="bed-top ${bed.cls}"><div><div class="bed-name">${bed.name}</div><div class="bed-hint">${bed.hint}</div></div><div class="bed-dir">${bed.dir}</div></div><div class="grid-bg">${bed.rows.map((row,ri)=>`<div class="grid-row">${row.map((cell,ci)=>renderCell(cell,bi,ri,ci)).join('')}</div>`).join('')}</div></div></div>`).join('');
+}
+function renderCell(cell,bi,ri,ci){
+  const pl=cell.p?P[cell.p]:null;const s=cell.s||'empty';const isSel=selectMode&&selected.has(`${bi}-${ri}-${ci}`);
+  let pip='';if(s==='ready')pip='<div class="cell-pip pip-r"></div>';if(s==='bolting')pip='<div class="cell-pip pip-b"></div>';if(s==='done')pip='<div class="cell-pip pip-d"></div>';
+  return `<div class="cell s-${s}${isSel?' selected':''}" id="cell-${bi}-${ri}-${ci}" data-bi="${bi}" data-ri="${ri}" data-ci="${ci}" ontouchstart="cellTS(event,${bi},${ri},${ci})" onclick="cellClick(${bi},${ri},${ci})"><div class="cell-chk">${isSel?'✓':''}</div>${pip}<div class="cell-e">${pl?pl.e:'＋'}</div><div class="cell-n">${pl?pl.n:''}</div></div>`;
+}
+function cellClick(bi,ri,ci){if('ontouchstart' in window)return;if(selectMode)toggleSelect(bi,ri,ci);else handleTap(bi,ri,ci);}
+function handleTap(bi,ri,ci){const cell=getCell(bi,ri,ci);if(cell.s==='empty'||!cell.p)openPicker(bi,ri,ci);else openCellSheet(bi,ri,ci);}
+
+function renderAlerts(){
+  const al=buildAlerts();const wrap=document.getElementById('alerts-wrap');const pill=document.getElementById('alert-pill');
+  if(!al.length){wrap.innerHTML='';pill.style.display='none';return;}
+  const urg=al.filter(a=>a.lv==='r').length;
+  if(urg){pill.textContent=urg+' urgent';pill.style.display='inline-block';}else pill.style.display='none';
+  wrap.innerHTML=`<div class="alerts"><div class="alerts-hdr">⚡ Needs attention</div>${al.map(a=>`<div class="alert-row"><div class="adot a${a.lv}"></div><div>${a.msg}</div></div>`).join('')}</div>`;
+}
+function buildAlerts(){
+  const out=[],seen=new Set();
+  ST.beds.forEach(bed=>{bed.rows.forEach(row=>{row.forEach(cell=>{if(!cell.p)return;const k=cell.s+':'+cell.p;if(seen.has(k))return;seen.add(k);const pl=P[cell.p];if(cell.s==='ready')out.push({lv:'r',msg:`🌾 ${pl.n} in ${bed.name} — ready to harvest`});if(cell.s==='bolting')out.push({lv:'r',msg:`⚠️ ${pl.n} in ${bed.name} — bolting, harvest now!`});});});});
+  return out;
+}
+function goToAlerts(){const b=document.querySelector('.nav-btn');setView('beds',b);setTimeout(()=>document.getElementById('alerts-wrap')?.scrollIntoView({behavior:'smooth'}),100);}
+
+const MONTHS=['January','February','March','April','May','June','July','August','September','October','November','December'];
+const MONTH_INTRO={9:'The big switchover month. Cool season finishing, warm season beginning. Hills nights still cold — be patient with new warm-season seedlings.',10:'Full summer mode. Most cool-season crops finishing. Big space opens as broad beans lift.',11:'Full summer. Garden should be producing well. Watering is the main job now.'};
+const STLBL={seed:'🌱 Seed',seedling:'🪴 Seedling',growing:'🌿 Growing',ready:'✨ Ready',bolting:'⚠️ Bolting',done:'✅ Done',empty:'▫️ Empty'};
+const STHW={ready:'harvest now',bolting:'harvest now!',done:'remove when ready'};
+
+function getPlantsInBeds(){
+  const m=new Map();
+  ST.beds.forEach(bed=>{bed.rows.forEach(row=>{row.forEach(cell=>{if(cell.p&&cell.s!=='empty'&&P[cell.p]){if(!m.has(cell.p))m.set(cell.p,{count:0,s:cell.s});m.get(cell.p).count++;}});});});
+  return m;
+}
+function countEmptyCells(){let n=0;ST.beds.forEach(bed=>bed.rows.forEach(row=>row.forEach(cell=>{if(!cell.p||cell.s==='empty')n++;})));return n;}
+
+function getBedRecap(){
+  return ST.beds.map((bed,bi)=>{
+    const rows=[];const seen=new Set();
+    bed.rows.forEach(row=>{row.forEach(cell=>{if(!cell.p||cell.s==='empty')return;const k=cell.p+':'+cell.s;if(seen.has(k))return;seen.add(k);const pl=P[cell.p];rows.push({e:pl.e,n:pl.n,s:cell.s,hw:STHW[cell.s]||pl.h});});});
+    let empties=0;bed.rows.forEach(row=>row.forEach(cell=>{if(!cell.p||cell.s==='empty')empties++;}));
+    if(empties>0)rows.push({e:'▫️',n:`${empties} empty cell${empties>1?'s':''}`,s:'empty',hw:'available to plant'});
+    return{bed,rows};
+  });
+}
+
+let _newlyRevealed=new Set();
+
+function renderMonthly(){
+  const m=new Date().getMonth();
+  const tasks=TASKS[m]||[];
+  const tState=getTaskState(m);
+  const done=new Set(tState.done||[]);
+  const revealed=new Set(tState.revealed||[]);
+  const toShow=[];
+  for(const task of tasks){
+    if(!done.has(task.id))toShow.push(task);
+    if(task.followOn&&revealed.has(task.followOn.id)&&!done.has(task.followOn.id))toShow.push({...task.followOn,_fo:true});
+  }
+  const urgent=toShow.filter(t=>t.type==='urgent'&&!t._fo);
+  const soon=toShow.filter(t=>(t.type==='soon'||t._fo)&&t.type!=='rest');
+  const coming=toShow.filter(t=>t.type==='coming'&&!t._fo);
+  const rest=toShow.filter(t=>t.type==='rest');
+  const sec=(lbl,ts)=>ts.length?`<div class="task-section"><div class="task-sec-title">${lbl}</div>${ts.map(t=>taskCardHtml(t)).join('')}</div>`:'';
+  const tasksHtml=[sec('🔴 Do this week',urgent),sec('🟡 This month',soon),sec('🟢 Coming up',coming),sec('🌿 Rest',rest)].join('')||`<div class="all-done">All done for ${MONTHS[m]} 🌿<br><span>The garden is doing its thing.</span></div>`;
+  const recap=getBedRecap();
+  const recapHtml=recap.map(({bed,rows},i)=>`<div class="recap-block"><div class="recap-hdr rh${i+1}">${bed.name}</div>${rows.map(r=>`<div class="recap-row"><div class="recap-ico">${r.e}</div><div><div class="recap-nm">${r.n}</div><div class="recap-st">${STLBL[r.s]||r.s}</div></div><div class="recap-hw">${r.hw||''}</div></div>`).join('')}</div>`).join('');
+  document.getElementById('month-content').innerHTML=`<div class="mv-heading">${MONTHS[m]}</div><div class="mv-intro">${MONTH_INTRO[m]||'Check the Beds view for current plant status.'}</div><div class="mv-section"><div class="mv-st">🌱 What\'s in the beds</div>${recapHtml}</div><div class="mv-section"><div class="mv-st">📋 Tasks</div>${tasksHtml}</div>`;
+}
+
+function taskCardHtml(t){
+  const isNew=_newlyRevealed.has(t.id);
+  const cls=['task-card',t.type==='urgent'?'tc-urgent':t.type==='soon'?'tc-soon':t.type==='rest'?'tc-rest':'',t._fo?'tc-followon':'',isNew?'appearing':''].filter(Boolean).join(' ');
+  return `<div class="${cls}" id="task-${t.id}"><div class="task-cb-area" onclick="completeTask('${t.id}',${new Date().getMonth()})"><div class="task-cb">○</div></div><div class="task-content"><div class="task-title">${t._fo?'↪ ':''}${t.text}</div><div class="task-detail">${t.detail}</div></div></div>`;
+}
+
+function completeTask(taskId,m){
+  const card=document.getElementById('task-'+taskId);if(!card)return;
+  const cbRect=card.querySelector('.task-cb').getBoundingClientRect();
+  const task=findTask(m,taskId);if(!task)return;
+  const tState=getTaskState(m);
+  if(!tState.done.includes(taskId))tState.done.push(taskId);
+  if(task.followOn&&!tState.revealed.includes(task.followOn.id)){tState.revealed.push(task.followOn.id);_newlyRevealed.add(task.followOn.id);}
+  if(!ST.taskState)ST.taskState={};ST.taskState[m]=tState;saveState();
+  if(task.type!=='rest')taskConfetti(cbRect.left+cbRect.width/2,cbRect.top+cbRect.height/2);
+  card.classList.add('completing');
+  setTimeout(()=>{renderMonthly();_newlyRevealed.clear();},380);
+}
+
+function findTask(m,taskId){for(const task of TASKS[m]||[]){if(task.id===taskId)return task;if(task.followOn?.id===taskId)return task.followOn;}return null;}
+
+function taskConfetti(cx,cy){
+  const wrap=document.getElementById('confetti');const cols=['#FFD54F','#8BAA6B','#B85C38','#FF8C42','#F0E6CC'];
+  for(let i=0;i<16;i++){const el=document.createElement('div');el.className='cp';const sz=5+Math.random()*5;el.style.cssText=`left:${cx+(Math.random()-.5)*100}px;top:${cy-10+(Math.random()-.5)*20}px;background:${cols[Math.floor(Math.random()*cols.length)]};width:${sz}px;height:${sz}px;animation-delay:${Math.random()*.1}s;animation-duration:${.7+Math.random()*.4}s;`;wrap.appendChild(el);}
+  setTimeout(()=>wrap.querySelectorAll('.cp').forEach(c=>c.remove()),1400);
+}
+
+function renderPlants(){
+  const inBeds=getPlantsInBeds();
+  const m=new Date().getMonth();
+  const storyHtml=(STORIES[m]||[]).map(s=>storyCardHtml(s,inBeds)).join('');
+  const bedKeys=[...inBeds.keys()].filter(k=>P[k]);
+  const bedHtml=bedKeys.map(k=>bedPlantCardHtml(k)).join('');
+  const empties=countEmptyCells();
+  const nudge=empties>0?nudgeHtml(empties,inBeds):'';
+  const noBeds=!bedHtml?'<div style="text-align:center;padding:20px;font-size:12px;color:#5A7040">Nothing planted yet. Tap an empty cell in the Beds tab to get started.</div>':'';
+  document.getElementById('plants-content').innerHTML=`${storyHtml}${bedHtml?`<div style="font-size:10px;font-weight:800;letter-spacing:2px;text-transform:uppercase;color:#5A7040;margin-bottom:8px">🌿 What\'s in your beds</div>${bedHtml}`:noBeds}${nudge}`;
+}
+
+function storyCardHtml(story,inBeds){
+  const hasPlants=story.checkBeds.some(k=>inBeds.has(k));
+  const badge=hasPlants&&story.trackTitle?'ON TRACK':'plant'===story.badgeType?story.badge:story.badge;
+  const bdCls=hasPlants?'sb-track':story.badgeType==='harvest'?'sb-harvest':'sb-plant';
+  const title=hasPlants&&story.trackTitle?story.trackTitle:story.title;
+  const txt=hasPlants&&story.trackStory?story.trackStory:story.story;
+  return `<div class="story-card"><span class="story-badge ${bdCls}">${badge}</span><div class="story-emojis">${story.emoji}</div><div class="story-title">${title}</div><div class="story-text">${txt}</div><div class="story-harvest">${story.harvest}</div></div>`;
+}
+
+function bedPlantCardHtml(k){
+  const pl=P[k];
+  return `<div class="bpc"><div class="bpc-top"><div class="bpc-emoji">${pl.e}</div><div><div class="bpc-name">${pl.n}</div><div class="bpc-hw">Harvest: ${pl.h}</div></div></div><div class="bpc-body"><div class="bpc-tip">${pl.tip}</div><div class="bpc-harvest"><div class="bpc-harvest-lbl">When you harvest, try…</div><div class="bpc-harvest-txt">${pl.idea}</div></div></div></div>`;
+}
+
+function nudgeHtml(count,inBeds){
+  const m=new Date().getMonth();
+  const allPow=[...COOL_VEG,...WARM_VEG];
+  const sug=allPow.filter(k=>P[k]&&!inBeds.has(k)).slice(0,3);
+  if(!sug.length)return'';
+  return `<div class="nudge"><div class="nudge-title">You've got ${count} empty ${count===1?'cell':'cells'} 🌱</div><div class="nudge-sub">Good candidates for right now:</div><div class="nudge-plants">${sug.map(k=>`<div class="nudge-plant"><div>${P[k].e}</div><div>${P[k].n}</div></div>`).join('')}</div><div class="nudge-hint">Tap any empty cell in Beds to plant</div></div>`;
+}
+
+function openCellSheet(bi,ri,ci){
+  const cell=getCell(bi,ri,ci);const pl=P[cell.p];const days=cell.d?Math.floor((Date.now()-new Date(cell.d))/86400000):null;
+  const stOpts=['seed','seedling','growing','ready','bolting','done'];const stLbl={seed:'Seed',seedling:'Seedling',growing:'Growing',ready:'Ready',bolting:'Bolting!',done:'Done'};
+  document.getElementById('sh-content').innerHTML=`<div class="sh-plant-hdr"><div class="sh-pe">${pl.e}</div><div><div class="sh-pn">${pl.n}</div><span class="sh-stag tg-${cell.s}">${stLbl[cell.s]||cell.s}</span></div></div><div class="sh-body"><div class="sh-chips"><div class="sh-chip"><div class="sh-cl">Harvest</div><div class="sh-cv" style="color:#C49010">${pl.h}</div></div><div class="sh-chip"><div class="sh-cl">In ground</div><div class="sh-cv">${days!==null?days+'d':'—'}</div></div><div class="sh-chip"><div class="sh-cl">Bed</div><div class="sh-cv">${bi+1}</div></div></div><div class="sh-tip">💡 ${pl.tip}</div>${pl.nx?`<div class="sh-next"><div class="sh-nl">→ Plant next</div><div class="sh-nv">${P[pl.nx].e} ${P[pl.nx].n} — ${P[pl.nx].h}</div></div>`:''}<div class="stat-lbl">Update status</div><div class="stat-grid">${stOpts.map(s=>`<button class="stat-opt so-${s}${cell.s===s?' sel':''}" onclick="doUpdateStatus(${bi},${ri},${ci},'${s}')">${stLbl[s]}</button>`).join('')}</div><div class="btn-row"><button class="btn btn-harvest" onclick="doHarvest(${bi},${ri},${ci})">🌾 Harvest</button><button class="btn btn-remove" onclick="doRemove(${bi},${ri},${ci})">🗑️ Remove</button><button class="btn btn-cancel btn-full" onclick="closeSheet()">Cancel</button></div></div>`;
+  showSheet();
+}
+
+let _pend=null;
+function openPicker(bi,ri,ci){
+  const pickItem=k=>`<div class="pick-item" onclick="choosePlant(${bi},${ri},${ci},'${k}')"><div class="pick-e">${P[k].e}</div><div class="pick-n">${P[k].n}</div></div>`;
+  document.getElementById('sh-content').innerHTML=`<div class="sh-body"><div class="sh-heading">🌱 Plant here</div><div class="sh-sub">${ST.beds[bi].name}</div><div class="picker-grid"><div class="picker-cat">Cool Season</div>${COOL_VEG.map(pickItem).join('')}<div class="picker-cat">Warm Season</div>${WARM_VEG.map(pickItem).join('')}<div class="picker-cat">Herbs</div>${HERBS.map(pickItem).join('')}<div class="picker-cat">Companions</div>${COMPANIONS.map(pickItem).join('')}</div><button class="btn btn-cancel btn-full" style="margin-top:14px" onclick="closeSheet()">Cancel</button></div>`;
+  showSheet();
+}
+function choosePlant(bi,ri,ci,key){_pend={bi,ri,ci,key};const pl=P[key];document.getElementById('sh-content').innerHTML=`<div class="sh-body"><div class="ptc-emoji">${pl.e}</div><div class="ptc-name">${pl.n}</div><div class="ptc-hw">Harvest: ${pl.h}</div><div class="ptc-q">How are you starting it?</div><div class="btn-row"><button class="btn btn-seed" onclick="confirmPlant('seed')">🌱 Direct seed</button><button class="btn btn-sdlng" onclick="confirmPlant('seedling')">🪴 Seedling</button></div><button class="btn btn-cancel btn-full" style="margin-top:8px" onclick="openPicker(${bi},${ri},${ci})">← Back</button></div>`;}
+function confirmPlant(startStatus){if(!_pend)return;const{bi,ri,ci,key}=_pend;_pend=null;setCell(bi,ri,ci,{p:key,s:startStatus,d:today()});renderBeds();renderAlerts();closeSheet();toast('🌱 Planted '+P[key].n);}
+
+function doUpdateStatus(bi,ri,ci,s){setCell(bi,ri,ci,{s});renderBeds();renderAlerts();closeSheet();toast('Updated');}
+function doHarvest(bi,ri,ci){
+  const pl=P[getCell(bi,ri,ci).p];const nx=pl.nx;
+  celebrate();
+  setTimeout(()=>{setCell(bi,ri,ci,{p:null,s:'empty',d:null});renderBeds();renderAlerts();closeSheet();toast('🎉 Harvested '+pl.n+'!');if(nx)setTimeout(()=>toast('💡 Try planting '+P[nx].n+' next'),1900);},500);
+}
+function doRemove(bi,ri,ci){const pl=P[getCell(bi,ri,ci).p];setCell(bi,ri,ci,{p:null,s:'empty',d:null});renderBeds();renderAlerts();closeSheet();toast('Removed '+pl.n);}
+
+function openSettings(){document.getElementById('sh-content').innerHTML=`<div class="sh-body"><div class="sh-heading">⚙️ Settings</div><div style="font-size:12px;color:#5A7040;line-height:1.6;margin:10px 0 16px">Reset all beds back to the October 2026 starting state. Your current layout will be replaced.</div><button class="btn btn-reset btn-full" onclick="doReset()">🔄 Reset to October 2026 defaults</button><button class="btn btn-cancel btn-full" style="margin-top:8px" onclick="closeSheet()">Close</button></div>`;showSheet();}
+function doReset(){if(!confirm('Reset all beds to October 2026?'))return;ST=dc(DEFAULT);saveState();renderBeds();renderAlerts();closeSheet();toast('🔄 Reset to October 2026');}
+
+function doSave(){saveState();const btn=document.getElementById('save-btn');btn.textContent='✓ Saved';btn.classList.add('ok');setTimeout(()=>{btn.textContent='💾 Save';btn.classList.remove('ok');},2000);}
+
+function showSheet(){document.getElementById('overlay').classList.add('on');document.getElementById('sheet').classList.add('on');}
+function closeSheet(){document.getElementById('overlay').classList.remove('on');document.getElementById('sheet').classList.remove('on');_pend=null;}
+
+function setView(name,btn){
+  document.querySelectorAll('.view').forEach(v=>v.classList.remove('on'));
+  document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));
+  document.getElementById('view-'+name).classList.add('on');btn?.classList.add('active');
+  if(name==='month')renderMonthly();if(name==='plants')renderPlants();
+}
+
+let _tt;
+function toast(msg){const el=document.getElementById('toast');el.textContent=msg;el.classList.add('on');clearTimeout(_tt);_tt=setTimeout(()=>el.classList.remove('on'),2600);}
+
+function celebrate(){
+  const wrap=document.getElementById('confetti');const cols=['#FFD54F','#8BAA6B','#B85C38','#FF8C42','#4A6B35','#F0E6CC','#7AD47A'];
+  const cx=window.innerWidth/2,cy=window.innerHeight*.35;wrap.innerHTML='';
+  for(let i=0;i<26;i++){const el=document.createElement('div');el.className='cp';el.style.cssText=`left:${cx+(Math.random()-.5)*260}px;top:${cy+(Math.random()-.5)*60}px;background:${cols[Math.floor(Math.random()*cols.length)]};width:8px;height:8px;animation-delay:${Math.random()*.25}s;animation-duration:${1.2+Math.random()*.5}s;`;wrap.appendChild(el);}
+  setTimeout(()=>wrap.innerHTML='',2200);
+}
+
+function today(){return new Date().toISOString().slice(0,10);}
+function updateHeader(){const d=new Date();document.getElementById('hdr-sub').textContent=`${MONTHS[d.getMonth()]} ${d.getFullYear()} · auto-saved`;}
+
+loadState();updateHeader();renderBeds();renderAlerts();
+</script>
+</body>
+</html>
