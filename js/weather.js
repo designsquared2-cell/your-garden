@@ -2,9 +2,8 @@
 // Water balance = evaporation (ET₀) − effective rain, counted since the last watering or soaking rain.
 'use strict';
 const WX_K='gdn_wx';
-const DEFAULT_LOC={name:'Kalamunda, WA',lat:-31.97,lon:116.06};
 let WX=null,WX_ERR=false;
-function wxLoc(){return ST.wx||DEFAULT_LOC;}
+function wxLoc(){return ST.wx||null;}
 function wxIcon(c){return c==null?'🌡️':c===0?'☀️':c<=2?'🌤️':c===3?'☁️':c<=48?'🌫️':c<=57?'🌦️':c<=67?'🌧️':c<=77?'❄️':c<=82?'🌦️':'⛈️';}
 function dayName(iso){const off=daysBetween(localDate(),iso);return off===-1?'yesterday':off===1?'tomorrow':off===0?'today':new Date(iso+'T00:00').toLocaleDateString('en-AU',{weekday:'long'});}
 // Index of "today" in the forecast. The API uses the garden's timezone; fall back to the
@@ -13,6 +12,7 @@ function wxToday(d){const i=d.time.indexOf(localDate());return i>=0?i:Math.min(7
 
 async function loadWeather(force){
   const loc=wxLoc();let c=null;
+  if(!loc){WX=null;renderWeather();return;}
   try{c=JSON.parse(localStorage.getItem(WX_K));}catch(e){}
   const same=c&&c.lat===loc.lat&&c.lon===loc.lon;
   if(same){WX=c;renderWeather();if(!force&&Date.now()-c.t<3600e3)return;}else{WX=null;renderWeather();}
@@ -51,6 +51,7 @@ function wxVerdict(){
 
 function renderWeather(){
   const w=$('wx-wrap');const loc=wxLoc();
+  if(!loc){w.innerHTML=ST.beds.length?`<button class="wx wx-setup" onclick="openSettings()"><span class="wx-ico">📍</span><span><span class="wx-loc">Set your location</span><span class="wx-sum">Get watering advice from your local weather</span></span><span class="nudge-cnt">›</span></button>`:'';return;}
   if(!WX?.daily){w.innerHTML=`<div class="wx"><div class="wx-top"><div class="wx-ico">🌡️</div><div><div class="wx-loc">${esc(loc.name)}</div><div class="wx-sum">${WX_ERR?'Couldn\'t reach the weather service — check your connection.':'Loading weather…'}</div></div></div></div>`;return;}
   const d=WX.daily,ti=wxToday(d);
   const r3=[ti-3,ti-2,ti-1].reduce((s,i)=>s+(d.precipitation_sum[i]||0),0);

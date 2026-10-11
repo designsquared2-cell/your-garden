@@ -6,7 +6,56 @@ const cellData=c=>Object.fromEntries(CELL_KEYS.map(k=>[k,c[k]??null]));
 // ── Grid ──
 function renderBeds(){
   const w=$('beds-wrap');w.classList.toggle('sel-mode',selectMode);
-  w.innerHTML=ST.beds.map((bed,bi)=>`<div class="bed-wrap"><div class="bed-card"><div class="bed-top ${bed.cls}"><div class="bed-name">${bed.name}</div></div><div class="grid-bg">${bed.rows.map((row,ri)=>`<div class="grid-row">${row.map((cell,ci)=>renderCell(cell,bi,ri,ci)).join('')}</div>`).join('')}</div></div></div>`).join('');
+  $('view-beds').classList.toggle('no-beds',!ST.beds.length);
+  if(!ST.beds.length){
+    w.innerHTML=`<div class="setup"><div class="setup-e">🌱</div><div class="setup-t">Start your garden plan</div>
+      <div class="setup-s">Add each bed, patch or pot group, then tap a spot to plant it.</div>
+      <button class="btn btn-seed" onclick="openBedEditor()">＋ Add your first bed</button>
+      ${ST.wx?'':'<button class="btn btn-cancel" onclick="openSettings()">📍 Set your location for watering advice</button>'}
+      <button class="link-btn" onclick="openSettings()">Have a backup? Import it in Settings</button></div>`;
+    return;
+  }
+  w.innerHTML=ST.beds.map((bed,bi)=>`<div class="bed-wrap"><div class="bed-card"><div class="bed-top bt${bi%3+1}"><div class="bed-name">${esc(bed.name)}${bed.low?' <span class="bed-tag">low crops</span>':''}</div>${selectMode?'':`<button class="bed-edit" aria-label="Edit ${esc(bed.name)}" onclick="openBedEditor(${bi})">✏️</button>`}</div><div class="grid-bg">${bed.rows.map((row,ri)=>`<div class="grid-row">${row.map((cell,ci)=>renderCell(cell,bi,ri,ci)).join('')}</div>`).join('')}</div></div></div>`).join('')
+    +(selectMode?'':'<button class="add-bed" onclick="openBedEditor()">＋ Add a bed</button>');
+}
+
+// ── Add / edit beds ──
+const BED_MAX_ROWS=8,BED_MAX_COLS=10;
+const emptyCell=()=>({p:null,s:'empty',d:null,st:null,picks:0});
+function openBedEditor(bi){
+  const bed=bi==null?null:ST.beds[bi];
+  const v=bed?{name:bed.name,r:bed.rows.length,c:bed.rows[0]?.length||1,low:bed.low}:{name:`Bed ${ST.beds.length+1}`,r:2,c:6,low:false};
+  const stepper=(id,val,max)=>`<div class="stepper"><button onclick="stepNum('${id}',-1,${max})" aria-label="Fewer">−</button><input class="fm-in" id="${id}" type="number" inputmode="numeric" min="1" max="${max}" value="${val}"><button onclick="stepNum('${id}',1,${max})" aria-label="More">+</button></div>`;
+  showSheet(`<div class="sh-body"><div class="sh-sticky"><div class="sh-toprow"><div><div class="sh-heading">${bed?'✏️ Edit bed':'＋ New bed'}</div><div class="sh-sub">${bed?'Shrinking a bed removes plants outside the new size':'You can change this any time'}</div></div><button class="sh-cancel" onclick="closeSheet()">✕ Cancel</button></div></div>
+    <div class="fm-lbl">Name</div><input class="fm-in" id="bed-n" maxlength="30" placeholder="e.g. Bed 1 — South" value="${esc(v.name)}">
+    <div class="fm-2col"><div><div class="fm-lbl">Rows</div>${stepper('bed-r',v.r,BED_MAX_ROWS)}</div><div><div class="fm-lbl">Spots per row</div>${stepper('bed-c',v.c,BED_MAX_COLS)}</div></div>
+    <label class="fm-check"><input type="checkbox" id="bed-low"${v.low?' checked':''}> Low crops only — don't suggest tall or climbing plants</label>
+    <button class="btn btn-seed btn-full" style="margin-top:16px" onclick="saveBed(${bi??'null'})">${bed?'💾 Save bed':'＋ Add bed'}</button>
+    ${bed?`<button class="btn btn-remove btn-full" style="margin-top:8px" onclick="deleteBed(${bi})">🗑️ Delete this bed</button>`:''}
+  </div>`);
+  if(!bed&&!('ontouchstart' in window))setTimeout(()=>$('bed-n')?.select(),50);
+}
+function stepNum(id,d,max){const el=$(id);el.value=Math.min(max,Math.max(1,(+el.value||1)+d));}
+function saveBed(bi){
+  const name=$('bed-n').value.trim()||`Bed ${(bi??ST.beds.length)+1}`;
+  const r=Math.min(BED_MAX_ROWS,Math.max(1,+$('bed-r').value||1)),c=Math.min(BED_MAX_COLS,Math.max(1,+$('bed-c').value||1));
+  const low=$('bed-low').checked;
+  if(bi==null){
+    ST.beds.push({id:newId(),name,low,rows:Array.from({length:r},()=>Array.from({length:c},emptyCell))});
+    saveState();closeSheet();refreshAll();toast(`＋ Added ${name}`);
+    $('beds-wrap').lastElementChild?.previousElementSibling?.scrollIntoView({behavior:'smooth',block:'center'});
+    return;
+  }
+  snapshot();const bed=ST.beds[bi];
+  const lost=bed.rows.flatMap((row,ri)=>row.filter((cell,ci)=>(ri>=r||ci>=c)&&!isEmpty(cell))).length;
+  bed.name=name;bed.low=low;
+  bed.rows=Array.from({length:r},(_,ri)=>Array.from({length:c},(_,ci)=>bed.rows[ri]?.[ci]||emptyCell()));
+  saveState();closeSheet();refreshAll();
+  toast(lost?`Saved — ${plural(lost,'plant')} removed`:`Saved ${name}`,{undo:!!lost});
+}
+function deleteBed(bi){
+  snapshot();const name=ST.beds[bi].name;ST.beds.splice(bi,1);saveState();closeSheet();refreshAll();
+  toast(`Deleted ${name}`,{undo:true});
 }
 function renderCell(cell,bi,ri,ci){
   const pl=isEmpty(cell)?null:P[cell.p];const s=pl?cell.s:'empty';const sel=selectMode&&selected.has(`${bi}-${ri}-${ci}`);
@@ -134,7 +183,7 @@ function removePlant(bi,ri,ci){snapshot();const p=getCell(bi,ri,ci).p;clearCell(
 let _pk=null;
 function openPicker(bi,ri,ci,q=''){
   _pk={bi,ri,ci};
-  showSheet(`<div class="sh-body"><div class="sh-heading">🌱 Plant here</div><div class="sh-sub">${ST.beds[bi].name}</div><input class="pick-search" id="pick-q" type="search" placeholder="🔍 Search plants…" autocomplete="off" value="${esc(q)}" oninput="renderPickerGrid(this.value)" onkeydown="if(event.key==='Enter'){event.preventDefault();pickEnter();}"><div class="picker-grid" id="pick-grid"></div><button class="btn btn-cancel btn-full" style="margin-top:14px" onclick="closeSheet()">Cancel</button></div>`);
+  showSheet(`<div class="sh-body"><div class="sh-sticky"><div class="sh-toprow"><div><div class="sh-heading">🌱 Plant here</div><div class="sh-sub">${esc(ST.beds[bi].name)}</div></div><button class="sh-cancel" onclick="closeSheet()">✕ Cancel</button></div><input class="pick-search" id="pick-q" type="search" placeholder="🔍 Search plants…" autocomplete="off" value="${esc(q)}" oninput="renderPickerGrid(this.value)" onkeydown="if(event.key==='Enter'){event.preventDefault();pickEnter();}"></div><div class="picker-grid" id="pick-grid"></div></div>`);
   renderPickerGrid(q);
   if(!('ontouchstart' in window))setTimeout(()=>$('pick-q')?.focus(),280);
 }
@@ -145,7 +194,7 @@ function renderPickerGrid(q){
   const groups=pickerMatches(t),total=groups.reduce((n,[,ks])=>n+ks.length,0);
   let html='';
   if(!t){const sug=suggestForBed(bi);if(sug.length)html+=`<div class="picker-cat">✨ Suggested for this bed</div>${sug.map(s=>pickTile(s.k,s.why,' pick-sug')).join('')}`;}
-  html+=groups.filter(([,ks])=>ks.length).map(([cat,ks])=>`<div class="picker-cat">${CAT_LBL[cat]}</div>${ks.map(k=>pickTile(k,inSeason(k)?'':'out of season',inSeason(k)?'':' pick-off')).join('')}`).join('');
+  html+=groups.filter(([,ks])=>ks.length).map(([cat,ks])=>`<div class="picker-cat">${CAT_LBL[cat]}</div>${ks.map(k=>pickTile(k,inSeason(k)?'':'Out of season',inSeason(k)?'':' pick-off')).join('')}`).join('');
   if(t&&!total)html=`<div class="pick-empty">No “${esc(t)}” in your list yet — add it below.</div>`;
   const exact=groups.some(([,ks])=>ks.some(k=>plantName(k).toLowerCase()===t.toLowerCase()));
   if(!exact)html+=`<div class="picker-cat">${total?'Not in the list?':'New plant'}</div><button class="pick-item pick-new" onclick="openNewPlant()"><div class="pick-e">＋</div><div class="pick-n">${t?`Add “${esc(t)}”`:'Add a new plant'}</div></button>`;

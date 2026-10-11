@@ -3,7 +3,7 @@
 function openSettings(){
   showSheet(`<div class="sh-body"><div class="sh-heading">⚙️ Settings</div>
     <div class="fm-lbl">Weather location</div>
-    <div class="set-txt">Currently: <b>${esc(wxLoc().name)}</b></div>
+    <div class="set-txt">${wxLoc()?`Currently: <b>${esc(wxLoc().name)}</b>`:'Not set yet — search for your suburb to get watering advice.'}</div>
     <div class="fm-emoji-row"><input class="fm-in" id="loc-q" placeholder="Search a town or suburb" onkeydown="if(event.key==='Enter')searchLoc()"><button class="btn btn-seed btn-inline" onclick="searchLoc()">Search</button></div>
     <div id="loc-res"></div>
     <button class="btn btn-cancel btn-full" style="margin-top:7px" onclick="useMyLoc()">📍 Use my current location</button>
@@ -13,11 +13,34 @@ function openSettings(){
     <div class="btn-row"><button class="btn btn-cancel" onclick="exportBackup()">⬇️ Export</button><button class="btn btn-cancel" onclick="$('imp-file').click()">⬆️ Import</button></div>
     <input type="file" id="imp-file" accept="application/json,.json" hidden onchange="importBackup(this.files[0])">
 
-    <div class="fm-lbl" style="margin-top:18px">Start over</div>
-    <div class="set-txt">Reset the beds to the October 2026 layout. Your own plants and location are kept.</div>
-    <button class="btn btn-reset btn-full" onclick="doReset()">🔄 Reset beds</button>
+    <div class="fm-lbl" style="margin-top:18px">Start fresh</div>
+    <div class="set-txt">Clear everything and plan a new garden from scratch.</div>
+    <button class="btn btn-reset btn-full" onclick="confirmStartFresh()">🧹 Start a fresh garden</button>
     <button class="btn btn-cancel btn-full" style="margin-top:8px" onclick="closeSheet()">Close</button>
   </div>`);
+}
+function confirmStartFresh(){
+  const n=plantedCells().length,own=Object.keys(ST.customPlants).length;
+  showSheet(`<div class="sh-body"><div class="sh-heading">🧹 Start a fresh garden?</div>
+    <div class="set-txt" style="margin-top:8px">This deletes everything saved on this device:</div>
+    <ul class="fresh-list">
+      <li>${plural(ST.beds.length,'bed')} and ${plural(n,'plant')}</li>
+      <li>${plural(own,'plant')} you added to the plant list</li>
+      <li>Your harvest log (${ST.log.length} ${ST.log.length===1?'entry':'entries'}), watering log and weather location</li>
+    </ul>
+    <div class="set-txt">Want a copy first? Export a backup — you can import it again later.</div>
+    <button class="btn btn-cancel btn-full" onclick="exportBackup()">⬇️ Export a backup first</button>
+    <button class="btn btn-reset btn-full" style="margin-top:8px" onclick="startFresh()">Delete everything & start fresh</button>
+    <button class="btn btn-cancel btn-full" style="margin-top:8px" onclick="openSettings()">← Back</button>
+  </div>`);
+}
+function startFresh(){
+  snapshot();
+  Object.keys(ST.customPlants).forEach(k=>{delete P[k];delete TIMING[k];Object.values(CATS).forEach(a=>{const i=a.indexOf(k);if(i>-1)a.splice(i,1);});});
+  ST=freshState();saveState();
+  try{localStorage.removeItem(WX_K);}catch(e){}
+  WX=null;exitSelectMode();closeSheet();setView('beds');refreshAll();
+  toast('🧹 Fresh start — add your first bed',{undo:true});
 }
 function exportBackup(){
   const blob=new Blob([JSON.stringify({app:'garden',exported:new Date().toISOString(),state:ST},null,1)],{type:'application/json'});
@@ -33,10 +56,4 @@ async function importBackup(file){
     snapshot();ST=migrate(s);saveState();applyCustomPlants();closeSheet();refreshAll();loadWeather(true);
     toast('⬆️ Backup restored',{undo:true});
   }catch(e){toast('That file isn\'t a garden backup');}
-}
-function doReset(){
-  snapshot();
-  const keep={customPlants:ST.customPlants,wx:ST.wx,lastWatered:ST.lastWatered,log:ST.log};
-  ST=migrate(Object.assign(dc(DEFAULT),keep));saveState();closeSheet();refreshAll();
-  toast('🔄 Beds reset',{undo:true});
 }

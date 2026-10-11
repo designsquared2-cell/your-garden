@@ -5,7 +5,7 @@
 function suggestForBed(bi,n=3){
   const here=[...new Set(plantedCells().filter(x=>x.bi===bi).map(x=>x.cell.p))];
   const fams=new Set(here.map(familyOf).filter(Boolean));
-  const lowOnly=/low/i.test(ST.beds[bi].hint||'');
+  const lowOnly=!!ST.beds[bi].low;
   const sc={};
   const add=(k,pts,why)=>{if(!P[k]||!inSeason(k)||(lowOnly&&TALL.includes(k)))return;(sc[k]??={k,s:0,why:[]}).s+=pts;sc[k].why.push(why);};
   here.forEach(k=>{if(P[k].nx)add(P[k].nx,3,`follows ${plantName(k)}`);});
@@ -29,7 +29,7 @@ function renderPlants(){
   const guides=[...here].map(k=>plantGuideHtml(k,td)).join('');
   const empties=allCells().filter(x=>isEmpty(x.cell)).length;
   $('plants-content').innerHTML=`${stories}
-    ${guides?`<div class="pv-sec-title">🌿 What's in your beds</div>${guides}`:'<div class="pv-none">Nothing planted yet. Tap an empty spot in Beds to get started.</div>'}
+    ${guides?`<div class="pv-sec-title">🌿 What's in your beds</div>${guides}`:`<div class="pv-none">${ST.beds.length?'Nothing planted yet. Tap an empty spot in Beds to get started.':'No beds yet. Add one on the Beds tab to start planning.'}</div>`}
     ${empties?nudgeHtml(empties):''}
     ${harvestLogHtml()}`;
 }
@@ -65,7 +65,7 @@ function nudgeHtml(count){
   const rows=ST.beds.map((bed,bi)=>{
     const n=emptyCells(bi).length;if(!n)return'';
     const sug=suggestForBed(bi);
-    return `<button class="nudge-bed" onclick="goToEmpty(${bi})"><div class="nudge-bed-top"><span>${bed.name}</span><span class="nudge-cnt">${n} empty ›</span></div>${sug.length?`<div class="nudge-plants">${sug.map(s=>`<div class="nudge-plant"><div>${P[s.k].e}</div><div>${P[s.k].n}</div><div class="nudge-why">${esc(s.why)}</div></div>`).join('')}</div>`:''}</button>`;
+    return `<button class="nudge-bed" onclick="goToEmpty(${bi})"><div class="nudge-bed-top"><span>${esc(bed.name)}</span><span class="nudge-cnt">${n} empty ›</span></div>${sug.length?`<div class="nudge-plants">${sug.map(s=>`<div class="nudge-plant"><div>${P[s.k].e}</div><div>${P[s.k].n}</div><div class="nudge-why">${esc(s.why)}</div></div>`).join('')}</div>`:''}</button>`;
   }).join('');
   return `<div class="nudge"><div class="nudge-title">You've got ${plural(count,'empty spot')} 🌱</div><div class="nudge-sub">Suggestions based on what's already growing in each bed</div>${rows}<div class="nudge-hint">Tap a bed to jump to its empty spot</div></div>`;
 }
@@ -76,6 +76,6 @@ function harvestLogHtml(){
   const recent=ST.log.slice(-8).reverse();
   return `<div class="pv-sec-title" style="margin-top:16px">🧺 Harvest log</div><div class="hlog">
     <div class="hlog-sum">${month.length?`${MONTHS[curMonth()]}: ${Object.entries(counts).map(([k,n])=>`${P[k]?.e||'🌱'} ${plantName(k)} ×${n}`).join(' · ')}`:'Nothing picked yet this month.'}</div>
-    ${recent.map(l=>`<div class="hlog-row"><span>${P[l.p]?.e||'🌱'} ${P[l.p]?.n||esc(l.p)}${l.f?' <span class="hlog-f">finished</span>':''}</span><span class="hlog-d">${fmtDate(l.d)} · ${esc(ST.beds[l.b]?.name.split(' — ')[0]||'')}</span></div>`).join('')}
+    ${recent.map(l=>`<div class="hlog-row"><span>${P[l.p]?.e||'🌱'} ${P[l.p]?.n||esc(l.p)}${l.f?' <span class="hlog-f">finished</span>':''}</span><span class="hlog-d">${fmtDate(l.d)} · ${esc(bedById(l.bid)?.name.split(' — ')[0]||'removed bed')}</span></div>`).join('')}
   </div>`;
 }

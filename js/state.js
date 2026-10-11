@@ -16,10 +16,20 @@ function plural(n,w){return `${n} ${w}${n===1?'':'s'}`;}
 // ── Load / save ──
 // Fill in fields added since older saves, so old data keeps working.
 function migrate(s){
-  s.customPlants??={};s.alertDone??={};s.taskState??={};s.log??=[];
-  s.beds.forEach(b=>b.rows.forEach(r=>r.forEach(c=>{c.picks??=0;})));
-  return s;
+  s.beds??=[];s.customPlants??={};s.alertDone??={};s.log??=[];
+  delete s.taskState;
+  s.beds.forEach(b=>{
+    b.id??=newId();
+    b.low??=/low/i.test(b.hint||'');delete b.hint;delete b.dir;delete b.cls;
+    b.rows.forEach(r=>r.forEach(c=>{c.picks??=0;}));
+  });
+  // Harvest log used to store the bed's position; store its id so deleting a bed can't mislabel entries
+  s.log.forEach(l=>{if(l.bid==null&&l.b!=null){l.bid=s.beds[l.b]?.id||null;delete l.b;}});
+  s.v=5;return s;
 }
+function newId(){return'b'+Date.now().toString(36)+Math.random().toString(36).slice(2,6);}
+function bedById(id){return ST.beds.find(b=>b.id===id);}
+function freshState(){return migrate(dc(DEFAULT));}
 function loadState(){
   try{const r=localStorage.getItem(SK);ST=r?JSON.parse(r):dc(DEFAULT);}catch(e){ST=dc(DEFAULT);}
   migrate(ST);saveState();
@@ -32,7 +42,7 @@ function snapshot(){_undo=JSON.stringify(ST);}
 function undo(){
   if(!_undo)return;
   ST=migrate(JSON.parse(_undo));_undo=null;saveState();applyCustomPlants();
-  closeSheet();refreshAll();toast('↩ Undone');
+  closeSheet();refreshAll();if(!WX)loadWeather();toast('↩ Undone');
 }
 
 // ── Cells ──
@@ -89,6 +99,6 @@ function overdueOneOff(cell){
 
 // ── Harvest log ──
 function logHarvest(p,bi,final){
-  ST.log.push({d:localDate(),p,b:bi,f:final?1:0});
+  ST.log.push({d:localDate(),p,bid:ST.beds[bi].id,f:final?1:0});
   if(ST.log.length>1000)ST.log=ST.log.slice(-1000);
 }

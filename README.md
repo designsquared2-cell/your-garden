@@ -18,14 +18,14 @@ Then visit http://localhost:8080. (Opening `index.html` straight from disk also 
 |---|---|
 | `index.html` | Page skeleton |
 | `css/styles.css` | All styles |
-| `js/data.js` | Plant library (`P`), sowing months & days-to-harvest (`TIMING`), families, hand-written Oct–Dec stories and tasks, starting layout |
+| `js/data.js` | Plant library (`P`), sowing months & days-to-harvest (`TIMING`), families, seasonal stories. No preloaded garden — a fresh install starts with no beds |
 | `js/state.js` | Saved state (localStorage key `gdn_v4`), migration, undo, cell & plant helpers |
 | `js/ui.js` | Sheet, toast (with Undo), confetti, tab switching |
 | `js/weather.js` | Open-Meteo forecast, watering verdict, location search |
-| `js/tasks.js` | One task list feeding **Needs attention** and **This Month**: plant alerts, hand-written tasks, generated year-round tasks |
+| `js/tasks.js` | One task list feeding **Needs attention** and **This Month**, generated from the beds, plant timing and weather |
 | `js/plants-view.js` | Plants tab, bed-aware suggestions, harvest log |
-| `js/beds.js` | Bed grid, select mode, drag & drop, plant sheet, picker, custom plants |
-| `js/settings.js` | Location, backup export/import, reset |
+| `js/beds.js` | Bed grid, add/edit/resize beds, select mode, drag & drop, plant sheet, picker, custom plants |
+| `js/settings.js` | Location, backup export/import, start fresh |
 | `js/main.js` | Startup, service worker |
 | `sw.js`, `manifest.webmanifest`, `icons/` | Offline support and home-screen install |
 
