@@ -12,6 +12,18 @@ python -m http.server 8080
 
 Then visit http://localhost:8080. (Opening `index.html` straight from disk also works, minus offline support.)
 
+## Tabs — one job each
+
+| Tab | Shows |
+|---|---|
+| 🌿 Beds | Summary (weather, counts by stage, links) and the bed layout |
+| 🐝 Jobs | Every task — watering, harvests, pest checks, treatments, clearing, filling spots |
+| 📅 This Month | What's in the beds |
+| 🌱 Plants | Plant information — plant now, what you're growing, the plant library |
+| 🐛 Pests | "What are you seeing?" finder, this month's pests, the full guide |
+
+Keep new features in the tab they belong to: anything you tick off goes in Jobs.
+
 ## Layout
 
 | File | What it holds |
@@ -22,11 +34,11 @@ Then visit http://localhost:8080. (Opening `index.html` straight from disk also 
 | `js/state.js` | Saved state (localStorage key `gdn_v4`), migration, undo, cell & plant helpers |
 | `js/ui.js` | Sheet, toast (with Undo), confetti, tab switching |
 | `js/weather.js` | Open-Meteo forecast, watering verdict, location search |
-| `js/pests.js` | Pest & bug library (`PESTS`: plants/families affected, months, peak, what to look for, fix, prevention), pest-check jobs, "found some" reports |
-| `js/tasks.js` | Jobs tab: one list feeding **Needs attention** and **Jobs**, generated from the beds, plant timing, pests and weather |
-| `js/month.js` | This Month: pest watch, what to sow now, what's in the beds |
-| `js/plants-view.js` | Plants tab, bed-aware suggestions, harvest log |
-| `js/beds.js` | Bed grid, add/edit/resize beds, select mode, drag & drop, plant sheet, picker, custom plants |
+| `js/pests.js` | Pest library (`PESTS`), beginner symptoms (`SYMPTOMS`) and which pests they point to (`PEST_ID`), pest-check and treatment jobs, Pests tab |
+| `js/tasks.js` | Jobs tab, generated from the beds, plant timing, pests and weather; urgent count for the header and tab badge |
+| `js/month.js` | This Month: what's in the beds |
+| `js/plants-view.js` | Plants tab, plant library and info sheet, bed-aware suggestions |
+| `js/beds.js` | Beds summary, bed grid, add/edit/resize beds, select mode, drag & drop, plant sheet, picker, custom plants |
 | `js/settings.js` | Location, backup export/import, start fresh |
 | `js/main.js` | Startup, service worker |
 | `sw.js`, `manifest.webmanifest`, `icons/` | Offline support and home-screen install |

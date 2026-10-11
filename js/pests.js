@@ -134,14 +134,17 @@ function tickTreat(i){
   return`✓ Treated — re-check in ${PEST_RECHECK_DAYS} days`;
 }
 
-// ── "Found some" ──
-function openPestReport(id,fromBi){
+// ── "That's it" / "Found some" → treatment job ──
+function plantGroups(cells){const g=new Map();cells.forEach(x=>{const k=x.bi+':'+x.cell.p;if(!g.has(k))g.set(k,x);});return[...g.values()];}
+function openPestReport(id,plant){
   const p=PEST_BY_ID[id];
-  const groups=new Map();
-  pestCells(p).forEach(x=>{const k=x.bi+':'+x.cell.p;if(!groups.has(k))groups.set(k,x);});
-  const opts=[...groups.values()].filter(x=>fromBi==null||x.bi===fromBi);
-  showSheet(`<div class="sh-body"><div class="sh-sticky"><div class="sh-toprow"><div><div class="sh-heading">${p.e} Where did you find ${p.n.toLowerCase()}?</div><div class="sh-sub">We'll add a treatment job</div></div><button class="sh-cancel" onclick="closeSheet()">✕ Cancel</button></div></div>
-    ${opts.map(x=>`<button class="loc-res" onclick="reportPest('${id}','${x.cell.p}',${x.bi})">${P[x.cell.p].e} ${P[x.cell.p].n} <span class="hlog-d">· ${esc(x.bed.name)}</span></button>`).join('')||'<div class="set-txt">None of your current plants are on this pest\'s list.</div>'}
+  // Plants this pest usually attacks; if none (or a beginner's guess doesn't fit), let them pick any plant
+  let opts=plantGroups(pestCells(p));
+  if(plant)opts=opts.filter(x=>x.cell.p===plant);
+  if(!opts.length)opts=plantGroups(plantedCells().filter(x=>!plant||x.cell.p===plant));
+  if(opts.length===1){reportPest(id,opts[0].cell.p,opts[0].bi);return;}
+  showSheet(`<div class="sh-body"><div class="sh-sticky"><div class="sh-toprow"><div><div class="sh-heading">${p.e} Where did you find it?</div><div class="sh-sub">We'll add a treatment job to Jobs</div></div><button class="sh-cancel" onclick="closeSheet()">✕ Cancel</button></div></div>
+    ${opts.map(x=>`<button class="loc-res" onclick="reportPest('${id}','${x.cell.p}',${x.bi})">${P[x.cell.p].e} ${P[x.cell.p].n} <span class="hlog-d">· ${esc(x.bed.name)}</span></button>`).join('')||'<div class="set-txt">Nothing planted yet.</div>'}
     <div class="pest-fix"><b>What to do:</b> ${p.fix}</div></div>`);
 }
 function reportPest(id,p,bi){
@@ -151,24 +154,100 @@ function reportPest(id,p,bi){
   toast(`${PEST_BY_ID[id].e} Treatment job added to Jobs`);
 }
 
-// ── Rendering helpers ──
-// Plant sheet: pests to watch for on this plant
-function plantPestsHtml(k,bi){
-  const ps=pestsFor(k);if(!ps.length)return'';
+// ── "What are you seeing?" ── beginners describe what they see; we suggest what it probably is
+const SYMPTOMS=[
+  {id:'green-cat',g:'see',e:'🐛',t:'Small green caterpillars'},
+  {id:'white-fly-about',g:'see',e:'🦋',t:'White butterflies or small moths'},
+  {id:'tiny-clusters',g:'see',e:'🐜',t:'Clusters of tiny insects'},
+  {id:'ants',g:'see',e:'🐜',t:'Ants running up stems'},
+  {id:'white-flies',g:'see',e:'🤍',t:'Tiny white flies when brushed'},
+  {id:'snail',g:'see',e:'🐌',t:'Snails, slugs or slime trails'},
+  {id:'grey-grub',g:'see',e:'🪱',t:'Fat grey grubs in the soil'},
+  {id:'earwig',g:'see',e:'🪳',t:'Brown bugs with tail pincers'},
+  {id:'shield-bug',g:'see',e:'🪲',t:'Green shield-shaped bugs'},
+  {id:'webbing',g:'see',e:'🕸️',t:'Fine webbing under leaves'},
+  {id:'maggots',g:'see',e:'🪰',t:'Maggots inside fruit'},
+  {id:'birds',g:'see',e:'🐦',t:'Birds hanging around'},
+  {id:'holes',g:'dmg',e:'🍃',t:'Holes chewed in leaves'},
+  {id:'window',g:'dmg',e:'🪟',t:'See-through patches on leaves'},
+  {id:'droppings',g:'dmg',e:'⚫',t:'Little green or dark droppings'},
+  {id:'overnight',g:'dmg',e:'🌙',t:'Damage appears overnight'},
+  {id:'seedling-cut',g:'dmg',e:'✂️',t:'Seedlings cut off or vanished'},
+  {id:'curled',g:'dmg',e:'🌀',t:'Curled or puckered new leaves'},
+  {id:'sticky',g:'dmg',e:'🍯',t:'Sticky leaves or black mould'},
+  {id:'speckled',g:'dmg',e:'⚪',t:'Pale speckles on leaves'},
+  {id:'bronze',g:'dmg',e:'🟤',t:'Bronze, dried-out lower leaves'},
+  {id:'powder',g:'dmg',e:'🌫️',t:'White powder on leaves'},
+  {id:'fruit-holes',g:'dmg',e:'🍅',t:'Holes or soft spots in fruit'},
+  {id:'wilting',g:'dmg',e:'🥀',t:'Wilting tips or dropping pods'},
+  {id:'pecked',g:'dmg',e:'🍓',t:'Pecked fruit or pulled seedlings'},
+];
+const SYM_BY_ID=Object.fromEntries(SYMPTOMS.map(s=>[s.id,s]));
+// signs: which symptoms point to each pest; what: plain-language "what am I looking at?"
+const PEST_ID={
+  'cabbage-white':{signs:['green-cat','white-fly-about','holes','droppings'],what:'The baby stage of the white butterflies you see fluttering around in spring. Each butterfly lays tiny yellow eggs under leaves, and they hatch into very hungry green caterpillars.'},
+  'diamondback':{signs:['green-cat','white-fly-about','window','holes'],what:'Caterpillars of a small grey-brown moth. They\'re smaller and twitchier than cabbage white caterpillars — touch one and it wriggles backwards and drops on a silk thread.'},
+  'aphids':{signs:['tiny-clusters','ants','curled','sticky'],what:'Tiny soft-bodied insects, about the size of a pinhead, that suck sap. They breed incredibly fast — a few become hundreds in a week. Ants "farm" them for their sweet honeydew.'},
+  'snails':{signs:['snail','holes','overnight','seedling-cut'],what:'Snails and slugs feed at night and hide during the day, so you usually see the damage before you see them.'},
+  'cutworm':{signs:['grey-grub','seedling-cut','overnight'],what:'Moth caterpillars that live in the soil and come up at night to chew through young stems right at ground level.'},
+  'earwigs':{signs:['earwig','holes','overnight'],what:'Brown insects with pincers on their tail. They\'re partly helpful (they eat aphids) but chew soft seedlings, leaves and petals at night.'},
+  'medfly':{signs:['maggots','fruit-holes'],what:'A small fly that lays its eggs just under the skin of ripening fruit. The eggs hatch into maggots that rot the fruit from the inside.'},
+  'two-spot-mite':{signs:['webbing','speckled','bronze'],what:'Not insects but tiny spiders — barely visible without a magnifier. They suck leaves dry in hot, dry weather.'},
+  'russet-mite':{signs:['bronze'],what:'A microscopic mite that attacks tomatoes and their relatives. You\'ll see the bronzed, dried-out lower stems long before you could ever see the mites.'},
+  'whitefly':{signs:['white-flies','sticky','speckled'],what:'Tiny white moth-like insects that suck sap from leaf undersides and leave sticky honeydew, which grows black mould.'},
+  'heliothis':{signs:['green-cat','fruit-holes','droppings','holes'],what:'Caterpillars of a brown moth. Unlike leaf-eaters, they bore into tomatoes, beans and corn cobs.'},
+  'shield-bugs':{signs:['shield-bug','wilting','fruit-holes'],what:'Sap-sucking bugs shaped like a little shield. Their babies are round and spotty black, white and orange — they look like a different bug.'},
+  'powdery-mildew':{signs:['powder'],what:'Not a bug at all — a fungus. It loves warm days, cool nights and crowded, leafy plants.'},
+  'birds':{signs:['birds','pecked','seedling-cut'],what:'Wattlebirds and parrots love ripe strawberries; blackbirds scratch up fresh seedlings looking for worms.'},
+};
+PESTS.forEach(p=>Object.assign(p,PEST_ID[p.id]));
+
+let _idSel=new Set(),_idPlant=null;
+function idToggle(s){_idSel.has(s)?_idSel.delete(s):_idSel.add(s);renderPests();}
+function idPlant(k){_idPlant=_idPlant===k?null:k;renderPests();}
+function idClear(){_idSel.clear();_idPlant=null;renderPests();}
+// From a plant sheet: "Something wrong with this plant?"
+function openPestsFor(k){closeSheet();_idSel.clear();_idPlant=k;setView('pests');}
+function idMatches(){
+  if(!_idSel.size)return[];
   const m=curMonth();
-  ps.sort((a,b)=>pestActive(b,m)-pestActive(a,m)||pestPeak(b,m)-pestPeak(a,m));
-  return `<div class="stat-lbl">🐛 Watch for</div><div class="pest-mini">${ps.map(p=>`<div class="pest-mini-row${pestActive(p,m)?' on':''}"><span>${p.e} ${p.n}${pestPeak(p,m)?' <span class="peak-tag">peak now</span>':pestActive(p,m)?' <span class="now-tag">active now</span>':` <span class="hlog-d">${monthsText(p.months)}</span>`}</span>${pestActive(p,m)?`<button class="pest-spot" onclick="reportPest('${p.id}','${k}',${bi})">Spotted it</button>`:''}</div>`).join('')}</div>`;
+  return PESTS.map(p=>{
+    const hit=p.signs.filter(s=>_idSel.has(s)).length;if(!hit)return null;
+    let score=hit*3;
+    if(_idPlant)score+=pestOnPlant(p,_idPlant)?3:-2;
+    if(pestActive(p,m))score+=1;if(pestPeak(p,m))score+=1;
+    return{p,hit,score};
+  }).filter(Boolean).sort((a,b)=>b.score-a.score).slice(0,3);
 }
-// This Month: what to look out for
-function pestWatchHtml(m){
+function photosUrl(p){return'https://www.google.com/search?tbm=isch&q='+encodeURIComponent(p.n+' garden pest Australia');}
+function idResultHtml({p,hit},i){
+  const fits=_idPlant&&!pestOnPlant(p,_idPlant);
+  return `<div class="id-res${i===0?' top':''}"><div class="pest-hdr"><span class="pest-e">${p.e}</span><div><div class="id-lead">${i===0?'Most likely':'Could also be'}</div><div class="pest-n">${p.n}</div></div></div>
+    <div class="id-what">${p.what}</div>
+    <div class="pest-txt"><b>How to tell:</b> ${p.look}</div>
+    <div class="pest-txt"><b>What to do:</b> ${p.fix}</div>
+    ${fits?`<div class="pest-txt id-warn">It doesn't usually attack ${plantName(_idPlant)}, so check the photos.</div>`:''}
+    <div class="id-btns"><a class="id-photos" href="${photosUrl(p)}" target="_blank" rel="noopener">📷 See photos ↗</a>${plantedCells().length?`<button class="task-btn" onclick="openPestReport('${p.id}',${_idPlant?`'${_idPlant}'`:'null'})">✓ That's it — add a job</button>`:''}</div></div>`;
+}
+function renderPests(){
+  const m=curMonth(),matches=idMatches();
+  const chips=g=>SYMPTOMS.filter(s=>s.g===g).map(s=>`<button class="sym${_idSel.has(s.id)?' on':''}" onclick="idToggle('${s.id}')">${s.e} ${s.t}</button>`).join('');
+  const mine=[...new Set(plantedCells().map(x=>x.cell.p))];
+  if(_idPlant&&!mine.includes(_idPlant))mine.unshift(_idPlant);
   const watch=pestsToWatch(m);
-  if(!watch.length)return'';
-  return `<div class="mv-section"><div class="mv-st">🐛 Pest watch</div>${watch.map(p=>{const cells=pestCells(p);return `<div class="pest-card${pestPeak(p,m)?' peak':''}"><div class="pest-hdr"><span class="pest-e">${p.e}</span><div><div class="pest-n">${p.n}${pestPeak(p,m)?' <span class="peak-tag">peak</span>':''}</div><div class="pest-on">Likely on your ${plantList(cells,4)}</div></div></div><div class="pest-txt"><b>Look for:</b> ${p.look}</div><div class="pest-txt"><b>Prevent:</b> ${p.prevent}</div></div>`;}).join('')}</div>`;
+  $('pests-content').innerHTML=`<div class="mv-heading">Pests & problems</div>
+    <div class="mv-intro">Not sure what's eating your plants? Tap what you can see and we'll help work out what it is.</div>
+    <div class="mv-section" id="pest-id"><div class="mv-st">🔍 What are you seeing?</div>
+      <div class="sym-grp">Bugs you can see</div><div class="sym-wrap">${chips('see')}</div>
+      <div class="sym-grp">Damage you can see</div><div class="sym-wrap">${chips('dmg')}</div>
+      ${mine.length?`<div class="sym-grp">Which plant? (optional)</div><div class="sym-wrap">${mine.map(k=>`<button class="sym${_idPlant===k?' on':''}" onclick="idPlant('${k}')">${P[k].e} ${P[k].n}</button>`).join('')}</div>`:''}
+      ${_idSel.size||_idPlant?`<button class="link-btn" onclick="idClear()">Clear and start again</button>`:''}
+      ${matches.length?`<button class="id-bar" onclick="$('id-results').scrollIntoView({behavior:'smooth',block:'start'})">See ${matches.length===1?'the likely match':`${matches.length} likely matches`} ↓</button>`:''}
+      <div id="id-results">${matches.length?matches.map(idResultHtml).join(''):_idSel.size?'<div class="set-txt">Nothing in the guide matches that — try fewer signs, or check the guide below.</div>':_idPlant?`<div class="set-txt">Now tap what you can see on your ${plantName(_idPlant)}.</div>`:''}</div>
+    </div>
+    ${watch.length?`<div class="mv-section"><div class="mv-st">👀 Watch out for in ${MONTHS[m]}</div>${watch.map(p=>{const cells=pestCells(p);return `<div class="pest-card${pestPeak(p,m)?' peak':''}"><div class="pest-hdr"><span class="pest-e">${p.e}</span><div><div class="pest-n">${p.n}${pestPeak(p,m)?' <span class="peak-tag">peak</span>':''}</div><div class="pest-on">Likely on your ${plantList(cells,4)}</div></div></div><div class="id-what">${p.what}</div><div class="pest-txt"><b>Look for:</b> ${p.look}</div><div class="pest-txt"><b>Prevent:</b> ${p.prevent}</div></div>`;}).join('')}</div>`:''}
+    <div class="mv-section"><div class="mv-st">📖 Pest & bug guide</div><div class="pest-guide">${PESTS.map(p=>`<details class="pg"><summary><span>${p.e} ${p.n}${p.disease?' <span class="hlog-d">(disease)</span>':''}</span><span class="${pestActive(p,m)?'now-tag':'hlog-d'}">${pestActive(p,m)?'active now':monthsText(p.months)}</span></summary>
+      <div class="pg-body"><div class="id-what">${p.what}</div><div class="pest-txt"><b>When:</b> ${monthsText(p.months)} · worst ${monthsText(p.peak)}</div><div class="pest-txt"><b>Signs:</b> ${p.signs.map(s=>SYM_BY_ID[s].t.toLowerCase()).join(' · ')}</div><div class="pest-txt"><b>Look for:</b> ${p.look}</div><div class="pest-txt"><b>Where:</b> ${p.where}</div><div class="pest-txt"><b>What to do:</b> ${p.fix}</div><div class="pest-txt"><b>Prevent:</b> ${p.prevent}</div><a class="id-photos" href="${photosUrl(p)}" target="_blank" rel="noopener">📷 See photos ↗</a></div></details>`).join('')}</div>
+    <div class="pg-note">Timing is typical for Perth and shifts with each season's weather. For declared pests like Medfly, check DPIRD for current advice.</div></div>`;
 }
-// Plants tab: the full guide
-function pestGuideHtml(){
-  const m=curMonth();
-  return `<div class="pv-sec-title" style="margin-top:16px">🐛 Pest & bug guide</div><div class="pest-guide">${PESTS.map(p=>`<details class="pg"><summary><span>${p.e} ${p.n}${p.disease?' <span class="hlog-d">(disease)</span>':''}</span><span class="${pestActive(p,m)?'now-tag':'hlog-d'}">${pestActive(p,m)?'active now':monthsText(p.months)}</span></summary>
-    <div class="pg-body"><div class="pest-txt"><b>When:</b> ${monthsText(p.months)} · worst ${monthsText(p.peak)}</div><div class="pest-txt"><b>Look for:</b> ${p.look}</div><div class="pest-txt"><b>Where:</b> ${p.where}</div><div class="pest-txt"><b>What to do:</b> ${p.fix}</div><div class="pest-txt"><b>Prevent:</b> ${p.prevent}</div></div></details>`).join('')}</div>
-    <div class="pg-note">Timing is typical for Perth and shifts with each season's weather. For declared pests like Medfly, check DPIRD for current advice.</div>`;
-}
+

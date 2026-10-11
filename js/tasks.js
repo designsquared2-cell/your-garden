@@ -93,11 +93,11 @@ function runAuto(id){
 }
 
 // ── Rendering ──
+// Urgent count on the header pill and the Jobs tab badge (the jobs themselves live only in Jobs)
 function renderAlerts(){
-  const all=urgentItems(),al=all.filter(a=>a.kind!=='water');
-  const pill=$('alert-pill');pill.textContent=all.length+' urgent';pill.style.display=all.length?'inline-block':'none';
-  const badge=$('jobs-badge');badge.textContent=all.length;badge.hidden=!all.length;
-  $('alerts-wrap').innerHTML=al.length?`<div class="alerts"><div class="alerts-hdr">⚡ Needs attention</div>${al.map(a=>`<div class="alert-row"><button class="al-cb" aria-label="Mark done" onclick="tickItem('${a.kind}','${a.id}',this)">✓</button><div>${a.title}</div></div>`).join('')}</div>`:'';
+  const n=urgentItems().length;
+  const pill=$('alert-pill');pill.textContent=n+' urgent';pill.style.display=n?'inline-block':'none';
+  const badge=$('jobs-badge');badge.textContent=n;badge.hidden=!n;
 }
 function goToAlerts(){setView('jobs');}
 
@@ -118,5 +118,5 @@ function renderJobs(){
     ||(ST.beds.length?`<div class="all-done">All done for now 🐝<br><span>The garden is doing its thing.</span></div>`
       :cardHtml({type:'soon',icon:'🌱',title:'Add your first bed',detail:'Jobs, harvest dates, pest checks and watering advice appear here once you start planting.',btn:{label:'＋ Add a bed',js:"setView('beds');openBedEditor()"}}));
   const n=jobCount();
-  $('jobs-content').innerHTML=`<div class="mv-heading">Jobs to do</div><div class="mv-intro">${n?`${plural(n,'job')} for ${MONTHS[m]}. Tick them off as you go.`:'Nothing needs doing right now.'}</div>${body}`;
+  $('jobs-content').innerHTML=`<div class="mv-heading">Jobs to do</div><div class="mv-intro">${n?`${plural(n,'job')} for ${MONTHS[m]}. Tick them off as you go.`:'Nothing needs doing right now.'}</div>${weatherCardHtml()}${body}`;
 }

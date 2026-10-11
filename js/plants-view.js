@@ -1,4 +1,4 @@
-// Plants tab: seasonal stories, guides for what's in the beds, empty-spot suggestions, harvest log.
+// Plants tab: plant information only — what to plant now, guides for what you're growing, and the plant library.
 'use strict';
 
 // ── Bed-aware suggestions ── scores in-season plants by what already grows in the same bed
@@ -22,61 +22,64 @@ function goToEmpty(bi){
   setTimeout(()=>{el?.classList.remove('selected');openPicker(bi,e.ri,e.ci);},450);
 }
 
+// ── Plants tab ──
+let _libQ='';
 function renderPlants(){
   const m=curMonth(),td=localDate();
   const here=new Set(plantedCells().map(x=>x.cell.p));
-  const stories=(STORIES[m]||[]).map(s=>storyCardHtml(s,here)).join('')||upcomingCardHtml(td);
+  const stories=(STORIES[m]||[]).map(s=>storyCardHtml(s,here)).join('');
+  const now=[...COOL_VEG,...WARM_VEG,...HERBS].filter(k=>!P[k].custom&&inSeason(k,m));
   const guides=[...here].map(k=>plantGuideHtml(k,td)).join('');
-  const empties=allCells().filter(x=>isEmpty(x.cell)).length;
-  $('plants-content').innerHTML=`${stories}
-    ${guides?`<div class="pv-sec-title">🌿 What's in your beds</div>${guides}`:`<div class="pv-none">${ST.beds.length?'Nothing planted yet. Tap an empty spot in Beds to get started.':'No beds yet. Add one on the Beds tab to start planning.'}</div>`}
-    ${empties?nudgeHtml(empties):''}
-    ${harvestLogHtml()}
-    ${pestGuideHtml()}`;
+  $('plants-content').innerHTML=`<div class="mv-heading">Plants</div>
+    <div class="mv-intro">What to plant now, how your plants are doing, and everything in the plant library.</div>
+    ${stories}
+    ${now.length?`<div class="mv-section"><div class="mv-st">🌱 Plant now in ${MONTHS[m]}</div><div class="sow-chips">${now.map(k=>`<button class="sow-chip" onclick="openPlantInfo('${k}')">${P[k].e} ${P[k].n}</button>`).join('')}</div></div>`:''}
+    <div class="mv-section"><div class="mv-st">🌿 What you're growing</div>${guides||`<div class="pv-none">${ST.beds.length?'Nothing planted yet — tap an empty spot in Beds to plant.':'No beds yet — add one on the Beds tab.'}</div>`}</div>
+    <div class="mv-section"><div class="mv-st">📚 Plant library</div>
+      <input class="pick-search" id="lib-q" type="search" placeholder="🔍 Search all plants…" autocomplete="off" value="${esc(_libQ)}" oninput="_libQ=this.value;renderLibrary()">
+      <div id="lib-list"></div></div>`;
+  renderLibrary();
 }
-
 function storyCardHtml(story,here){
   const on=story.checkBeds.some(k=>here.has(k))&&story.trackTitle;
   const cls=on?'sb-track':story.badgeType==='harvest'?'sb-harvest':'sb-plant';
   return `<div class="story-card"><span class="story-badge ${cls}">${on?'ON TRACK':story.badge}</span><div class="story-emojis">${story.emoji}</div><div class="story-title">${on?story.trackTitle:story.title}</div><div class="story-text">${on?story.trackStory:story.story}</div><div class="story-harvest">${story.harvest}</div></div>`;
 }
-// Months without a hand-written story get a "coming up" card built from expected harvest dates
-function upcomingCardHtml(td){
-  const soon=new Map();
-  plantedCells().forEach(({cell})=>{
-    if(['ready','bolting','done'].includes(cell.s))return;
-    const exp=expectedDate(cell);if(!exp||daysBetween(td,exp)>45)return;
-    if(!soon.has(cell.p)||exp<soon.get(cell.p))soon.set(cell.p,exp);
-  });
-  const ready=[...new Set(plantedCells().filter(x=>x.cell.s==='ready').map(x=>x.cell.p))];
-  if(!soon.size&&!ready.length)return'';
-  const list=[...soon].sort((a,b)=>a[1]<b[1]?-1:1);
-  return `<div class="story-card"><span class="story-badge sb-track">COMING UP</span><div class="story-emojis">${[...ready,...list.map(x=>x[0])].slice(0,4).map(k=>P[k].e).join(' ')}</div><div class="story-title">${ready.length?`${ready.map(k=>P[k].n).join(', ')} ready now`:'Your next harvests'}</div><div class="story-text">${list.length?list.map(([k,d])=>`${P[k].n} — around ${fmtDate(d)}`).join('<br>'):'Keep picking what\'s ready — the more you pick, the more you get.'}</div></div>`;
-}
 function plantGuideHtml(k,td){
   const pl=P[k],cells=plantedCells().filter(x=>x.cell.p===k);
-  const picks=ST.log.filter(l=>l.p===k).length;
+  const picks=ST.log.filter(l=>l.p===k),last=picks.at(-1);
   // Most advanced cell wins: ready beats picking season beats a future date
   const rank=c=>['ready','bolting'].includes(c.s)?0:c.s==='done'?3:expectedDate(c)&&expectedDate(c)<=td?1:2;
   const lead=cells.map(x=>x.cell).sort((a,b)=>rank(a)-rank(b)||(expectedDate(a)||'z').localeCompare(expectedDate(b)||'z'))[0];
-  const when=readyLabel(lead);
-  return `<div class="bpc"><div class="bpc-top"><div class="bpc-emoji">${pl.e}</div><div><div class="bpc-name">${pl.n}</div><div class="bpc-hw">${when}${picks?` · 🧺 ${plural(picks,'pick')}`:''}</div></div></div><div class="bpc-body"><div class="bpc-tip">${pl.tip}</div>${(()=>{const ps=pestsFor(k).filter(p=>pestActive(p));return ps.length?`<div class="bpc-pests">🐛 Watch for now: ${ps.map(p=>p.n.toLowerCase()).join(', ')}</div>`:'';})()}<div class="bpc-harvest"><div class="bpc-harvest-lbl">When you harvest, try…</div><div class="bpc-harvest-txt">${pl.idea}</div></div></div></div>`;
+  return `<div class="bpc" onclick="openPlantInfo('${k}')"><div class="bpc-top"><div class="bpc-emoji">${pl.e}</div><div><div class="bpc-name">${pl.n}</div><div class="bpc-hw">${readyLabel(lead)}${picks.length?` · 🧺 ${plural(picks.length,'pick')}, last ${fmtDate(last.d)}`:''}</div></div></div><div class="bpc-body"><div class="bpc-tip">${pl.tip}</div><div class="bpc-harvest"><div class="bpc-harvest-lbl">When you harvest, try…</div><div class="bpc-harvest-txt">${pl.idea}</div></div></div></div>`;
 }
-function nudgeHtml(count){
-  const rows=ST.beds.map((bed,bi)=>{
-    const n=emptyCells(bi).length;if(!n)return'';
-    const sug=suggestForBed(bi);
-    return `<button class="nudge-bed" onclick="goToEmpty(${bi})"><div class="nudge-bed-top"><span>${esc(bed.name)}</span><span class="nudge-cnt">${n} empty ›</span></div>${sug.length?`<div class="nudge-plants">${sug.map(s=>`<div class="nudge-plant"><div>${P[s.k].e}</div><div>${P[s.k].n}</div><div class="nudge-why">${esc(s.why)}</div></div>`).join('')}</div>`:''}</button>`;
+function renderLibrary(){
+  const t=_libQ.trim().toLowerCase(),m=curMonth();
+  const groups=Object.entries(CATS).map(([cat,keys])=>{
+    const ks=keys.filter(k=>P[k]&&(!t||plantName(k).toLowerCase().includes(t)));
+    return ks.length?`<div class="lib-cat">${CAT_LBL[cat]}</div><div class="lib-grid">${ks.map(k=>`<button class="lib-item" onclick="openPlantInfo('${k}')"><span>${P[k].e}</span><span class="lib-n">${P[k].n}</span>${inSeason(k,m)?'<span class="lib-dot" aria-label="plant now"></span>':''}</button>`).join('')}</div>`:'';
   }).join('');
-  return `<div class="nudge"><div class="nudge-title">You've got ${plural(count,'empty spot')} 🌱</div><div class="nudge-sub">Suggestions based on what's already growing in each bed</div>${rows}<div class="nudge-hint">Tap a bed to jump to its empty spot</div></div>`;
+  $('lib-list').innerHTML=groups?`<div class="lib-key"><span class="lib-dot"></span> plant now in ${MONTHS[m]}</div>${groups}`
+    :`<div class="set-txt">No plants match “${esc(_libQ)}”. You can add your own when planting an empty spot.</div>`;
 }
-function harvestLogHtml(){
-  if(!ST.log.length)return'';
-  const mk=localDate().slice(0,7),month=ST.log.filter(l=>l.d.startsWith(mk));
-  const counts={};month.forEach(l=>counts[l.p]=(counts[l.p]||0)+1);
-  const recent=ST.log.slice(-8).reverse();
-  return `<div class="pv-sec-title" style="margin-top:16px">🧺 Harvest log</div><div class="hlog">
-    <div class="hlog-sum">${month.length?`${MONTHS[curMonth()]}: ${Object.entries(counts).map(([k,n])=>`${P[k]?.e||'🌱'} ${plantName(k)} ×${n}`).join(' · ')}`:'Nothing picked yet this month.'}</div>
-    ${recent.map(l=>`<div class="hlog-row"><span>${P[l.p]?.e||'🌱'} ${P[l.p]?.n||esc(l.p)}${l.f?' <span class="hlog-f">finished</span>':''}</span><span class="hlog-d">${fmtDate(l.d)} · ${esc(bedById(l.bid)?.name.split(' — ')[0]||'removed bed')}</span></div>`).join('')}
-  </div>`;
+// Plant info sheet: everything about one plant
+function openPlantInfo(k){
+  const pl=P[k],t=timing(k),m=curMonth();
+  const growing=plantedCells().filter(x=>x.cell.p===k);
+  const fam=familyOf(k);
+  const facts=[
+    ['When to plant',t.sow?(t.sow.length===12?'All year':monthsText(t.sow)):'—'],
+    ['Ready in',t.days?`about ${t.days} days from seed`:'—'],
+    ['Harvest',pl.h],
+    ['Harvesting',t.pick?'Keeps producing — pick often':'One harvest, then pull'],
+  ];
+  const pests=pestsFor(k);
+  showSheet(`<div class="sh-body"><div class="sh-sticky"><div class="sh-toprow"><div class="pi-hdr"><span class="sh-pe">${pl.e}</span><div><div class="sh-pn">${pl.n}</div><div class="sh-sub">${inSeason(k,m)?'<span class="now-tag">plant now</span>':`Not the season to plant`}${fam?` · ${FAM_LBL[fam]}`:''}${growing.length?` · growing in ${[...new Set(growing.map(x=>esc(x.bed.name)))].join(', ')}`:''}</div></div></div><button class="sh-cancel" onclick="closeSheet()">✕ Close</button></div></div>
+    <div class="pi-facts">${facts.map(([a,b])=>`<div><div class="sh-cl">${a}</div><div class="pi-v">${b}</div></div>`).join('')}</div>
+    <div class="sh-tip">💡 ${pl.tip}</div>
+    <div class="bpc-harvest" style="margin-bottom:12px"><div class="bpc-harvest-lbl">When you harvest, try…</div><div class="bpc-harvest-txt">${pl.idea}</div></div>
+    ${pl.nx&&P[pl.nx]?`<div class="sh-next"><div class="sh-nl">→ Plant next</div><div class="sh-nv">${P[pl.nx].e} ${P[pl.nx].n} — ${P[pl.nx].h}</div></div>`:''}
+    ${pests.length?`<div class="set-txt">🐛 Can be bothered by ${pests.map(p=>p.n.toLowerCase()).join(', ')}. <button class="link-btn" onclick="openPestsFor('${k}')">See the Pests tab ›</button></div>`:''}
+  </div>`);
 }
+

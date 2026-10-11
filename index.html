@@ -24,8 +24,7 @@
 </header>
 <main class="scroll">
   <section class="view on" id="view-beds">
-    <div id="wx-wrap"></div>
-    <div id="alerts-wrap"></div>
+    <div id="beds-summary"></div>
     <div class="bed-controls"><button class="sel-fab" id="sel-fab" onclick="toggleSelectMode()">✓ Select</button></div>
     <div id="beds-wrap"></div>
     <div class="legend">
@@ -41,12 +40,14 @@
   <section class="view" id="view-jobs"><div id="jobs-content"></div></section>
   <section class="view" id="view-month"><div id="month-content"></div></section>
   <section class="view" id="view-plants"><div id="plants-content"></div></section>
+  <section class="view" id="view-pests"><div id="pests-content"></div></section>
 </main>
 <nav class="nav" id="main-nav">
   <button class="nav-btn active" data-view="beds" onclick="setView('beds')"><span class="nav-icon">🌿</span>Beds</button>
   <button class="nav-btn" data-view="jobs" onclick="setView('jobs')"><span class="nav-icon">🐝<span class="nav-badge" id="jobs-badge" hidden>0</span></span>Jobs</button>
   <button class="nav-btn" data-view="month" onclick="setView('month')"><span class="nav-icon">📅</span>This Month</button>
   <button class="nav-btn" data-view="plants" onclick="setView('plants')"><span class="nav-icon">🌱</span>Plants</button>
+  <button class="nav-btn" data-view="pests" onclick="setView('pests')"><span class="nav-icon">🐛</span>Pests</button>
 </nav>
 <div class="sel-bar" id="sel-bar">
   <div class="sel-count" id="sel-count">0 selected</div>

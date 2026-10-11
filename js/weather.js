@@ -49,10 +49,11 @@ function wxVerdict(){
   return{lv:'g',msg:`Soil moisture looks fine ${since} (${Math.max(0,def)}mm short).`};
 }
 
-function renderWeather(){
-  const w=$('wx-wrap');const loc=wxLoc();
-  if(!loc){w.innerHTML=ST.beds.length?`<button class="wx wx-setup" onclick="openSettings()"><span class="wx-ico">📍</span><span><span class="wx-loc">Set your location</span><span class="wx-sum">Get watering advice from your local weather</span></span><span class="nudge-cnt">›</span></button>`:'';return;}
-  if(!WX?.daily){w.innerHTML=`<div class="wx"><div class="wx-top"><div class="wx-ico">🌡️</div><div><div class="wx-loc">${esc(loc.name)}</div><div class="wx-sum">${WX_ERR?'Couldn\'t reach the weather service — check your connection.':'Loading weather…'}</div></div></div></div>`;return;}
+// Jobs tab: the full watering card, with the "Watered" button
+function weatherCardHtml(){
+  const loc=wxLoc();
+  if(!loc)return ST.beds.length?`<button class="wx wx-setup" onclick="openSettings()"><span class="wx-ico">📍</span><span><span class="wx-loc">Set your location</span><span class="wx-sum">Get watering advice from your local weather</span></span><span class="nudge-cnt">›</span></button>`:'';
+  if(!WX?.daily)return `<div class="wx"><div class="wx-top"><div class="wx-ico">🌡️</div><div><div class="wx-loc">${esc(loc.name)}</div><div class="wx-sum">${WX_ERR?'Couldn\'t reach the weather service — check your connection.':'Loading weather…'}</div></div></div></div>`;
   const d=WX.daily,ti=wxToday(d);
   const r3=[ti-3,ti-2,ti-1].reduce((s,i)=>s+(d.precipitation_sum[i]||0),0);
   const v=wxVerdict();const watered=ST.lastWatered===localDate();
@@ -60,14 +61,24 @@ function renderWeather(){
   const tmr=d.precipitation_sum[ti+1]||0;
   const rows=[`<div class="wx-row"><div class="adot a${v.lv}"></div><div>${v.msg}</div></div>`];
   if(heat.length)rows.push(`<div class="wx-row"><div class="adot ay"></div><div>🔥 Hot days ahead: ${heat.join(', ')}. Water deeply the morning before and mulch well.</div></div>`);
-  w.innerHTML=`<div class="wx"><div class="wx-top"><div class="wx-ico">${wxIcon(d.weather_code[ti])}</div><div><div class="wx-loc">${esc(loc.name)} · ${Math.round(d.temperature_2m_max[ti])}° today</div><div class="wx-sum">${r3.toFixed(1)}mm rain last 3 days · ${tmr>=1?`${Math.round(tmr)}mm`:'dry'} tomorrow</div></div><button class="wx-btn${watered?' done':''}" onclick="logWatered()">${watered?'✓ Watered':'💧 Watered'}</button></div>${rows.join('')}<div class="wx-foot">Updated ${new Date(WX.t).toLocaleTimeString('en-AU',{hour:'numeric',minute:'2-digit'})} · Open-Meteo</div></div>`;
+  return `<div class="wx"><div class="wx-top"><div class="wx-ico">${wxIcon(d.weather_code[ti])}</div><div><div class="wx-loc">💧 Watering · ${Math.round(d.temperature_2m_max[ti])}° today</div><div class="wx-sum">${r3.toFixed(1)}mm rain last 3 days · ${tmr>=1?`${Math.round(tmr)}mm`:'dry'} tomorrow</div></div><button class="wx-btn${watered?' done':''}" onclick="logWatered()">${watered?'✓ Watered':'💧 I watered'}</button></div>${rows.join('')}<div class="wx-foot">${esc(loc.name)} · updated ${new Date(WX.t).toLocaleTimeString('en-AU',{hour:'numeric',minute:'2-digit'})} · Open-Meteo</div></div>`;
 }
+// Beds summary: one line of weather
+function weatherLineHtml(){
+  const loc=wxLoc();
+  if(!loc)return'';
+  if(!WX?.daily)return `<div class="sum-wx">🌡️ ${WX_ERR?'Weather unavailable':'Loading weather…'}</div>`;
+  const d=WX.daily,ti=wxToday(d),v=wxVerdict();
+  const short={r:'Water today',y:v.msg.includes('hold off')?'Rain coming — hold off watering':'Water tomorrow',g:ST.lastWatered===localDate()?'Watered today':'Soil moisture fine'}[v.lv];
+  return `<div class="sum-wx">${wxIcon(d.weather_code[ti])} <b>${Math.round(d.temperature_2m_max[ti])}°</b> today · <span class="adot a${v.lv}"></span>${short}</div>`;
+}
+function renderWeather(){renderSummary();if(curView==='jobs')renderJobs();}
 
 function logWatered(){
   const td=localDate();
   if(ST.lastWatered===td){ST.lastWatered=ST.prevWatered||null;toast('Watering log undone');}
   else{ST.prevWatered=ST.lastWatered||null;ST.lastWatered=td;toast('💧 Logged — clock reset');}
-  saveState();renderWeather();renderAlerts();renderView();
+  saveState();renderSummary();renderAlerts();renderView();
 }
 
 // ── Location (Settings) ──

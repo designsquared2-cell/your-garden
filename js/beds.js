@@ -19,6 +19,23 @@ function renderBeds(){
     +(selectMode?'':'<button class="add-bed" onclick="openBedEditor()">＋ Add a bed</button>');
 }
 
+// ── Summary ── weather at a glance, how things are growing, links to Jobs and Pests
+const SUM_ST=[['seed','🌱','Seeds'],['seedling','🪴','Seedlings'],['growing','🌿','Growing'],['ready','✨','Ready'],['bolting','⚠️','Bolting'],['done','✅','Finished']];
+function renderSummary(){
+  const el=$('beds-summary');
+  if(!ST.beds.length){el.innerHTML='';return;}
+  const cells=plantedCells(),empty=allCells().length-cells.length;
+  const counts=SUM_ST.map(([s,e,l])=>[s,e,l,cells.filter(x=>x.cell.s===s).length]).filter(x=>x[3]);
+  const urgent=urgentItems().length,jobs=jobCount(),pests=pestsToWatch().length;
+  el.innerHTML=`<div class="sum">
+    ${wxLoc()?weatherLineHtml():`<button class="sum-wx sum-link" onclick="openSettings()">📍 Set your location for watering advice ›</button>`}
+    <div class="sum-counts">${counts.map(([s,e,l,n])=>`<span class="sum-c sc-${s}"><b>${n}</b> ${e} ${l}</span>`).join('')}${empty?`<span class="sum-c sc-empty"><b>${empty}</b> ▫️ Empty</span>`:''}</div>
+    <div class="sum-links">
+      <button class="sum-go${urgent?' hot':''}" onclick="setView('jobs')">🐝 ${jobs?`${plural(jobs,'job')}${urgent?` · ${urgent} urgent`:''}`:'No jobs'} ›</button>
+      <button class="sum-go" onclick="setView('pests')">🐛 ${pests?`${plural(pests,'pest')} to watch`:'Pest guide'} ›</button>
+    </div></div>`;
+}
+
 // ── Add / edit beds ──
 const BED_MAX_ROWS=8,BED_MAX_COLS=10;
 const emptyCell=()=>({p:null,s:'empty',d:null,st:null,picks:0});
@@ -156,7 +173,7 @@ function openCellSheet(bi,ri,ci){
       <button class="btn btn-seed${canPick?'':' btn-full'}" onclick="finishPlant(${a})">${cell.s==='done'?'🧹 Clear this spot':'✅ Finished'}</button>
     </div>
     <div class="sh-hint">${cell.s==='done'?'Finished plants stay until you clear them.':canPick&&keepsProducing(cell.p)?'Picking keeps the plant growing. Finished clears the spot.':'Finished logs the harvest and clears the spot.'}</div>
-    ${plantPestsHtml(cell.p,bi)}
+    <button class="btn btn-cancel btn-full" style="margin-bottom:12px" onclick="openPestsFor('${cell.p}')">🐛 Something wrong with this plant?</button>
     <div class="stat-lbl">Status</div>
     <div class="stat-grid">${STATUSES.map(s=>`<button class="stat-opt so-${s}${cell.s===s?' sel':''}" onclick="doUpdateStatus(${a},'${s}')">${STATUS_LBL[s]}</button>`).join('')}</div>
     <div class="btn-row">
