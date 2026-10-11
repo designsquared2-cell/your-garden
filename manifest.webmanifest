@@ -1,0 +1,15 @@
+{
+  "name": "Garden — Bed Planner",
+  "short_name": "Garden",
+  "description": "Bed planner, tasks and watering for a Perth Hills garden",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#0F1A08",
+  "theme_color": "#1A2D10",
+  "icons": [
+    { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any maskable" },
+    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
+  ]
+}

@@ -1,0 +1,212 @@
+// Beds view: grid, select mode, drag & drop, plant sheet, plant picker, custom plant form.
+'use strict';
+const CELL_KEYS=['p','s','d','st','picks'];
+const cellData=c=>Object.fromEntries(CELL_KEYS.map(k=>[k,c[k]??null]));
+
+// ── Grid ──
+function renderBeds(){
+  const w=$('beds-wrap');w.classList.toggle('sel-mode',selectMode);
+  w.innerHTML=ST.beds.map((bed,bi)=>`<div class="bed-wrap"><div class="bed-card"><div class="bed-top ${bed.cls}"><div class="bed-name">${bed.name}</div></div><div class="grid-bg">${bed.rows.map((row,ri)=>`<div class="grid-row">${row.map((cell,ci)=>renderCell(cell,bi,ri,ci)).join('')}</div>`).join('')}</div></div></div>`).join('');
+}
+function renderCell(cell,bi,ri,ci){
+  const pl=isEmpty(cell)?null:P[cell.p];const s=pl?cell.s:'empty';const sel=selectMode&&selected.has(`${bi}-${ri}-${ci}`);
+  const pip={ready:'pip-r',bolting:'pip-b',done:'pip-d'}[s];
+  return `<div class="cell s-${s}${sel?' selected':''}" id="cell-${bi}-${ri}-${ci}" data-bi="${bi}" data-ri="${ri}" data-ci="${ci}" role="button" tabindex="0" aria-label="${pl?pl.n+', '+STATUS_LBL[s]:'Empty — tap to plant'}" onpointerdown="cellPD(event,${bi},${ri},${ci})" onclick="cellClick(${bi},${ri},${ci})" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();cellClick(${bi},${ri},${ci});}"><div class="cell-chk">${sel?'✓':''}</div>${pip?`<div class="cell-pip ${pip}"></div>`:''}<div class="cell-e">${pl?pl.e:'＋'}</div><div class="cell-n">${pl?pl.n:''}</div></div>`;
+}
+function cellClick(bi,ri,ci){if(suppressClick)return;if(selectMode)toggleSelect(bi,ri,ci);else if(isEmpty(getCell(bi,ri,ci)))openPicker(bi,ri,ci);else openCellSheet(bi,ri,ci);}
+
+// ── Select mode ──
+let selectMode=false;
+const selected=new Set();
+function toggleSelectMode(){
+  selectMode=!selectMode;selected.clear();updateSelCount();
+  const fab=$('sel-fab');fab.classList.toggle('on',selectMode);fab.textContent=selectMode?'✓ Selecting':'✓ Select';
+  $('sel-bar').classList.toggle('on',selectMode);$('main-nav').style.display=selectMode?'none':'flex';
+  renderBeds();
+}
+function exitSelectMode(){if(selectMode)toggleSelectMode();}
+function updateSelCount(){$('sel-count').textContent=selected.size+' selected';}
+function toggleSelect(bi,ri,ci){const k=`${bi}-${ri}-${ci}`;selected.has(k)?selected.delete(k):selected.add(k);renderBeds();updateSelCount();}
+function selectedCells(){return[...selected].map(k=>k.split('-').map(Number)).filter(([bi,ri,ci])=>!isEmpty(getCell(bi,ri,ci)));}
+function openMultiStatus(){
+  const n=selectedCells().length;if(!n){toast('Select some plants first');return;}
+  showSheet(`<div class="sh-body"><div class="sh-heading">Update ${plural(n,'plant')}</div><div class="sh-sub">Set status for all selected spots</div><div class="stat-grid">${STATUSES.map(s=>`<button class="stat-opt so-${s}" onclick="doMultiStatus('${s}')">${STATUS_LBL[s]}</button>`).join('')}</div><button class="btn btn-cancel btn-full" onclick="closeSheet()">Cancel</button></div>`);
+}
+function doMultiStatus(s){const cs=selectedCells();cs.forEach(([bi,ri,ci])=>setCell(bi,ri,ci,{s}));closeSheet();exitSelectMode();renderAlerts();toast(`Updated ${plural(cs.length,'plant')}`);}
+function doMultiRemove(){
+  const cs=selectedCells();if(!cs.length){toast('Select some plants first');return;}
+  snapshot();cs.forEach(([bi,ri,ci])=>clearCell(bi,ri,ci));exitSelectMode();renderAlerts();
+  toast(`Removed ${plural(cs.length,'plant')}`,{undo:true});
+}
+
+// ── Drag to move/swap ── Mouse: starts after a small move. Touch: press-and-hold 300ms so normal swipes still scroll.
+let DS=null,suppressClick=false;
+function cellPD(e,bi,ri,ci){
+  if(selectMode||e.button>0||isEmpty(getCell(bi,ri,ci)))return;
+  DS={src:{bi,ri,ci},x:e.clientX,y:e.clientY,active:false,ghost:null,touch:e.pointerType!=='mouse',timer:null};
+  if(DS.touch)DS.timer=setTimeout(()=>startDrag(DS.x,DS.y),300);
+}
+function startDrag(x,y){
+  if(!DS||DS.active)return;
+  DS.active=true;const{bi,ri,ci}=DS.src;
+  const g=document.createElement('div');g.className='drag-ghost';g.textContent=P[getCell(bi,ri,ci).p].e;
+  g.style.left=(x-28)+'px';g.style.top=(y-28)+'px';document.body.appendChild(g);DS.ghost=g;
+  $(`cell-${bi}-${ri}-${ci}`)?.classList.add('dragging');navigator.vibrate?.(15);
+}
+function dropTarget(x,y){return document.elementFromPoint(x,y)?.closest?.('.cell[data-bi]')||null;}
+function endDrag(){
+  if(!DS)return;clearTimeout(DS.timer);DS.ghost?.remove();
+  document.querySelectorAll('.cell.drag-over,.cell.dragging').forEach(c=>c.classList.remove('drag-over','dragging'));
+  DS=null;
+}
+document.addEventListener('pointermove',e=>{
+  if(!DS)return;
+  if(!DS.active){
+    if(Math.hypot(e.clientX-DS.x,e.clientY-DS.y)<8)return;
+    if(DS.touch){endDrag();return;} // moved before the hold finished → it's a scroll
+    startDrag(e.clientX,e.clientY);
+  }
+  DS.ghost.style.left=(e.clientX-28)+'px';DS.ghost.style.top=(e.clientY-28)+'px';
+  document.querySelectorAll('.cell.drag-over').forEach(c=>c.classList.remove('drag-over'));
+  const tc=dropTarget(e.clientX,e.clientY);const{bi,ri,ci}=DS.src;
+  if(tc&&tc.id!==`cell-${bi}-${ri}-${ci}`)tc.classList.add('drag-over');
+});
+document.addEventListener('pointerup',e=>{
+  if(!DS)return;
+  if(DS.active){
+    suppressClick=true;setTimeout(()=>suppressClick=false,0);
+    const src=DS.src,tc=dropTarget(e.clientX,e.clientY);
+    if(tc&&tc.id!==`cell-${src.bi}-${src.ri}-${src.ci}`){
+      const tbi=+tc.dataset.bi,tri=+tc.dataset.ri,tci=+tc.dataset.ci;
+      const a=cellData(getCell(src.bi,src.ri,src.ci)),b=cellData(getCell(tbi,tri,tci));
+      setCell(src.bi,src.ri,src.ci,b);setCell(tbi,tri,tci,a);
+      endDrag();renderBeds();renderAlerts();toast(isEmpty(b)?'Moved '+plantName(a.p):'Plants swapped ↔');return;
+    }
+  }
+  endDrag();
+});
+document.addEventListener('pointercancel',endDrag);
+// Once a touch drag is live, stop the page scrolling under the finger
+document.addEventListener('touchmove',e=>{if(DS?.active)e.preventDefault();},{passive:false});
+document.addEventListener('contextmenu',e=>{if(DS)e.preventDefault();});
+
+// ── Plant sheet ──
+function openCellSheet(bi,ri,ci){
+  const cell=getCell(bi,ri,ci),pl=P[cell.p],td=localDate();
+  const days=cell.d?daysBetween(cell.d,td):null;
+  const readyTxt={'Ready now':'Now','Picking season':'Picking','Ready about now':'Any day','Finished':'—'}[readyLabel(cell,true)]??readyLabel(cell,true);
+  const canPick=['growing','ready','bolting'].includes(cell.s);
+  const a=`${bi},${ri},${ci}`;
+  showSheet(`<div class="sh-plant-hdr"><div class="sh-pe">${pl.e}</div><div><div class="sh-pn">${pl.n}</div><span class="sh-stag tg-${cell.s}">${STATUS_LBL[cell.s]}</span>${cell.picks?`<span class="sh-picks">🧺 ${plural(cell.picks,'pick')}</span>`:''}</div></div>
+  <div class="sh-body">
+    <div class="sh-chips"><div class="sh-chip"><div class="sh-cl">Season</div><div class="sh-cv" style="color:#C49010">${pl.h}</div></div><div class="sh-chip"><div class="sh-cl">In ground</div><div class="sh-cv">${days!==null?days+'d':'—'}</div></div><div class="sh-chip"><div class="sh-cl">Ready</div><div class="sh-cv">${readyTxt}</div></div></div>
+    <div class="sh-tip">💡 ${pl.tip}</div>
+    ${pl.nx&&P[pl.nx]?`<div class="sh-next"><div class="sh-nl">→ Plant next</div><div class="sh-nv">${P[pl.nx].e} ${P[pl.nx].n} — ${P[pl.nx].h}</div></div>`:''}
+    <div class="btn-row">
+      ${canPick?`<button class="btn btn-harvest" onclick="pickSome(${a})">🧺 Picked some</button>`:''}
+      <button class="btn btn-seed${canPick?'':' btn-full'}" onclick="finishPlant(${a})">${cell.s==='done'?'🧹 Clear this spot':'✅ Finished'}</button>
+    </div>
+    <div class="sh-hint">${cell.s==='done'?'Finished plants stay until you clear them.':canPick&&keepsProducing(cell.p)?'Picking keeps the plant growing. Finished clears the spot.':'Finished logs the harvest and clears the spot.'}</div>
+    <div class="stat-lbl">Status</div>
+    <div class="stat-grid">${STATUSES.map(s=>`<button class="stat-opt so-${s}${cell.s===s?' sel':''}" onclick="doUpdateStatus(${a},'${s}')">${STATUS_LBL[s]}</button>`).join('')}</div>
+    <div class="btn-row">
+      ${pl.custom?`<button class="btn btn-cancel" onclick="openNewPlant('${cell.p}',${a})">✏️ Edit plant</button>`:''}
+      <button class="btn btn-cancel${pl.custom?'':' btn-full'}" onclick="removePlant(${a})">🗑️ Remove</button>
+    </div>
+    <button class="btn btn-cancel btn-full" onclick="closeSheet()">Close</button>
+  </div>`);
+}
+function doUpdateStatus(bi,ri,ci,s){setCell(bi,ri,ci,{s});closeSheet();refreshAll();toast(`${plantName(getCell(bi,ri,ci).p)} → ${STATUS_LBL[s]}`);}
+function pickSome(bi,ri,ci){
+  snapshot();const c=getCell(bi,ri,ci);
+  c.picks++;logHarvest(c.p,bi,false);ST.alertDone[`${c.p}:${c.s}`]=localDate();saveState();
+  confettiAt(innerWidth/2,innerHeight*.6);closeSheet();refreshAll();toast(`🧺 Logged a pick of ${plantName(c.p)}`,{undo:true});
+}
+function finishPlant(bi,ri,ci){
+  snapshot();const c=getCell(bi,ri,ci),p=c.p,nx=P[p].nx;
+  if(c.s!=='done'&&!['seed','seedling'].includes(c.s)){logHarvest(p,bi,true);celebrate();}
+  clearCell(bi,ri,ci);closeSheet();refreshAll();
+  toast(nx?`🎉 ${plantName(p)} done — try ${plantName(nx)} next`:`🎉 ${plantName(p)} done — spot cleared`,{undo:true});
+}
+function removePlant(bi,ri,ci){snapshot();const p=getCell(bi,ri,ci).p;clearCell(bi,ri,ci);closeSheet();refreshAll();toast('Removed '+plantName(p),{undo:true});}
+
+// ── Picker ──
+let _pk=null;
+function openPicker(bi,ri,ci,q=''){
+  _pk={bi,ri,ci};
+  showSheet(`<div class="sh-body"><div class="sh-heading">🌱 Plant here</div><div class="sh-sub">${ST.beds[bi].name}</div><input class="pick-search" id="pick-q" type="search" placeholder="🔍 Search plants…" autocomplete="off" value="${esc(q)}" oninput="renderPickerGrid(this.value)" onkeydown="if(event.key==='Enter'){event.preventDefault();pickEnter();}"><div class="picker-grid" id="pick-grid"></div><button class="btn btn-cancel btn-full" style="margin-top:14px" onclick="closeSheet()">Cancel</button></div>`);
+  renderPickerGrid(q);
+  if(!('ontouchstart' in window))setTimeout(()=>$('pick-q')?.focus(),280);
+}
+function pickerMatches(q){const t=q.trim().toLowerCase();return Object.entries(CATS).map(([cat,keys])=>[cat,keys.filter(k=>P[k]&&(!t||plantName(k).toLowerCase().includes(t)))]);}
+function pickTile(k,why,extra=''){const{bi,ri,ci}=_pk;return `<button class="pick-item${extra}" onclick="choosePlant(${bi},${ri},${ci},'${k}')"><div class="pick-e">${P[k].e}</div><div class="pick-n">${P[k].n}</div>${why?`<div class="pick-why">${esc(why)}</div>`:''}</button>`;}
+function renderPickerGrid(q){
+  const{bi}=_pk,t=q.trim();
+  const groups=pickerMatches(t),total=groups.reduce((n,[,ks])=>n+ks.length,0);
+  let html='';
+  if(!t){const sug=suggestForBed(bi);if(sug.length)html+=`<div class="picker-cat">✨ Suggested for this bed</div>${sug.map(s=>pickTile(s.k,s.why,' pick-sug')).join('')}`;}
+  html+=groups.filter(([,ks])=>ks.length).map(([cat,ks])=>`<div class="picker-cat">${CAT_LBL[cat]}</div>${ks.map(k=>pickTile(k,inSeason(k)?'':'out of season',inSeason(k)?'':' pick-off')).join('')}`).join('');
+  if(t&&!total)html=`<div class="pick-empty">No “${esc(t)}” in your list yet — add it below.</div>`;
+  const exact=groups.some(([,ks])=>ks.some(k=>plantName(k).toLowerCase()===t.toLowerCase()));
+  if(!exact)html+=`<div class="picker-cat">${total?'Not in the list?':'New plant'}</div><button class="pick-item pick-new" onclick="openNewPlant()"><div class="pick-e">＋</div><div class="pick-n">${t?`Add “${esc(t)}”`:'Add a new plant'}</div></button>`;
+  $('pick-grid').innerHTML=html;
+}
+function pickEnter(){
+  const t=$('pick-q').value.trim();if(!t)return;
+  const ks=pickerMatches(t).flatMap(([,k])=>k);
+  if(ks.length===1)choosePlant(_pk.bi,_pk.ri,_pk.ci,ks[0]);else if(!ks.length)openNewPlant();
+}
+let _pend=null;
+function choosePlant(bi,ri,ci,key){
+  _pend={bi,ri,ci,key};const pl=P[key];
+  showSheet(`<div class="sh-body"><div class="ptc-emoji">${pl.e}</div><div class="ptc-name">${pl.n}</div><div class="ptc-hw">Harvest: ${pl.h}${inSeason(key)?'':' · <span style="color:#FF9060">out of season now</span>'}</div><div class="ptc-q">How are you starting it?</div><div class="btn-row"><button class="btn btn-seed" onclick="confirmPlant('seed')">🌱 Direct seed</button><button class="btn btn-sdlng" onclick="confirmPlant('seedling')">🪴 Seedling</button></div><button class="btn btn-cancel btn-full" style="margin-top:8px" onclick="openPicker(${bi},${ri},${ci})">← Back</button></div>`);
+}
+function confirmPlant(st){
+  if(!_pend)return;const{bi,ri,ci,key}=_pend;_pend=null;
+  setCell(bi,ri,ci,{p:key,s:st,st,d:localDate(),picks:0});closeSheet();refreshAll();
+  const exp=expectedDate(getCell(bi,ri,ci));
+  toast(`🌱 Planted ${plantName(key)}${exp?` — ready ~${fmtDate(exp)}`:''}`);
+}
+
+// ── New / edit custom plant ──
+let _np=null;
+function openNewPlant(editKey,bi,ri,ci){
+  const q=$('pick-q')?.value.trim()||'';
+  const c=editKey?ST.customPlants[editKey]:{n:q,e:'',cat:inSeason('tomatoes')?'warm':'cool',h:'',tip:'',idea:'',nx:'',days:'',pick:false};
+  _np=editKey?{key:editKey,bi,ri,ci,cat:c.cat}:{key:null,..._pk,cat:c.cat};
+  const nxOpts=Object.keys(P).filter(k=>k!==editKey).sort((a,b)=>plantName(a).localeCompare(plantName(b)));
+  const back=editKey?`openCellSheet(${bi},${ri},${ci})`:`openPicker(${_pk.bi},${_pk.ri},${_pk.ci},$('np-n').value)`;
+  showSheet(`<div class="sh-body">
+    <div class="sh-heading">${editKey?'✏️ Edit plant':'＋ New plant'}</div>
+    <div class="sh-sub">${editKey?'Changes show everywhere this plant appears':'Saved to your plant list for next time'}</div>
+    <div class="fm-lbl">Name</div><input class="fm-in" id="np-n" maxlength="40" placeholder="e.g. Purple Sprouting Broccoli" value="${esc(c.n)}">
+    <div class="fm-lbl">Icon</div>
+    <div class="fm-emoji-row"><input class="fm-in fm-emoji-in" id="np-e" maxlength="8" placeholder="🌱" value="${esc(c.e)}"><div class="fm-emojis">${NP_EMOJI.map(e=>`<button class="fm-emo" onclick="$('np-e').value='${e}'">${e}</button>`).join('')}</div></div>
+    <div class="fm-lbl">Type</div>
+    <div class="fm-cats">${Object.entries(CAT_LBL).map(([k,l])=>`<button class="fm-cat${c.cat===k?' sel':''}" data-cat="${k}" onclick="npCat('${k}')">${l}</button>`).join('')}</div>
+    <div class="fm-2col"><div><div class="fm-lbl">Harvest window</div><input class="fm-in" id="np-h" maxlength="20" placeholder="e.g. Dec–Feb" value="${esc(c.h)}"></div>
+    <div><div class="fm-lbl">Days to harvest</div><input class="fm-in" id="np-days" type="number" min="7" max="400" inputmode="numeric" placeholder="e.g. 60" value="${esc(c.days)}"></div></div>
+    <label class="fm-check"><input type="checkbox" id="np-pick"${c.pick?' checked':''}> Keeps producing — pick from it repeatedly</label>
+    <div class="fm-lbl">Growing tip</div><textarea class="fm-in" id="np-tip" rows="2" placeholder="Spacing, watering, when to pick…">${esc(c.tip)}</textarea>
+    <div class="fm-lbl">When you harvest, try…</div><textarea class="fm-in" id="np-idea" rows="2" placeholder="Your favourite way to eat it">${esc(c.idea)}</textarea>
+    <div class="fm-lbl">Plant next (optional)</div>
+    <select class="fm-in" id="np-nx"><option value="">— None —</option>${nxOpts.map(k=>`<option value="${k}"${c.nx===k?' selected':''}>${P[k].n}</option>`).join('')}</select>
+    <div class="btn-row" style="margin-top:16px"><button class="btn btn-cancel" onclick="${back}">← Back</button><button class="btn btn-seed" onclick="saveNewPlant()">${editKey?'💾 Save':'🌱 Save & plant'}</button></div>
+  </div>`);
+  if(!editKey&&!('ontouchstart' in window))setTimeout(()=>$(q?'np-h':'np-n')?.focus(),50);
+}
+function npCat(k){_np.cat=k;document.querySelectorAll('.fm-cat').forEach(b=>b.classList.toggle('sel',b.dataset.cat===k));}
+function saveNewPlant(){
+  const v=id=>$(id).value.trim();
+  const n=v('np-n');if(!n){toast('Give your plant a name');$('np-n').focus();return;}
+  if(!_np.key){
+    const dup=Object.keys(P).find(k=>plantName(k).toLowerCase()===n.toLowerCase());
+    if(dup){toast(`${plantName(dup)} is already in your list`);choosePlant(_np.bi,_np.ri,_np.ci,dup);return;}
+  }
+  let key=_np.key;
+  if(!key){const base='c-'+(n.toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'')||'plant');key=base;let i=2;while(P[key])key=base+'-'+i++;}
+  ST.customPlants[key]={n,e:v('np-e')||'🌱',cat:_np.cat,h:v('np-h'),days:v('np-days'),pick:$('np-pick').checked,tip:v('np-tip'),idea:v('np-idea'),nx:v('np-nx')};
+  saveState();applyCustomPlants();
+  if(_np.key){const{bi,ri,ci}=_np;refreshAll();openCellSheet(bi,ri,ci);toast('Saved '+n);}
+  else choosePlant(_np.bi,_np.ri,_np.ci,key);
+}
