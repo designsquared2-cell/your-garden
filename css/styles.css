@@ -380,3 +380,32 @@ button.sow-chip:hover{border-color:#5A9A3A}
 .hu-row{font-size:11.5px;color:#C8D8B0;line-height:1.5;padding:4px 0}
 .hu-row.bad{color:#FFB48A}
 .hu-row.good{color:#A0D870}
+/* Harvest tab */
+.hv-card{background:linear-gradient(135deg,#2A3A10,#3A2E08);border:1px solid #6A5A18;border-radius:14px;padding:14px 15px 8px;margin-bottom:16px}
+.hv-card.empty{background:#182210;border-color:#3A5C22;padding-bottom:12px}
+.hv-lbl{font-size:10px;font-weight:900;letter-spacing:1.5px;text-transform:uppercase;color:#E0B040}
+.hv-big{font-size:32px;font-weight:900;color:#FFE08A;line-height:1.15}
+.hv-card.empty .hv-big{font-size:20px;color:#F0E6CC}
+.hv-sub{font-size:12px;color:#D8C890;line-height:1.5;margin-top:2px}
+.hv-card.empty .hv-sub{color:#8A9A70}
+.hv-top{display:flex;flex-wrap:wrap;gap:6px;margin:10px 0 2px}
+.hv-top span{background:rgba(0,0,0,.25);border-radius:10px;padding:3px 9px;font-size:11.5px;color:#F0E6CC}
+.hv-top b{color:#FFE08A}
+.hv-card .link-btn{color:#C8B070;font-size:10.5px;padding:6px 0 2px}
+.hv-note{font-size:11px;color:#5A7040;margin:-3px 0 7px}
+.hv-list{background:#182210;border-radius:11px;overflow:hidden}
+.hv-row{display:flex;align-items:center;gap:10px;width:100%;background:none;border:none;border-top:1px solid rgba(255,255,255,.05);padding:10px 12px;font-family:inherit;color:inherit;text-align:left;cursor:pointer}
+.hv-row:first-child{border-top:none}
+.hv-row:hover{background:rgba(255,255,255,.03)}
+.hv-e{font-size:22px;line-height:1}
+.hv-mid{flex:1;min-width:0;display:flex;flex-direction:column}
+.hv-n{font-size:13px;font-weight:800}
+.hv-m{font-size:10.5px;color:#7A9060;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.hv-w{font-size:11px;color:#C49010;font-weight:800;white-space:nowrap}
+.hv-go{color:#5A7040;font-size:16px}
+.hv-log{display:flex;justify-content:space-between;gap:8px;padding:8px 12px;font-size:12px;border-top:1px solid rgba(255,255,255,.05)}
+.hv-log:first-child{border-top:none}
+.hlog-f{font-size:9px;color:#8BAA6B;background:rgba(58,92,34,.3);padding:1px 6px;border-radius:6px;margin-left:4px}
+.price-row{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:7px 0;border-bottom:1px solid rgba(255,255,255,.05);font-size:13px}
+.price-in{display:flex;align-items:center;gap:4px;color:#8BAA6B;font-weight:800}
+.price-in .fm-in{width:80px;padding:6px 8px;text-align:right}

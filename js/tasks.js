@@ -1,4 +1,4 @@
-// Tasks: one list feeds both "Needs attention" (Beds) and "This Month".
+// Tasks: one list feeds the Jobs tab, the header urgent pill and the Jobs badge.
 // Everything is generated from the beds, plant timing and weather, so it works in any month for any garden:
 // plant alerts (ready/bolting), watering, finished plants to clear, one-off crops due, empty spots, upcoming harvests, next month's sowing.
 // Item: {kind:'plant'|'auto'|'water', id, type:'urgent'|'soon'|'coming', title, detail, cb, btn, icon}
@@ -78,11 +78,12 @@ function tickItem(kind,id,btn){
 // Ticking a ready/bolting alert = a harvest. Repeat croppers stay put; one-off and bolting crops become "finished".
 function harvestFromAlert(k){
   const[p,s]=k.split(':');const finish=s==='bolting'||!keepsProducing(p);
-  const beds=new Set();
-  plantedCells().filter(x=>x.cell.p===p&&x.cell.s===s).forEach(x=>{x.cell.picks++;if(finish)x.cell.s='done';beds.add(x.bi);});
-  beds.forEach(bi=>logHarvest(p,bi,finish));
+  const beds=new Map();
+  plantedCells().filter(x=>x.cell.p===p&&x.cell.s===s).forEach(x=>{x.cell.picks++;if(finish)x.cell.s='done';beds.set(x.bi,(beds.get(x.bi)||0)+1);});
+  let n=0;beds.forEach((c,bi)=>{logHarvest(p,bi,finish,c);n+=c;});
   ST.alertDone[k]=localDate();
-  return finish?`🧺 Harvested ${plantName(p)} — marked finished`:`🧺 Logged a pick of ${plantName(p)}`;
+  const v=priceOf(p)*n?` (+${money(priceOf(p)*n)})`:'';
+  return finish?`🧺 Harvested ${plantName(p)}${v} — marked finished`:`🧺 Logged a pick of ${plantName(p)}${v}`;
 }
 function runAuto(id){
   const[type,bi,p]=id.split(':');

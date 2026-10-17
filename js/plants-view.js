@@ -51,7 +51,7 @@ function plantGuideHtml(k,td){
   // Most advanced cell wins: ready beats picking season beats a future date
   const rank=c=>['ready','bolting'].includes(c.s)?0:c.s==='done'?3:expectedDate(c)&&expectedDate(c)<=td?1:2;
   const lead=cells.map(x=>x.cell).sort((a,b)=>rank(a)-rank(b)||(expectedDate(a)||'z').localeCompare(expectedDate(b)||'z'))[0];
-  return `<div class="bpc" onclick="openPlantInfo('${k}')"><div class="bpc-top"><div class="bpc-emoji">${pl.e}</div><div><div class="bpc-name">${pl.n}</div><div class="bpc-hw">${readyLabel(lead)}${picks.length?` · 🧺 ${plural(picks.length,'pick')}, last ${fmtDate(last.d)}`:''}</div></div></div><div class="bpc-body"><div class="bpc-tip">${pl.tip}</div><div class="bpc-harvest"><div class="bpc-harvest-lbl">When you harvest, try…</div><div class="bpc-harvest-txt">${pl.idea}</div></div></div></div>`;
+  return `<div class="bpc" onclick="openGrowing('${k}')"><div class="bpc-top"><div class="bpc-emoji">${pl.e}</div><div><div class="bpc-name">${pl.n}</div><div class="bpc-hw">${readyLabel(lead)}${picks.length?` · 🧺 ${plural(picks.length,'pick')}, last ${fmtDate(last.d)}`:''}</div></div></div><div class="bpc-body"><div class="bpc-tip">${pl.tip}</div><div class="bpc-harvest"><div class="bpc-harvest-lbl">When you harvest, try…</div><div class="bpc-harvest-txt">${pl.idea}</div></div></div></div>`;
 }
 function renderLibrary(){
   const t=_libQ.trim().toLowerCase(),m=curMonth();
@@ -77,7 +77,8 @@ function openPlantInfo(k){
   showSheet(`<div class="sh-body"><div class="sh-sticky"><div class="sh-toprow"><div class="pi-hdr"><span class="sh-pe">${pl.e}</span><div><div class="sh-pn">${pl.n}</div><div class="sh-sub">${inSeason(k,m)?'<span class="now-tag">plant now</span>':`Not the season to plant`}${fam?` · ${FAM_LBL[fam]}`:''}${growing.length?` · growing in ${[...new Set(growing.map(x=>esc(x.bed.name)))].join(', ')}`:''}</div></div></div><button class="sh-cancel" onclick="closeSheet()">✕ Close</button></div></div>
     <div class="pi-facts">${facts.map(([a,b])=>`<div><div class="sh-cl">${a}</div><div class="pi-v">${b}</div></div>`).join('')}</div>
     <div class="sh-tip">💡 ${pl.tip}</div>
-    <div class="bpc-harvest" style="margin-bottom:12px"><div class="bpc-harvest-lbl">When you harvest, try…</div><div class="bpc-harvest-txt">${pl.idea}</div></div>
+    ${readySignHtml(k)}
+    ${recipesHtml(k)}
     ${pl.nx&&P[pl.nx]?`<div class="sh-next"><div class="sh-nl">→ Plant next</div><div class="sh-nv">${P[pl.nx].e} ${P[pl.nx].n} — ${P[pl.nx].h}</div></div>`:''}
     ${behaviourHtml(k)}
     ${pests.length?`<div class="set-txt">🐛 Can be bothered by ${pests.map(p=>p.n.toLowerCase()).join(', ')}. <button class="link-btn" onclick="openPestsFor('${k}')">See the Pests tab ›</button></div>`:''}

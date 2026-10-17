@@ -16,7 +16,7 @@ function plural(n,w){return `${n} ${w}${n===1?'':'s'}`;}
 // ── Load / save ──
 // Fill in fields added since older saves, so old data keeps working.
 function migrate(s){
-  s.beds??=[];s.customPlants??={};s.alertDone??={};s.log??=[];s.pestDone??={};s.pestReports??=[];s.guardDone??={};s.prefs??={};
+  s.beds??=[];s.customPlants??={};s.alertDone??={};s.log??=[];s.pestDone??={};s.pestReports??=[];s.guardDone??={};s.prefs??={};s.prices??={};
   delete s.taskState;
   s.beds.forEach(b=>{
     b.id??=newId();
@@ -83,7 +83,7 @@ function expectedDate(cell){
   return addDays(cell.d,cell.st==='seed'?t.days:Math.max(14,t.days-21));
 }
 
-// Short "when" label, shared by the plant sheet, This Month recap and Plants tab
+// Short "when" label, shared by the plant sheet, Harvest and Plants tabs
 function readyLabel(cell,short){
   const pl=P[cell.p],exp=expectedDate(cell);
   if(cell.s==='ready'||cell.s==='bolting')return'Ready now';
@@ -99,7 +99,8 @@ function overdueOneOff(cell){
 }
 
 // ── Harvest log ──
-function logHarvest(p,bi,final){
-  ST.log.push({d:localDate(),p,bid:ST.beds[bi].id,f:final?1:0});
+// n = how many plants this harvest came from (for the harvest value)
+function logHarvest(p,bi,final,n=1){
+  ST.log.push({d:localDate(),p,bid:ST.beds[bi].id,f:final?1:0,n});
   if(ST.log.length>1000)ST.log=ST.log.slice(-1000);
 }

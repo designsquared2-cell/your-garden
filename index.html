@@ -12,7 +12,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="css/styles.css?v=8">
+<link rel="stylesheet" href="css/styles.css?v=10">
 </head>
 <body>
 <header class="hdr">
@@ -38,14 +38,14 @@
     <div class="beds-hint">Drag a plant to move it (on phones, press and hold first) · Tap Select to edit several at once</div>
   </section>
   <section class="view" id="view-jobs"><div id="jobs-content"></div></section>
-  <section class="view" id="view-month"><div id="month-content"></div></section>
+  <section class="view" id="view-harvest"><div id="harvest-content"></div></section>
   <section class="view" id="view-plants"><div id="plants-content"></div></section>
   <section class="view" id="view-pests"><div id="pests-content"></div></section>
 </main>
 <nav class="nav" id="main-nav">
   <button class="nav-btn active" data-view="beds" onclick="setView('beds')"><span class="nav-icon">🌿</span>Beds</button>
   <button class="nav-btn" data-view="jobs" onclick="setView('jobs')"><span class="nav-icon">🐝<span class="nav-badge" id="jobs-badge" hidden>0</span></span>Jobs</button>
-  <button class="nav-btn" data-view="month" onclick="setView('month')"><span class="nav-icon">📅</span>This Month</button>
+  <button class="nav-btn" data-view="harvest" onclick="setView('harvest')"><span class="nav-icon">🧺</span>Harvest</button>
   <button class="nav-btn" data-view="plants" onclick="setView('plants')"><span class="nav-icon">🌱</span>Plants</button>
   <button class="nav-btn" data-view="pests" onclick="setView('pests')"><span class="nav-icon">🐛</span>Pests</button>
 </nav>
@@ -62,17 +62,17 @@
 <div id="confetti"></div>
 
 <!-- Plain scripts (no build step); order matters: data → state → UI → features → startup -->
-<script src="js/data.js?v=8"></script>
-<script src="js/state.js?v=8"></script>
-<script src="js/ui.js?v=8"></script>
-<script src="js/weather.js?v=8"></script>
-<script src="js/pests.js?v=8"></script>
-<script src="js/tasks.js?v=8"></script>
-<script src="js/month.js?v=8"></script>
-<script src="js/plants-view.js?v=8"></script>
-<script src="js/behaviour.js?v=8"></script>
-<script src="js/beds.js?v=8"></script>
-<script src="js/settings.js?v=8"></script>
-<script src="js/main.js?v=8"></script>
+<script src="js/data.js?v=10"></script>
+<script src="js/state.js?v=10"></script>
+<script src="js/ui.js?v=10"></script>
+<script src="js/weather.js?v=10"></script>
+<script src="js/pests.js?v=10"></script>
+<script src="js/tasks.js?v=10"></script>
+<script src="js/harvest.js?v=10"></script>
+<script src="js/plants-view.js?v=10"></script>
+<script src="js/behaviour.js?v=10"></script>
+<script src="js/beds.js?v=10"></script>
+<script src="js/settings.js?v=10"></script>
+<script src="js/main.js?v=10"></script>
 </body>
 </html>

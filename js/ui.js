@@ -37,9 +37,9 @@ function setView(name){
   document.querySelectorAll('.nav-btn').forEach(b=>b.classList.toggle('active',b.dataset.view===name));
   renderView();window.scrollTo(0,0);
 }
-// Each tab has one job: Beds = summary + layout, Jobs = everything to do, This Month = what's in the beds,
+// Each tab has one job: Beds = summary + layout, Jobs = everything to do, Harvest = what's ready & what it's worth,
 // Plants = plant information, Pests = identifying and learning about pests.
-function renderView(){({jobs:renderJobs,month:renderMonthly,plants:renderPlants,pests:renderPests})[curView]?.();}
+function renderView(){({jobs:renderJobs,harvest:renderHarvest,plants:renderPlants,pests:renderPests})[curView]?.();}
 // Re-render everything that depends on state
 function refreshAll(){renderBeds();renderSummary();renderAlerts();renderView();}
 function updateHeader(){const d=new Date();$('hdr-sub').textContent=`${MONTHS[d.getMonth()]} ${d.getFullYear()} · saved on this device`;}

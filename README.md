@@ -18,7 +18,7 @@ Then visit http://localhost:8080. (Opening `index.html` straight from disk also 
 |---|---|
 | 🌿 Beds | Summary (weather, counts by stage, links) and the bed layout |
 | 🐝 Jobs | Every task — watering, harvests, pest checks, treatments, clearing, filling spots |
-| 📅 This Month | What's in the beds |
+| 🧺 Harvest | What your harvests are worth, and what's ready, coming up and growing — tap a plant for tips & recipes |
 | 🌱 Plants | Plant information — plant now, what you're growing, the plant library |
 | 🐛 Pests | "What are you seeing?" finder, this month's pests, the full guide |
 
@@ -37,7 +37,7 @@ Keep new features in the tab they belong to: anything you tick off goes in Jobs.
 | `js/pests.js` | Pests + growing problems (`PESTS`, `DISORDERS`), prevention plans (`GUARDS`), remedies (`REMEDIES`: home-made / organic / native), the step-by-step finder, Pests tab |
 | `js/behaviour.js` | How plants grow (`TRAITS`), spots needed, good and bad neighbours |
 | `js/tasks.js` | Jobs tab, generated from the beds, plant timing, pests and weather; urgent count for the header and tab badge |
-| `js/month.js` | This Month: what's in the beds |
+| `js/harvest.js` | Harvest tab: harvest value (`PRICE`, editable), ready / coming up / growing, "ready when" signs (`READY_SIGN`), recipe ideas (`RECIPES`), the tips & recipes sheet |
 | `js/plants-view.js` | Plants tab, plant library and info sheet, bed-aware suggestions |
 | `js/beds.js` | Beds summary, bed grid, add/edit/resize beds, select mode, drag & drop, plant sheet, picker, custom plants |
 | `js/settings.js` | Location, backup export/import, start fresh |
