@@ -174,3 +174,13 @@ const STATUS_LBL={seed:'Seed',seedling:'Seedling',growing:'Growing',ready:'Ready
 const STLBL={seed:'🌱 Seed',seedling:'🪴 Seedling',growing:'🌿 Growing',ready:'✨ Ready',bolting:'⚠️ Bolting',done:'✅ Done',empty:'▫️ Empty'};
 const NP_EMOJI=['🌱','🌿','🥬','🥕','🍅','🫑','🌶️','🥒','🫘','🧅','🥔','🌽','🍓','🍉','🌸','🌻'];
 
+
+// How many plants fit in one spot, for a 30cm square spot (square-foot gardening counts).
+// Plants that need more than one spot are in SPOTS (behaviour.js) and count as 1 per their area.
+const PER_SPOT={
+  'broad-beans':4,'peas':8,'kale':1,'chard':4,'lettuce':4,'spinach':9,'asian-greens':4,'cabbage':1,'broccoli':1,'cauliflower':1,
+  'coriander':4,'parsley':4,'garlic-chives':4,'bok-choy':4,'marigold':4,'beetroot':9,'carrots':16,'turnip':9,'potato':1,'onions':9,
+  'shallots':4,'spring-onions':16,'leek':9,'garlic':9,'radish':16,'strawberry':1,'tomatoes':1,'basil':2,'zucchini':1,'cucumber':2,
+  'capsicum':1,'eggplant':1,'beans':9,'sweet-corn':4,'pumpkin':1,'chilli':1,'sweet-potato':1,'thyme':2,'rosemary':1,'sage':1,
+  'mint':1,'oregano':1,'dill':1,'lemongrass':1,'chives':4,'calendula':1,'nasturtium':1,'borage':1,
+};

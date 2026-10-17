@@ -84,11 +84,12 @@ function behaviourHtml(k){
 function groupWhy(xs){const g=new Map();xs.forEach(x=>{if(!g.has(x.why))g.set(x.why,[]);g.get(x.why).push(x.o);});return[...g];}
 function andList(ks){const n=ks.map(k=>P[k].n);return n.length>1?n.slice(0,-1).join(', ')+' and '+n.at(-1):n[0];}
 // Planting sheet: only the things worth knowing before it goes in this bed
-function plantingHeadsUpHtml(k,bi,vid){
+function plantingHeadsUpHtml(k,bi,vid,ri,ci){
   const ts=traitsOf(k,vid),warn=ts.filter(t=>t.warn),{good,bad}=bedNeighbours(k,bi),sp=varietyOf(k,vid)?.spots||SPOTS[k];
   const low=ST.beds[bi].low&&ts.some(t=>t.id==='tall');
-  if(!warn.length&&!good.length&&!bad.length&&!low)return'';
-  return `<div class="heads-up"><div class="hu-t">Heads up</div>
+  const rot=rotationHeadsUpHtml(k,bi,ri,ci);
+  if(!warn.length&&!good.length&&!bad.length&&!low&&!rot)return'';
+  return `<div class="heads-up"><div class="hu-t">Heads up</div>${rot}
     ${low?`<div class="hu-row bad">📏 This bed is set to low crops only — ${P[k].n} grows tall.</div>`:''}
     ${groupWhy(bad).map(([why,os])=>`<div class="hu-row bad">✋ ${andList(os)} ${os.length>1?'are':'is'} in this bed — ${why.charAt(0).toLowerCase()+why.slice(1)}</div>`).join('')}
     ${warn.map(t=>`<div class="hu-row">${t.e} <b>${t.t}${t.id==='big'&&sp?` (about ${sp} spots)`:''}.</b> ${t.d}</div>`).join('')}

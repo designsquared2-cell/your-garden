@@ -26,7 +26,8 @@ function migrate(s){
   });
   // Harvest log used to store the bed's position; store its id so deleting a bed can't mislabel entries
   s.log.forEach(l=>{if(l.bid==null&&l.b!=null){l.bid=s.beds[l.b]?.id||null;delete l.b;}});
-  s.customVarieties??={};
+  s.customVarieties??={};s.history??=[];s.seeds??=[];
+  s.beds.forEach(b=>{b.spot??=30;}); // spot size in cm
   // v6: plants that were really varieties became one crop each (Cherry Tomato → Tomato › Cherry, …)
   if((s.v||0)<6){
     const crop=k=>CROP_ALIAS[k]?.[0]||k;
@@ -67,7 +68,11 @@ function undo(){
 // ── Cells ──
 function getCell(bi,ri,ci){return ST.beds[bi].rows[ri][ci];}
 function setCell(bi,ri,ci,d){Object.assign(ST.beds[bi].rows[ri][ci],d);saveState();}
-function clearCell(bi,ri,ci){setCell(bi,ri,ci,{p:null,v:null,s:'empty',d:null,st:null,picks:0});}
+function clearCell(bi,ri,ci){
+  const c=getCell(bi,ri,ci);
+  if(c.p&&P[c.p]){ST.history.push({bid:ST.beds[bi].id,ri,ci,p:c.p,v:c.v||null,d:c.d||null,end:localDate()});if(ST.history.length>3000)ST.history=ST.history.slice(-3000);}
+  setCell(bi,ri,ci,{p:null,v:null,s:'empty',d:null,st:null,picks:0});
+}
 function isEmpty(c){return!c.p||c.s==='empty';}
 function allCells(){const out=[];ST.beds.forEach((bed,bi)=>bed.rows.forEach((row,ri)=>row.forEach((cell,ci)=>out.push({bed,bi,ri,ci,cell}))));return out;}
 function plantedCells(){return allCells().filter(x=>!isEmpty(x.cell)&&P[x.cell.p]);}

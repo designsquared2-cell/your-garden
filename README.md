@@ -41,6 +41,10 @@ Keep new features in the tab they belong to: anything you tick off goes in Jobs.
 | `js/harvest.js` | Harvest tab: harvest value (`PRICE`, editable), ready / coming up / growing, "ready when" signs (`READY_SIGN`), recipe ideas (`RECIPES`), the tips & recipes sheet |
 | `js/plants-view.js` | Plants tab, plant library and info sheet, bed-aware suggestions |
 | `js/beds.js` | Beds summary, bed grid, add/edit/resize beds, select mode, drag & drop, plant sheet, picker, custom plants |
+| `js/zones.js` | Climate zones (`ZONES`): adjusts planting months and pest seasons from the temperate/Perth data |
+| `js/rotation.js` | Spacing per spot (`PER_SPOT` in data.js, bed `spot` size) and crop rotation from planting `history` |
+| `js/seeds.js` | Seed box (`seeds`): packets, when to sow, picker and Jobs integration |
+| `js/reminders.js` | Calendar reminders: exports a `.ics` file (weekly check, harvests, prevention, sowing) |
 | `js/settings.js` | Location, backup export/import, start fresh |
 | `js/main.js` | Startup, service worker |
 | `sw.js`, `manifest.webmanifest`, `icons/` | Offline support and home-screen install |

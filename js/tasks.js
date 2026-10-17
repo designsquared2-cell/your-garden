@@ -72,6 +72,7 @@ function autoItems(m){
   const opening=[...COOL_VEG,...WARM_VEG].filter(k=>!P[k].custom&&inSeason(k,nm)&&!inSeason(k,m));
   if(opening.length)out.push({kind:'auto',id:'next-month',type:'coming',cb:false,icon:'📆',
     title:`From ${MONTHS[nm]} you can start sowing`,detail:opening.slice(0,8).map(k=>P[k].n).join(', ')+'.'});
+  out.push(...seedItems(m));
   return out;
 }
 
@@ -131,5 +132,5 @@ function renderJobs(){
     ||(ST.beds.length?`<div class="all-done">All done for now 🐝<br><span>The garden is doing its thing.</span></div>`
       :cardHtml({type:'soon',icon:'🌱',title:'Add your first bed',detail:'Jobs, harvest dates, pest checks and watering advice appear here once you start planting.',btn:{label:'＋ Add a bed',js:"setView('beds');openBedEditor()"}}));
   const n=jobCount();
-  $('jobs-content').innerHTML=`<div class="mv-heading">Jobs to do</div><div class="mv-intro">${n?`${plural(n,'job')} for ${MONTHS[m]}. Tick them off as you go.`:'Nothing needs doing right now.'}</div>${weatherCardHtml()}${body}`;
+  $('jobs-content').innerHTML=`<div class="mv-heading">Jobs to do</div><div class="mv-intro">${n?`${plural(n,'job')} for ${MONTHS[m]}. Tick them off as you go.`:'Nothing needs doing right now.'}</div>${weatherCardHtml()}${ST.beds.length?'<button class="jobs-link" onclick="openReminders()"><span>📅 Add reminders to my calendar</span><span>›</span></button>':''}${body}`;
 }

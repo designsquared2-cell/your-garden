@@ -33,6 +33,7 @@ function confirmStartFresh(){
     <ul class="fresh-list">
       <li>${plural(ST.beds.length,'bed')} and ${plural(n,'plant')}</li>
       <li>${plural(own,'plant')} you added to the plant list</li>
+      <li>Your seed box (${plural(ST.seeds.length,'packet')}) and the planting history used for rotation</li>
       <li>Your harvest log (${ST.log.length} ${ST.log.length===1?'entry':'entries'}), watering log and weather location</li>
     </ul>
     <div class="set-txt">Want a copy first? Export a backup — you can import it again later.</div>

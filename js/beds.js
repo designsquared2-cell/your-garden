@@ -41,12 +41,14 @@ const BED_MAX_ROWS=8,BED_MAX_COLS=10;
 const emptyCell=()=>({p:null,s:'empty',d:null,st:null,picks:0});
 function openBedEditor(bi){
   const bed=bi==null?null:ST.beds[bi];
-  const v=bed?{name:bed.name,r:bed.rows.length,c:bed.rows[0]?.length||1,low:bed.low}:{name:`Bed ${ST.beds.length+1}`,r:2,c:6,low:false};
+  const v=bed?{name:bed.name,r:bed.rows.length,c:bed.rows[0]?.length||1,low:bed.low,spot:bed.spot||30}:{name:`Bed ${ST.beds.length+1}`,r:2,c:6,low:false,spot:30};
   const stepper=(id,val,max)=>`<div class="stepper"><button onclick="stepNum('${id}',-1,${max})" aria-label="Fewer">−</button><input class="fm-in" id="${id}" type="number" inputmode="numeric" min="1" max="${max}" value="${val}"><button onclick="stepNum('${id}',1,${max})" aria-label="More">+</button></div>`;
   showSheet(`<div class="sh-body"><div class="sh-sticky"><div class="sh-toprow"><div><div class="sh-heading">${bed?'✏️ Edit bed':'＋ New bed'}</div><div class="sh-sub">${bed?'Shrinking a bed removes plants outside the new size':'You can change this any time'}</div></div><button class="sh-cancel" onclick="closeSheet()">✕ Cancel</button></div></div>
     <div class="fm-lbl">Name</div><input class="fm-in" id="bed-n" maxlength="30" placeholder="e.g. Bed 1 — South" value="${esc(v.name)}">
     <div class="fm-2col"><div><div class="fm-lbl">Rows</div>${stepper('bed-r',v.r,BED_MAX_ROWS)}</div><div><div class="fm-lbl">Spots per row</div>${stepper('bed-c',v.c,BED_MAX_COLS)}</div></div>
+    <div class="fm-lbl">Each spot is about</div><div class="fm-emoji-row"><input class="fm-in" id="bed-spot" type="number" inputmode="numeric" min="10" max="200" value="${v.spot}" style="max-width:90px"><span class="set-txt" style="margin:0">cm square — used for how many plants fit in a spot</span></div>
     <label class="fm-check"><input type="checkbox" id="bed-low"${v.low?' checked':''}> Low crops only — don't suggest tall or climbing plants</label>
+    ${bed?`<button class="btn btn-cancel btn-full" style="margin-top:12px" onclick="openRotation(${bi})">🔄 Rotation & new season</button>`:''}
     <button class="btn btn-seed btn-full" style="margin-top:16px" onclick="saveBed(${bi??'null'})">${bed?'💾 Save bed':'＋ Add bed'}</button>
     ${bed?`<button class="btn btn-remove btn-full" style="margin-top:8px" onclick="deleteBed(${bi})">🗑️ Delete this bed</button>`:''}
   </div>`);
@@ -56,16 +58,16 @@ function stepNum(id,d,max){const el=$(id);el.value=Math.min(max,Math.max(1,(+el.
 function saveBed(bi){
   const name=$('bed-n').value.trim()||`Bed ${(bi??ST.beds.length)+1}`;
   const r=Math.min(BED_MAX_ROWS,Math.max(1,+$('bed-r').value||1)),c=Math.min(BED_MAX_COLS,Math.max(1,+$('bed-c').value||1));
-  const low=$('bed-low').checked;
+  const low=$('bed-low').checked,spot=Math.min(200,Math.max(10,parseInt($('bed-spot').value,10)||30));
   if(bi==null){
-    ST.beds.push({id:newId(),name,low,rows:Array.from({length:r},()=>Array.from({length:c},emptyCell))});
+    ST.beds.push({id:newId(),name,low,spot,rows:Array.from({length:r},()=>Array.from({length:c},emptyCell))});
     saveState();closeSheet();refreshAll();toast(`＋ Added ${name}`);
     $('beds-wrap').lastElementChild?.previousElementSibling?.scrollIntoView({behavior:'smooth',block:'center'});
     return;
   }
   snapshot();const bed=ST.beds[bi];
   const lost=bed.rows.flatMap((row,ri)=>row.filter((cell,ci)=>(ri>=r||ci>=c)&&!isEmpty(cell))).length;
-  bed.name=name;bed.low=low;
+  bed.name=name;bed.low=low;bed.spot=spot;
   bed.rows=Array.from({length:r},(_,ri)=>Array.from({length:c},(_,ci)=>bed.rows[ri]?.[ci]||emptyCell()));
   saveState();closeSheet();refreshAll();
   toast(lost?`Saved — ${plural(lost,'plant')} removed`:`Saved ${name}`,{undo:!!lost});
@@ -184,6 +186,7 @@ function openCellSheet(bi,ri,ci){
     ${varietiesOf(cell.p).length?`<div class="planted-row"><span class="sh-cl">🏷️ Variety</span><button class="var-btn" onclick="openVarietyStep(${a},'${cell.p}',true)">${cellVariety(cell)?esc(cellVariety(cell).n):'Not set — choose'} ›</button></div>`:''}
     <div class="planted-row"><span class="sh-cl">📅 Planted</span><input class="fm-in date-in" type="date" id="cell-d" max="${td}" value="${cell.d||td}" onchange="setPlanted(${a})"></div>
     <div class="sh-tip">💡 ${pl.tip}</div>
+    ${spacingHtml(cell.p,cell.v,bi)}
     ${pl.nx&&P[pl.nx]?`<div class="sh-next"><div class="sh-nl">→ Plant next</div><div class="sh-nv">${P[pl.nx].e} ${P[pl.nx].n} — ${P[pl.nx].h}</div></div>`:''}
     ${cell.s==='done'?`<button class="btn btn-seed btn-full" onclick="clearSpot(${a})">🧹 Pulled it out — clear this spot</button><div class="sh-hint">Completed. Pull out what's left, then clear the spot to replant.</div>`
       :canPick?(isLifted(cell.p)?`<button class="btn btn-harvest btn-full" onclick="harvestCell(${a},true)">🧺 Harvest — pull it up</button><div class="sh-hint">Pulled whole, so the spot is free to replant straight away.</div>`
@@ -225,6 +228,8 @@ function renderPickerGrid(q){
   const{bi}=_pk,t=q.trim();
   const groups=pickerMatches(t),total=groups.reduce((n,[,ks])=>n+ks.length,0);
   let html='';
+  // Packets in your seed box that can go in now come first
+  if(!t){const sd=seedsReady();if(sd.length)html+=`<div class="picker-cat">🌰 From your seed box</div>${sd.map(s=>{const v=seedVariety(s);return`<button class="pick-item pick-on pick-seed" onclick="choosePlant(${_pk.bi},${_pk.ri},${_pk.ci},'${s.p}',${s.v?`'${s.v}'`:'null'})"><div class="pick-e">${v?.e||P[s.p].e}</div><div class="pick-n">${P[s.p].n}${v?` › ${esc(v.s||v.n)}`:s.vn?` › ${esc(s.vn)}`:''}</div><div class="pick-why">your seeds</div></button>`;}).join('')}`;}
   if(!t){const sug=suggestForBed(bi);if(sug.length)html+=`<div class="picker-cat">✨ Suggested for this bed</div>${sug.map(s=>pickTile(s.k,s.why,' pick-sug')).join('')}`;}
   // In-season plants first (current season's group leading), then everything out of season at the bottom
   html+=groups.map(([cat,ks])=>[cat,ks.filter(k=>inSeason(k))]).filter(([,ks])=>ks.length).map(([cat,ks])=>`<div class="picker-cat">🟢 ${CAT_LBL[cat]} — plant now</div>${ks.map(k=>pickTile(k,'',' pick-on')).join('')}`).join('');
@@ -264,7 +269,8 @@ function choosePlant(bi,ri,ci,key,vid){
   showSheet(`<div class="sh-body"><div class="ptc-emoji">${v?.e||pl.e}</div><div class="ptc-name">${pl.n}</div>
     ${varietiesOf(key).length?`<div class="ptc-var">${v?esc(v.n):'Any variety'} · <button class="link-btn" onclick="openVarietyStep(${bi},${ri},${ci},'${key}')">change</button></div>`:''}
     <div class="ptc-hw">Harvest: ${pl.h}${(v?varietyInSeason(key,v):inSeason(key))?'':' · <span style="color:#FF9060">out of season now</span>'}</div>
-    ${plantingHeadsUpHtml(key,bi,vid)}
+    ${plantingHeadsUpHtml(key,bi,vid,ri,ci)}
+    ${spacingHtml(key,vid,bi)}
     <div class="ptc-q">When was it planted?</div>
     <div class="date-wrap">${datePickHtml('plant-d')}</div>
     <div class="fm-help" style="text-align:center;margin-bottom:12px">Already in the ground? Pick the date you planted it.</div>

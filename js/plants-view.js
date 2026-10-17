@@ -12,7 +12,12 @@ function suggestForBed(bi,n=3){
   Object.keys(P).forEach(k=>{const f=familyOf(k);if(f&&fams.has(f)&&!here.includes(k))add(k,2,`fits with the ${FAM_LBL[f]}`);});
   here.forEach(k=>add(k,1,`matches the ${plantName(k)} already here`));
   if(!here.some(k=>COMPANIONS.includes(k)))add('marigold',1,'companion to keep pests down');
-  return Object.values(sc).sort((a,b)=>b.s-a.s).slice(0,n).map(x=>({k:x.k,why:x.why[0]}));
+  const past=new Set(bedHistory(bi,365).map(h=>familyOf(h.p)).filter(Boolean));
+  Object.values(sc).forEach(x=>{if(past.has(familyOf(x.k)))x.s-=3;});
+  const ok=Object.values(sc).filter(x=>x.s>0);
+  // after a bed's history, the next family in the rotation is a good fit
+  if(past.size)[...COOL_VEG,...WARM_VEG].forEach(k=>{const f=familyOf(k);if(f&&!past.has(f)&&[...past].some(p=>(ROTATION_NEXT[p]||[]).includes(f))&&inSeason(k)&&!(lowOnly&&TALL.includes(k))&&!ok.some(x=>x.k===k))ok.push({k,s:1.5,why:['good rotation for this bed']});});
+  return ok.sort((a,b)=>b.s-a.s).slice(0,n).map(x=>({k:x.k,why:x.why[0]}));
 }
 function goToEmpty(bi){
   const e=emptyCells(bi)[0];if(!e)return;
@@ -34,6 +39,7 @@ function renderPlants(){
     <div class="mv-intro">What to plant now, how your plants are doing, and everything in the plant library.</div>
     ${stories}
     ${now.length?`<div class="mv-section"><div class="mv-st">🌱 Plant now in ${MONTHS[m]}</div><div class="sow-chips">${now.map(k=>`<button class="sow-chip" onclick="openPlantInfo('${k}')">${P[k].e} ${P[k].n}</button>`).join('')}</div></div>`:''}
+    ${seedBoxHtml()}
     <div class="mv-section"><div class="mv-st">🌿 What you're growing</div>${guides||`<div class="pv-none">${ST.beds.length?'Nothing planted yet — tap an empty spot in Beds to plant.':'No beds yet — add one on the Beds tab.'}</div>`}</div>
     <div class="mv-section"><div class="mv-st">📚 Plant library</div>
       <input class="pick-search" id="lib-q" type="search" placeholder="🔍 Search all plants…" autocomplete="off" value="${esc(_libQ)}" oninput="_libQ=this.value;renderLibrary()">
@@ -77,6 +83,7 @@ function openPlantInfo(k){
   showSheet(`<div class="sh-body"><div class="sh-sticky"><div class="sh-toprow"><div class="pi-hdr"><span class="sh-pe">${pl.e}</span><div><div class="sh-pn">${pl.n}</div><div class="sh-sub">${inSeason(k,m)?'<span class="now-tag">plant now</span>':`Not the season to plant`}${fam?` · ${FAM_LBL[fam]}`:''}${growing.length?` · growing in ${[...new Set(growing.map(x=>esc(x.bed.name)))].join(', ')}`:''}</div></div></div><button class="sh-cancel" onclick="closeSheet()">✕ Close</button></div></div>
     <div class="pi-facts">${facts.map(([a,b])=>`<div><div class="sh-cl">${a}</div><div class="pi-v">${b}</div></div>`).join('')}</div>
     <div class="sh-tip">💡 ${pl.tip}</div>
+    ${spacingHtml(k,null,ST.beds.length?0:-1)}
     ${readySignHtml(k)}
     ${recipesHtml(k)}
     ${pl.nx&&P[pl.nx]?`<div class="sh-next"><div class="sh-nl">→ Plant next</div><div class="sh-nv">${P[pl.nx].e} ${P[pl.nx].n} — ${P[pl.nx].h}</div></div>`:''}
