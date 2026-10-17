@@ -53,4 +53,4 @@ Add a plant to `P` in `js/data.js`, list it in one of `COOL_VEG` / `WARM_VEG` / 
 
 Everything is saved in the browser on each device. Use **Settings → Backup → Export** to keep a copy or move to another phone.
 
-When changing app files, bump `CACHE` in `sw.js` so installed copies pick up the update offline.
+When changing app files, bump `CACHE` in `sw.js` and the `?v=N` on every file link in `index.html`, so phones pick up the update.

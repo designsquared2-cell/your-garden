@@ -325,3 +325,12 @@ button.sow-chip:hover{border-color:#5A9A3A}
 .hlog-d{color:#5A7040;font-size:10.5px;white-space:nowrap}
 .lib-dot{width:8px;height:8px;border-radius:50%;background:#7AD47A;flex-shrink:0;box-shadow:0 0 0 2px rgba(122,212,122,.2)}
 .lib-key{display:flex;align-items:center;gap:6px;font-size:10.5px;color:#8BAA6B;margin-top:8px}
+/* Planted date */
+.date-wrap{margin-bottom:6px}
+.date-in{color-scheme:dark}
+.date-quick{display:flex;flex-wrap:wrap;gap:5px;margin-top:7px}
+.date-q{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:14px;color:#C8D8B0;font-family:inherit;font-size:11px;font-weight:700;padding:5px 10px;cursor:pointer}
+.date-q.on{background:#2E5E20;border-color:#5A9A3A;color:#fff}
+.planted-row{display:flex;align-items:center;gap:10px;margin-bottom:11px}
+.planted-row .sh-cl{flex-shrink:0;margin:0}
+.planted-row .date-in{padding:7px 10px;font-size:15px}
