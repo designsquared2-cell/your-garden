@@ -72,6 +72,9 @@ function applyCustomPlants(){
     if(FAMILY[c.fam])FAMILY[c.fam].push(k); // drives pest checks and bed suggestions
   });
 }
+// Plant categories in season order: warm-season crops first in spring/summer, cool-season first in autumn/winter
+function warmSeasonNow(m=curMonth()){return[8,9,10,11,0,1].includes(m);}
+function seasonCats(m=curMonth()){return(warmSeasonNow(m)?['warm','herb','comp','cool']:['cool','herb','comp','warm']).map(c=>[c,CATS[c]]);}
 function plantName(k){return ST.customPlants[k]?.n??P[k]?.n??k;}
 function timing(k){return TIMING[k]||{};}
 function inSeason(k,m=curMonth()){const t=TIMING[k];return t?.sow?t.sow.includes(m):true;}

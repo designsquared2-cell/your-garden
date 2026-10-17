@@ -55,7 +55,7 @@ function plantGuideHtml(k,td){
 }
 function renderLibrary(){
   const t=_libQ.trim().toLowerCase(),m=curMonth();
-  const groups=Object.entries(CATS).map(([cat,keys])=>{
+  const groups=seasonCats(m).map(([cat,keys])=>{
     const ks=keys.filter(k=>P[k]&&(!t||plantName(k).toLowerCase().includes(t)));
     return ks.length?`<div class="lib-cat">${CAT_LBL[cat]}</div><div class="lib-grid">${ks.map(k=>`<button class="lib-item" onclick="openPlantInfo('${k}')"><span>${P[k].e}</span><span class="lib-n">${P[k].n}</span>${inSeason(k,m)?'<span class="lib-dot" aria-label="plant now"></span>':''}</button>`).join('')}</div>`:'';
   }).join('');

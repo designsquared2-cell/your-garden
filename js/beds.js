@@ -221,14 +221,17 @@ function openPicker(bi,ri,ci,q=''){
   renderPickerGrid(q);
   if(!('ontouchstart' in window))setTimeout(()=>$('pick-q')?.focus(),280);
 }
-function pickerMatches(q){const t=q.trim().toLowerCase();return Object.entries(CATS).map(([cat,keys])=>[cat,keys.filter(k=>P[k]&&(!t||plantName(k).toLowerCase().includes(t)))]);}
+function pickerMatches(q){const t=q.trim().toLowerCase();return seasonCats().map(([cat,keys])=>[cat,keys.filter(k=>P[k]&&(!t||plantName(k).toLowerCase().includes(t)))]);}
 function pickTile(k,why,extra=''){const{bi,ri,ci}=_pk;return `<button class="pick-item${extra}" onclick="choosePlant(${bi},${ri},${ci},'${k}')"><div class="pick-e">${P[k].e}</div><div class="pick-n">${P[k].n}</div>${why?`<div class="pick-why">${esc(why)}</div>`:''}</button>`;}
 function renderPickerGrid(q){
   const{bi}=_pk,t=q.trim();
   const groups=pickerMatches(t),total=groups.reduce((n,[,ks])=>n+ks.length,0);
   let html='';
   if(!t){const sug=suggestForBed(bi);if(sug.length)html+=`<div class="picker-cat">✨ Suggested for this bed</div>${sug.map(s=>pickTile(s.k,s.why,' pick-sug')).join('')}`;}
-  html+=groups.filter(([,ks])=>ks.length).map(([cat,ks])=>`<div class="picker-cat">${CAT_LBL[cat]}</div>${ks.map(k=>pickTile(k,inSeason(k)?'':'Out of season',inSeason(k)?'':' pick-off')).join('')}`).join('');
+  // In-season plants first (current season's group leading), then everything out of season at the bottom
+  html+=groups.map(([cat,ks])=>[cat,ks.filter(k=>inSeason(k))]).filter(([,ks])=>ks.length).map(([cat,ks])=>`<div class="picker-cat">🟢 ${CAT_LBL[cat]} — plant now</div>${ks.map(k=>pickTile(k,'',' pick-on')).join('')}`).join('');
+  const off=groups.flatMap(([,ks])=>ks.filter(k=>!inSeason(k)));
+  if(off.length)html+=`<div class="picker-cat pick-off-hdr">💤 Out of season — better planted later</div>${off.map(k=>pickTile(k,timing(k).sow?'Plant '+monthsText(timing(k).sow):'Out of season',' pick-off')).join('')}`;
   if(t&&!total)html=`<div class="pick-empty">No “${esc(t)}” in your list yet — add it below.</div>`;
   const exact=groups.some(([,ks])=>ks.some(k=>plantName(k).toLowerCase()===t.toLowerCase()));
   if(!exact)html+=`<div class="picker-cat">${total?'Not in the list?':'New plant'}</div><button class="pick-item pick-new" onclick="openNewPlant()"><div class="pick-e">＋</div><div class="pick-n">${t?`Add “${esc(t)}”`:'Add a new plant'}</div></button>`;

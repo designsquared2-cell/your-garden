@@ -97,13 +97,12 @@ function harvestTotals(){
   return{month:sum(ST.log.filter(l=>l.d.startsWith(mk))),year:sum(year),all:sum(ST.log),picks:year.reduce((s,l)=>s+(l.n||1),0),
     top:Object.entries(by).sort((a,b)=>b[1]-a[1]).slice(0,3)};
 }
-function valueCardHtml(){
+// A quiet line at the bottom of the Harvest tab — useful, but the plants come first
+function valueLineHtml(){
+  if(!ST.log.length)return'';
   const t=harvestTotals();
-  if(!ST.log.length)return `<div class="hv-card empty"><div class="hv-big">🧺 $0 so far</div><div class="hv-sub">Every time you tick a harvest in Jobs or tap <b>Picked some</b>, we add up what it would have cost at the shops.</div></div>`;
-  return `<div class="hv-card"><div class="hv-lbl">Grown this year</div><div class="hv-big">${money(t.year)}</div>
-    <div class="hv-sub">of food from ${plural(t.picks,'picking')} · ${money(t.month)} this month${t.all>t.year?` · ${money(t.all)} all time`:''}</div>
-    ${t.top.length?`<div class="hv-top">${t.top.map(([k,v])=>`<span>${P[k]?.e||'🌱'} ${plantName(k)} <b>${money(v)}</b></span>`).join('')}</div>`:''}
-    <button class="link-btn" onclick="openPrices()">Estimated from typical shop prices — adjust</button></div>`;
+  return `<div class="hv-value">🧺 About <b>${money(t.year)}</b> of food grown this year${t.month&&t.month!==t.year?` · ${money(t.month)} this month`:''}
+    <button class="link-btn" onclick="openPrices()">Based on typical shop prices — adjust</button></div>`;
 }
 function openPrices(){
   const ks=[...new Set([...ST.log.map(l=>l.p),...plantedCells().map(x=>x.cell.p)])].filter(k=>P[k]);
@@ -131,22 +130,19 @@ function stageOf(c){
 }
 function harvestRowHtml({k,xs,lead}){
   const pl=P[k],beds=[...new Set(xs.map(x=>x.bed.name))].map(esc).join(', ');
-  const v=ST.log.filter(l=>l.p===k).reduce((s,l)=>s+logValue(l),0);
-  return `<button class="hv-row" onclick="openGrowing('${k}')"><span class="hv-e">${pl.e}</span><span class="hv-mid"><span class="hv-n">${pl.n}${xs.length>1?` <span class="hlog-d">×${xs.length}</span>`:''}</span><span class="hv-m">${beds}${v?` · 🧺 ${money(v)}`:''}</span></span><span class="hv-w">${readyLabel(lead,false).replace('Ready ~','~')}</span><span class="hv-go">›</span></button>`;
+  return `<button class="hv-row" onclick="openGrowing('${k}')"><span class="hv-e">${pl.e}</span><span class="hv-mid"><span class="hv-n">${pl.n}${xs.length>1?` <span class="hlog-d">×${xs.length}</span>`:''}</span><span class="hv-m">${beds}</span></span><span class="hv-w">${readyLabel(lead,false).replace('Ready ~','~')}</span><span class="hv-go">›</span></button>`;
 }
 function renderHarvest(){
   const groups=plantGroupsByKey();
   const by=st=>groups.filter(g=>stageOf(g.lead)===st);
   const sec=(t,gs,note)=>gs.length?`<div class="mv-section"><div class="mv-st">${t}</div>${note?`<div class="hv-note">${note}</div>`:''}<div class="hv-list">${gs.map(harvestRowHtml).join('')}</div></div>`:'';
-  const recent=ST.log.slice(-6).reverse();
   $('harvest-content').innerHTML=`<div class="mv-heading">Harvest</div>
     <div class="mv-intro">${!ST.beds.length?'No beds yet — add one on the Beds tab to start.':groups.length?'Tap any plant for how to tell it\'s ready, what to look out for, and recipe ideas.':'Nothing planted yet.'}</div>
-    ${valueCardHtml()}
     ${sec('✨ Ready to pick',by('ready'))}
     ${sec('⏳ Coming up',by('soon').sort((a,b)=>(expectedDate(a.lead)||'').localeCompare(expectedDate(b.lead)||'')),'Ready within about 6 weeks')}
     ${sec('🌿 Growing',by('growing'))}
     ${sec('✅ Finished',by('done'),'Clear these when you\'re ready — Jobs has a reminder.')}
-    ${recent.length?`<div class="mv-section"><div class="mv-st">🧺 Recent picks</div><div class="hv-list">${recent.map(l=>`<div class="hv-log"><span>${P[l.p]?.e||'🌱'} ${P[l.p]?.n||esc(l.p)}${(l.n||1)>1?` ×${l.n}`:''}${l.f?' <span class="hlog-f">finished</span>':''}</span><span class="hlog-d">${fmtDate(l.d)} · ${money(logValue(l))}</span></div>`).join('')}</div></div>`:''}`;
+    ${valueLineHtml()}`;
 }
 
 // ── Plant-in-your-garden sheet: ready signs, what to look out for now, recipes ──
@@ -180,15 +176,15 @@ function openGrowing(k){
   const xs=plantedCells().filter(x=>x.cell.p===k);if(!xs.length){openPlantInfo(k);return;}
   const pl=P[k],lead=leadCell(xs),beds=[...new Set(xs.map(x=>x.bed.name))].map(esc).join(', ');
   const planted=xs.map(x=>x.cell.d).filter(Boolean).sort()[0];
-  const v=ST.log.filter(l=>l.p===k).reduce((s,l)=>s+logValue(l),0),picks=ST.log.filter(l=>l.p===k).reduce((s,l)=>s+(l.n||1),0);
+  const picks=ST.log.filter(l=>l.p===k).reduce((s,l)=>s+(l.n||1),0);
   const pickable=xs.find(x=>['growing','ready','bolting'].includes(x.cell.s));
   showSheet(`<div class="sh-body"><div class="sh-sticky"><div class="sh-toprow"><div class="pi-hdr"><span class="sh-pe">${pl.e}</span><div><div class="sh-pn">${pl.n}</div><div class="sh-sub">${xs.length>1?`${xs.length} plants · `:''}${beds}</div></div></div><button class="sh-cancel" onclick="closeSheet()">✕ Close</button></div></div>
     <div class="pi-facts"><div><div class="sh-cl">Planted</div><div class="pi-v">${planted?fmtDate(planted):'—'}</div></div><div><div class="sh-cl">Ready</div><div class="pi-v">${readyLabel(lead,false)}</div></div>
-      <div><div class="sh-cl">Picked</div><div class="pi-v">${picks?plural(picks,'time'):'Not yet'}</div></div><div><div class="sh-cl">Worth so far</div><div class="pi-v">${money(v)}</div></div></div>
+      <div><div class="sh-cl">Picked</div><div class="pi-v">${picks?plural(picks,'time'):'Not yet'}</div></div></div>
     ${readySignHtml(k)}
     ${lookOutHtml(k,xs)}
     ${recipesHtml(k)}
-    ${pickable?`<button class="btn btn-harvest btn-full" style="margin-bottom:8px" onclick="pickSome(${pickable.bi},${pickable.ri},${pickable.ci})">🧺 Log a pick${priceOf(k)?` (+${money(priceOf(k))})`:''}</button>`:''}
+    ${pickable?`<button class="btn btn-harvest btn-full" style="margin-bottom:8px" onclick="pickSome(${pickable.bi},${pickable.ri},${pickable.ci})">🧺 Log a pick</button>`:''}
     <button class="btn btn-cancel btn-full" onclick="openPlantInfo('${k}')">📚 How it grows & neighbours</button>
   </div>`);
 }
