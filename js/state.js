@@ -16,7 +16,7 @@ function plural(n,w){return `${n} ${w}${n===1?'':'s'}`;}
 // ── Load / save ──
 // Fill in fields added since older saves, so old data keeps working.
 function migrate(s){
-  s.beds??=[];s.customPlants??={};s.alertDone??={};s.log??=[];s.pestDone??={};s.pestReports??=[];
+  s.beds??=[];s.customPlants??={};s.alertDone??={};s.log??=[];s.pestDone??={};s.pestReports??=[];s.guardDone??={};s.prefs??={};
   delete s.taskState;
   s.beds.forEach(b=>{
     b.id??=newId();

@@ -8,6 +8,9 @@ function openSettings(){
     <div id="loc-res"></div>
     <button class="btn btn-cancel btn-full" style="margin-top:7px" onclick="useMyLoc()">📍 Use my current location</button>
 
+    <div class="fm-lbl" style="margin-top:18px">Remedies</div>
+    <label class="fm-check"><input type="checkbox" id="pref-nat"${ST.prefs.naturalOnly?' checked':''} onchange="ST.prefs.naturalOnly=this.checked;saveState();renderView();toast(this.checked?'🌿 Showing natural remedies only':'Showing all remedies')"> Show natural & home-made remedies only</label>
+
     <div class="fm-lbl" style="margin-top:18px">Backup</div>
     <div class="set-txt">Your garden is saved on this device only. Export a backup to keep it safe or move it to another phone.</div>
     <div class="btn-row"><button class="btn btn-cancel" onclick="exportBackup()">⬇️ Export</button><button class="btn btn-cancel" onclick="$('imp-file').click()">⬆️ Import</button></div>

@@ -71,7 +71,7 @@ function tickItem(kind,id,btn){
   tickAway(btn,()=>{
     if(kind==='water'){logWatered();return;}
     snapshot();
-    const msg=kind==='plant'?harvestFromAlert(id):kind==='pest'?tickPest(id):kind==='treat'?tickTreat(id):runAuto(id);
+    const msg=kind==='plant'?harvestFromAlert(id):kind==='pest'?tickPest(id):kind==='treat'?tickTreat(id):kind==='guard'?tickGuard(id):runAuto(id);
     saveState();refreshAll();toast(msg,{undo:true});
   });
 }
@@ -102,16 +102,16 @@ function renderAlerts(){
 function goToAlerts(){setView('jobs');}
 
 function cardHtml(it){
-  const cls=['task-card',{urgent:'tc-urgent',soon:'tc-soon',pest:'tc-pest'}[it.type]||''].join(' ');
+  const cls=['task-card',{urgent:'tc-urgent',soon:'tc-soon',pest:'tc-pest',guard:'tc-guard'}[it.type]||''].join(' ');
   const lead=it.cb?`<button class="task-cb-area" aria-label="Mark done" onclick="tickItem('${it.kind}','${it.id}',this)"><div class="task-cb">○</div></button>`:`<div class="task-cb-area"><div class="task-ico">${it.icon||'•'}</div></div>`;
   return `<div class="${cls}">${lead}<div class="task-content"><div class="task-title">${it.title}</div><div class="task-detail">${it.detail||''}</div>${it.btn?`<button class="task-btn" onclick="${it.btn.js}">${it.btn.label}</button>`:''}</div></div>`;
 }
 // Jobs tab: everything to do, grouped by urgency
 function jobSections(){
   const m=curMonth(),auto=autoItems(m);
-  return[['🔴 Do this week',urgentItems()],['🐛 Pest checks',pestCheckItems(m)],['🟡 This month',auto.filter(t=>t.type==='soon')],['🟢 Coming up',auto.filter(t=>t.type==='coming')]];
+  return[['🔴 Do this week',urgentItems()],['🛡️ Prevent',guardItems(m)],['🐛 Pest checks',pestCheckItems(m)],['🟡 This month',auto.filter(t=>t.type==='soon')],['🟢 Coming up',auto.filter(t=>t.type==='coming')]];
 }
-function jobCount(){const[[,u],[,p],[,s]]=jobSections();return u.length+p.length+s.filter(t=>t.cb).length;}
+function jobCount(){const[[,u],[,g],[,p],[,s]]=jobSections();return u.length+g.length+p.length+s.filter(t=>t.cb).length;}
 function renderJobs(){
   const m=curMonth(),secs=jobSections();
   const body=secs.map(([lbl,ts])=>ts.length?`<div class="task-section"><div class="task-sec-title">${lbl}</div>${ts.map(cardHtml).join('')}</div>`:'').join('')

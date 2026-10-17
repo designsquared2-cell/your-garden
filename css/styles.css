@@ -334,3 +334,49 @@ button.sow-chip:hover{border-color:#5A9A3A}
 .planted-row{display:flex;align-items:center;gap:10px;margin-bottom:11px}
 .planted-row .sh-cl{flex-shrink:0;margin:0}
 .planted-row .date-in{padding:7px 10px;font-size:15px}
+/* Problems tab: sections */
+.seg{display:flex;gap:4px;background:#14200C;border:1px solid rgba(255,255,255,.07);border-radius:12px;padding:4px;margin:4px 0 14px}
+.seg-b{flex:1;background:none;border:none;border-radius:9px;color:#8BAA6B;font-family:inherit;font-size:12px;font-weight:800;padding:9px 4px;cursor:pointer;white-space:nowrap}
+.seg-b.on{background:#2E4A1A;color:#F0E6CC}
+/* Finder steps */
+.id-step{display:flex;align-items:center;gap:8px;font-size:13px;font-weight:900;margin:4px 0 9px}
+.id-num{display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;border-radius:50%;background:#5A3A90;color:#fff;font-size:11.5px;font-weight:900;flex-shrink:0}
+.area-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(102px,1fr));gap:6px;margin-bottom:16px}
+.area{display:flex;flex-direction:column;align-items:center;gap:4px;background:#182210;border:1.5px solid rgba(255,255,255,.08);border-radius:11px;color:#D8E6C0;font-family:inherit;font-size:11.5px;font-weight:800;padding:11px 6px;cursor:pointer}
+.area span{font-size:24px;line-height:1}
+.area.on{background:#2A2040;border-color:#9A7AD8;color:#fff}
+.sym.mini{font-size:10.5px;padding:3px 8px}
+.id-picked{display:flex;flex-wrap:wrap;gap:5px;align-items:center;margin-top:10px}
+.id-plant{margin-top:14px}
+.id-plant summary{display:flex;align-items:center;gap:8px;font-size:13px;font-weight:900;cursor:pointer;list-style:none;margin-bottom:9px}
+.id-plant summary::-webkit-details-marker{display:none}
+.id-wx{color:#9AD4EA}
+/* Remedies */
+.rem{background:rgba(255,255,255,.035);border-radius:9px;padding:8px 11px;margin:8px 0}
+.rem-t{font-size:10.5px;font-weight:900;color:#A0D870;margin:4px 0 3px}
+.rem ul{margin:0 0 4px 16px;font-size:11.5px;color:#C8D8B0;line-height:1.5}
+.rem-n{font-size:11.5px;color:#C8D8B0;line-height:1.5;margin-bottom:4px}
+/* This month: prevention list */
+.pm-list{background:#182210;border-radius:10px;padding:4px 12px 8px;margin-bottom:6px}
+.pm-row{display:flex;gap:10px;padding:9px 0;border-bottom:1px solid rgba(255,255,255,.05);font-size:12.5px}
+.pm-e{font-size:20px;line-height:1.2}
+.pm-d{font-size:11.5px;color:#8A9A70;line-height:1.5;margin-top:2px}
+.native-card{background:#182210;border-radius:10px;padding:4px 12px;font-size:11.5px;color:#8A9A70;line-height:1.5}
+.native-card>div{padding:8px 0;border-bottom:1px solid rgba(255,255,255,.05)}
+.native-card>div:last-child{border-bottom:none}
+.native-card b{color:#C8D8B0}
+.tc-guard{border-left-color:#4A9AB8}
+/* Plant behaviour */
+.trait-list{background:rgba(255,255,255,.03);border-radius:9px;margin-bottom:8px}
+.trait{display:flex;gap:10px;padding:8px 11px;border-top:1px solid rgba(255,255,255,.04);font-size:11.5px;color:#8A9A70;line-height:1.45}
+.trait:first-child{border-top:none}
+.trait b{color:#E0D8C0;font-size:12px}
+.trait-e{font-size:17px;line-height:1.2}
+.nb{font-size:11.5px;line-height:1.5;padding:7px 11px;border-radius:9px;margin-bottom:6px;color:#C8D8B0}
+.nb.good{background:rgba(58,92,34,.25)}
+.nb.bad{background:rgba(120,50,20,.25)}
+.heads-up{background:#1E1A10;border:1px solid #5A4A20;border-radius:11px;padding:9px 12px;margin:10px 0 4px;text-align:left}
+.hu-t{font-size:9.5px;font-weight:900;letter-spacing:1.5px;text-transform:uppercase;color:#E0B040;margin-bottom:4px}
+.hu-row{font-size:11.5px;color:#C8D8B0;line-height:1.5;padding:4px 0}
+.hu-row.bad{color:#FFB48A}
+.hu-row.good{color:#A0D870}

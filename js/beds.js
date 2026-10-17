@@ -256,6 +256,7 @@ let _pend=null;
 function choosePlant(bi,ri,ci,key){
   _pend={bi,ri,ci,key};const pl=P[key];
   showSheet(`<div class="sh-body"><div class="ptc-emoji">${pl.e}</div><div class="ptc-name">${pl.n}</div><div class="ptc-hw">Harvest: ${pl.h}${inSeason(key)?'':' · <span style="color:#FF9060">out of season now</span>'}</div>
+    ${plantingHeadsUpHtml(key,bi)}
     <div class="ptc-q">When was it planted?</div>
     <div class="date-wrap">${datePickHtml('plant-d')}</div>
     <div class="fm-help" style="text-align:center;margin-bottom:12px">Already in the ground? Pick the date you planted it.</div>

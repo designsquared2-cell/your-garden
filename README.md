@@ -34,7 +34,8 @@ Keep new features in the tab they belong to: anything you tick off goes in Jobs.
 | `js/state.js` | Saved state (localStorage key `gdn_v4`), migration, undo, cell & plant helpers |
 | `js/ui.js` | Sheet, toast (with Undo), confetti, tab switching |
 | `js/weather.js` | Open-Meteo forecast, watering verdict, location search |
-| `js/pests.js` | Pest library (`PESTS`), beginner symptoms (`SYMPTOMS`) and which pests they point to (`PEST_ID`), pest-check and treatment jobs, Pests tab |
+| `js/pests.js` | Pests + growing problems (`PESTS`, `DISORDERS`), prevention plans (`GUARDS`), remedies (`REMEDIES`: home-made / organic / native), the step-by-step finder, Pests tab |
+| `js/behaviour.js` | How plants grow (`TRAITS`), spots needed, good and bad neighbours |
 | `js/tasks.js` | Jobs tab, generated from the beds, plant timing, pests and weather; urgent count for the header and tab badge |
 | `js/month.js` | This Month: what's in the beds |
 | `js/plants-view.js` | Plants tab, plant library and info sheet, bed-aware suggestions |
