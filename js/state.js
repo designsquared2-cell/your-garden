@@ -96,7 +96,9 @@ function warmSeasonNow(m=curMonth()){return[8,9,10,11,0,1].includes(m);}
 function seasonCats(m=curMonth()){return(warmSeasonNow(m)?['warm','herb','comp','cool']:['cool','herb','comp','warm']).map(c=>[c,CATS[c]]);}
 function plantName(k){return ST.customPlants[k]?.n??P[k]?.n??k;}
 function timing(k){return TIMING[k]||{};}
-function inSeason(k,m=curMonth()){const t=TIMING[k];return t?.sow?t.sow.includes(m):true;}
+// A crop is in season if it — or any of its varieties (e.g. summer spinaches) — can be planted this month
+function inSeason(k,m=curMonth()){const t=TIMING[k];return(t?.sow?t.sow.includes(m):true)||varietiesOf(k).some(v=>v.sow?.includes(m));}
+function varietyInSeason(k,v,m=curMonth()){const sow=v?.sow||TIMING[k]?.sow;return sow?sow.includes(m):true;}
 function keepsProducing(k){return!!timing(k).pick;}
 function familyOf(k){return Object.keys(FAMILY).find(f=>FAMILY[f].includes(k));}
 // Expected first harvest. Seedlings (st !== 'seed', including the starting layout) are ~3 weeks ahead.

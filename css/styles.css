@@ -428,3 +428,6 @@ button.sow-chip:hover{border-color:#5A9A3A}
 .ptc-var{text-align:center;font-size:12.5px;font-weight:800;color:#A0D870;margin:-2px 0 4px}
 .ptc-var .link-btn{font-size:11.5px;padding:0 2px}
 .var-btn{flex:1;text-align:left;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:9px;color:#F0E6CC;font-family:inherit;font-size:13px;font-weight:700;padding:8px 10px;cursor:pointer;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.var-card.later{opacity:.6;border-style:dashed}
+.var-card.later .var-e{filter:grayscale(.8)}
+.var-later{font-size:10.5px;font-weight:800;color:#B8B8A0;margin-top:5px}

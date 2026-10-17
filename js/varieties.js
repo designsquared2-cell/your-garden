@@ -48,6 +48,13 @@ const VARIETIES={
     {id:'savoy',n:'Savoy',s:'Savoy',days:120,note:'Crinkly leaves, mild flavour, very cold-hardy.'},
     {id:'drumhead',n:'Drumhead (large)',s:'Drumhead',days:130,note:'Big, heavy heads that store well.'},
   ],
+  spinach:[
+    {id:'english',n:'English spinach',s:'English',days:45,tags:['b'],note:'The classic soft-leaved spinach. Bolts quickly once it warms up — a cool-season crop.'},
+    {id:'bloomsdale',n:'Bloomsdale (savoy, heirloom)',s:'Bloomsdale',days:50,tags:['r'],note:'Crinkly, thicker leaves and a little slower to bolt.'},
+    {id:'baby-leaf',n:'Baby leaf',s:'Baby leaf',days:30,tags:['f','c'],note:'Pick at 8–10cm — it regrows for a few more cuts.'},
+    {id:'warrigal',n:'Warrigal greens (native)',s:'Warrigal',days:60,sow:[8,9,10,11,0],traits:['sprawl','selfseeds'],tags:['h'],note:'An Australian native that loves heat — summer\'s spinach. Blanch the leaves for a minute before eating.'},
+    {id:'malabar',n:'Malabar spinach (climbing)',s:'Malabar',days:70,sow:[9,10,11,0],traits:['climb'],tags:['h'],note:'A glossy climbing vine that thrives in Perth summers. Needs a trellis.'},
+  ],
   kale:[
     {id:'tuscan',n:'Tuscan (cavolo nero)',s:'Tuscan',days:60,tags:['b'],note:'Dark, bumpy leaves — the best for cooking.'},
     {id:'curly',n:'Curly — Scotch / Vates',s:'Curly',days:55,note:'Frilly leaves, great for kale chips.'},

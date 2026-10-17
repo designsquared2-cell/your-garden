@@ -263,7 +263,7 @@ function choosePlant(bi,ri,ci,key,vid){
   vid=vid||null;_pend={bi,ri,ci,key,vid};const pl=P[key],v=varietyOf(key,vid);
   showSheet(`<div class="sh-body"><div class="ptc-emoji">${v?.e||pl.e}</div><div class="ptc-name">${pl.n}</div>
     ${varietiesOf(key).length?`<div class="ptc-var">${v?esc(v.n):'Any variety'} · <button class="link-btn" onclick="openVarietyStep(${bi},${ri},${ci},'${key}')">change</button></div>`:''}
-    <div class="ptc-hw">Harvest: ${pl.h}${inSeason(key)?'':' · <span style="color:#FF9060">out of season now</span>'}</div>
+    <div class="ptc-hw">Harvest: ${pl.h}${(v?varietyInSeason(key,v):inSeason(key))?'':' · <span style="color:#FF9060">out of season now</span>'}</div>
     ${plantingHeadsUpHtml(key,bi,vid)}
     <div class="ptc-q">When was it planted?</div>
     <div class="date-wrap">${datePickHtml('plant-d')}</div>
@@ -335,11 +335,11 @@ function saveNewPlant(){
 // change=true: called from a plant sheet (bi,ri,ci is the planted spot) — picking updates it instead of planting.
 function openVarietyStep(bi,ri,ci,k,change){
   const pl=P[k],cur=change?getCell(bi,ri,ci).v:null;
-  const vs=[...varietiesOf(k)].sort((a,b)=>(b.tags||[]).includes('b')-(a.tags||[]).includes('b'));
+  const vs=[...varietiesOf(k)].sort((a,b)=>varietyInSeason(k,b)-varietyInSeason(k,a)||(b.tags||[]).includes('b')-(a.tags||[]).includes('b'));
   const pick=vid=>change?`setVariety(${bi},${ri},${ci},${vid?`'${vid}'`:'null'})`:`choosePlant(${bi},${ri},${ci},'${k}',${vid?`'${vid}'`:'null'})`;
-  const card=v=>{const t={...timing(k),...(v.days?{days:v.days}:{}),...('pick' in v?{pick:v.pick}:{})};
-    return `<button class="var-card${cur===v.id?' on':''}" onclick="${pick(v.id)}"><div class="var-top"><span class="var-e">${v.e||pl.e}</span><span class="var-n">${esc(v.n)}</span><span class="var-d">~${t.days} days</span></div>
-      ${v.tags?.length?`<div class="var-tags">${tagsHtml(v)}</div>`:''}<div class="var-note">${esc(v.note||'')}</div></button>`;};
+  const card=v=>{const t={...timing(k),...(v.days?{days:v.days}:{}),...('pick' in v?{pick:v.pick}:{})},now=varietyInSeason(k,v);
+    return `<button class="var-card${cur===v.id?' on':''}${now?'':' later'}" onclick="${pick(v.id)}"><div class="var-top"><span class="var-e">${v.e||pl.e}</span><span class="var-n">${esc(v.n)}</span><span class="var-d">~${t.days} days</span></div>
+      ${v.tags?.length?`<div class="var-tags">${tagsHtml(v)}</div>`:''}<div class="var-note">${esc(v.note||'')}</div>${now?'':`<div class="var-later">💤 Plant ${monthsText(v.sow||timing(k).sow)}</div>`}</button>`;};
   showSheet(`<div class="sh-body"><div class="sh-sticky"><div class="sh-toprow"><div><div class="sh-heading">${pl.e} Which ${pl.n.toLowerCase()}?</div><div class="sh-sub">Not sure? Any is fine — you can change it later</div></div><button class="sh-cancel" onclick="${change?`openCellSheet(${bi},${ri},${ci})`:'closeSheet()'}">✕ ${change?'Back':'Cancel'}</button></div></div>
     <div class="var-list">${vs.map(card).join('')}
       <button class="var-card any${change&&!cur?' on':''}" onclick="${pick(null)}"><div class="var-top"><span class="var-e">🤷</span><span class="var-n">Not sure — any ${pl.n.toLowerCase()}</span></div><div class="var-note">Uses typical timing for ${pl.n.toLowerCase()}.</div></button>
