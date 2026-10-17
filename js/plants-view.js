@@ -80,8 +80,14 @@ function openPlantInfo(k){
     ${readySignHtml(k)}
     ${recipesHtml(k)}
     ${pl.nx&&P[pl.nx]?`<div class="sh-next"><div class="sh-nl">→ Plant next</div><div class="sh-nv">${P[pl.nx].e} ${P[pl.nx].n} — ${P[pl.nx].h}</div></div>`:''}
+    ${varietyListHtml(k)}
     ${behaviourHtml(k)}
     ${pests.length?`<div class="set-txt">🐛 Can be bothered by ${pests.map(p=>p.n.toLowerCase()).join(', ')}. <button class="link-btn" onclick="openPestsFor('${k}')">See the Pests tab ›</button></div>`:''}
   </div>`);
 }
-
+// Plant details: the varieties of this crop, beginner pick first
+function varietyListHtml(k){
+  const vs=[...varietiesOf(k)].sort((a,b)=>(b.tags||[]).includes('b')-(a.tags||[]).includes('b'));
+  if(!vs.length)return'';
+  return `<div class="stat-lbl">🏷️ Varieties</div><div class="var-list compact">${vs.map(v=>`<div class="var-card static"><div class="var-top"><span class="var-n">${esc(v.n)}</span><span class="var-d">~${v.days||timing(k).days} days</span></div>${v.tags?.length?`<div class="var-tags">${tagsHtml(v)}</div>`:''}<div class="var-note">${esc(v.note||'')}</div></div>`).join('')}</div>`;
+}

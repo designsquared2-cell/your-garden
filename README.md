@@ -31,7 +31,8 @@ Keep new features in the tab they belong to: anything you tick off goes in Jobs.
 | `index.html` | Page skeleton |
 | `css/styles.css` | All styles |
 | `js/data.js` | Plant library (`P`), sowing months & days-to-harvest (`TIMING`), families, seasonal stories. No preloaded garden — a fresh install starts with no beds |
-| `js/state.js` | Saved state (localStorage key `gdn_v4`), migration, undo, cell & plant helpers |
+| `js/state.js` | Saved state (localStorage key `gdn_v4`), migration (incl. old plant keys → crop › variety), undo, cell & plant helpers |
+| `js/varieties.js` | Varieties per crop (`VARIETIES`): name, days, traits, tags, notes; your own varieties in `customVarieties` |
 | `js/ui.js` | Sheet, toast (with Undo), confetti, tab switching |
 | `js/weather.js` | Open-Meteo forecast, watering verdict, location search |
 | `js/pests.js` | Pests + growing problems (`PESTS`, `DISORDERS`), prevention plans (`GUARDS`), remedies (`REMEDIES`: home-made / organic / native), the step-by-step finder, Pests tab |

@@ -1,6 +1,6 @@
 // Beds view: grid, select mode, drag & drop, plant sheet, plant picker, custom plant form.
 'use strict';
-const CELL_KEYS=['p','s','d','st','picks'];
+const CELL_KEYS=['p','v','s','d','st','picks'];
 const cellData=c=>Object.fromEntries(CELL_KEYS.map(k=>[k,c[k]??null]));
 
 // ── Grid ──
@@ -77,7 +77,7 @@ function deleteBed(bi){
 function renderCell(cell,bi,ri,ci){
   const pl=isEmpty(cell)?null:P[cell.p];const s=pl?cell.s:'empty';const sel=selectMode&&selected.has(`${bi}-${ri}-${ci}`);
   const pip={ready:'pip-r',bolting:'pip-b',done:'pip-d'}[s];
-  return `<div class="cell s-${s}${sel?' selected':''}" id="cell-${bi}-${ri}-${ci}" data-bi="${bi}" data-ri="${ri}" data-ci="${ci}" role="button" tabindex="0" aria-label="${pl?pl.n+', '+STATUS_LBL[s]:'Empty — tap to plant'}" onpointerdown="cellPD(event,${bi},${ri},${ci})" onclick="cellClick(${bi},${ri},${ci})" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();cellClick(${bi},${ri},${ci});}"><div class="cell-chk">${sel?'✓':''}</div>${pip?`<div class="cell-pip ${pip}"></div>`:''}<div class="cell-e">${pl?pl.e:'＋'}</div><div class="cell-n">${pl?pl.n:''}</div></div>`;
+  return `<div class="cell s-${s}${sel?' selected':''}" id="cell-${bi}-${ri}-${ci}" data-bi="${bi}" data-ri="${ri}" data-ci="${ci}" role="button" tabindex="0" aria-label="${pl?cellName(cell)+', '+STATUS_LBL[s]:'Empty — tap to plant'}" onpointerdown="cellPD(event,${bi},${ri},${ci})" onclick="cellClick(${bi},${ri},${ci})" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();cellClick(${bi},${ri},${ci});}"><div class="cell-chk">${sel?'✓':''}</div>${pip?`<div class="cell-pip ${pip}"></div>`:''}<div class="cell-e">${pl?cellEmoji(cell):'＋'}</div><div class="cell-n">${pl?cellShort(cell):''}</div></div>`;
 }
 function cellClick(bi,ri,ci){if(suppressClick)return;if(selectMode)toggleSelect(bi,ri,ci);else if(isEmpty(getCell(bi,ri,ci)))openPicker(bi,ri,ci);else openCellSheet(bi,ri,ci);}
 
@@ -130,7 +130,7 @@ function cellPD(e,bi,ri,ci){
 function startDrag(x,y){
   if(!DS||DS.active)return;
   DS.active=true;const{bi,ri,ci}=DS.src;
-  const g=document.createElement('div');g.className='drag-ghost';g.textContent=P[getCell(bi,ri,ci).p].e;
+  const g=document.createElement('div');g.className='drag-ghost';g.textContent=cellEmoji(getCell(bi,ri,ci));
   g.style.left=(x-28)+'px';g.style.top=(y-28)+'px';document.body.appendChild(g);DS.ghost=g;
   $(`cell-${bi}-${ri}-${ci}`)?.classList.add('dragging');navigator.vibrate?.(15);
 }
@@ -178,9 +178,10 @@ function openCellSheet(bi,ri,ci){
   const readyTxt={'Ready now':'Now','Picking season':'Picking','Ready about now':'Any day','Finished':'—'}[readyLabel(cell,true)]??readyLabel(cell,true);
   const canPick=['growing','ready','bolting'].includes(cell.s);
   const a=`${bi},${ri},${ci}`;
-  showSheet(`<div class="sh-plant-hdr"><div class="sh-pe">${pl.e}</div><div><div class="sh-pn">${pl.n}</div><span class="sh-stag tg-${cell.s}">${STATUS_LBL[cell.s]}</span>${cell.picks?`<span class="sh-picks">🧺 ${plural(cell.picks,'pick')}</span>`:''}</div></div>
+  showSheet(`<div class="sh-plant-hdr"><div class="sh-pe">${cellEmoji(cell)}</div><div><div class="sh-pn">${cellName(cell)}</div><span class="sh-stag tg-${cell.s}">${STATUS_LBL[cell.s]}</span>${cell.picks?`<span class="sh-picks">🧺 ${plural(cell.picks,'pick')}</span>`:''}</div></div>
   <div class="sh-body">
     <div class="sh-chips"><div class="sh-chip"><div class="sh-cl">Season</div><div class="sh-cv" style="color:#C49010">${pl.h}</div></div><div class="sh-chip"><div class="sh-cl">In ground</div><div class="sh-cv">${days!==null?days+'d':'—'}</div></div><div class="sh-chip"><div class="sh-cl">Ready</div><div class="sh-cv">${readyTxt}</div></div></div>
+    ${varietiesOf(cell.p).length?`<div class="planted-row"><span class="sh-cl">🏷️ Variety</span><button class="var-btn" onclick="openVarietyStep(${a},'${cell.p}',true)">${cellVariety(cell)?esc(cellVariety(cell).n):'Not set — choose'} ›</button></div>`:''}
     <div class="planted-row"><span class="sh-cl">📅 Planted</span><input class="fm-in date-in" type="date" id="cell-d" max="${td}" value="${cell.d||td}" onchange="setPlanted(${a})"></div>
     <div class="sh-tip">💡 ${pl.tip}</div>
     ${pl.nx&&P[pl.nx]?`<div class="sh-next"><div class="sh-nl">→ Plant next</div><div class="sh-nv">${P[pl.nx].e} ${P[pl.nx].n} — ${P[pl.nx].h}</div></div>`:''}
@@ -229,9 +230,12 @@ function renderPickerGrid(q){
   html+=groups.map(([cat,ks])=>[cat,ks.filter(k=>inSeason(k))]).filter(([,ks])=>ks.length).map(([cat,ks])=>`<div class="picker-cat">🟢 ${CAT_LBL[cat]} — plant now</div>${ks.map(k=>pickTile(k,'',' pick-on')).join('')}`).join('');
   const off=groups.flatMap(([,ks])=>ks.filter(k=>!inSeason(k)));
   if(off.length)html+=`<div class="picker-cat pick-off-hdr">💤 Out of season — better planted later</div>${off.map(k=>pickTile(k,timing(k).sow?'Plant '+monthsText(timing(k).sow):'Out of season',' pick-off')).join('')}`;
-  if(t&&!total)html=`<div class="pick-empty">No “${esc(t)}” in your list yet — add it below.</div>`;
+  // Varieties whose name matches the search (e.g. "Grosse Lisse" → Tomato › Grosse Lisse)
+  const vm=t?Object.keys(P).flatMap(k=>varietiesOf(k).filter(v=>v.n.toLowerCase().includes(t.toLowerCase())).map(v=>[k,v])):[];
+  if(vm.length)html=`<div class="picker-cat">🏷️ Varieties</div>${vm.map(([k,v])=>`<button class="pick-item pick-on" onclick="choosePlant(${_pk.bi},${_pk.ri},${_pk.ci},'${k}','${v.id}')"><div class="pick-e">${v.e||P[k].e}</div><div class="pick-n">${P[k].n} › ${esc(v.n)}</div></button>`).join('')}`+html;
+  if(t&&!total&&!vm.length)html=`<div class="pick-empty">No “${esc(t)}” in your list yet — add it below.</div>`;
   const exact=groups.some(([,ks])=>ks.some(k=>plantName(k).toLowerCase()===t.toLowerCase()));
-  if(!exact)html+=`<div class="picker-cat">${total?'Not in the list?':'New plant'}</div><button class="pick-item pick-new" onclick="openNewPlant()"><div class="pick-e">＋</div><div class="pick-n">${t?`Add “${esc(t)}”`:'Add a new plant'}</div></button>`;
+  if(!exact&&!vm.length)html+=`<div class="picker-cat">${total?'Not in the list?':'New plant'}</div><button class="pick-item pick-new" onclick="openNewPlant()"><div class="pick-e">＋</div><div class="pick-n">${t?`Add “${esc(t)}”`:'Add a new plant'}</div></button>`;
   $('pick-grid').innerHTML=html;
 }
 function pickEnter(){
@@ -253,10 +257,14 @@ function readDate(id){const v=$(id).value,td=localDate();return!v?td:v>td?td:v;}
 function statusForAge(st,d){return daysBetween(d,localDate())>=14?'growing':st;}
 
 let _pend=null;
-function choosePlant(bi,ri,ci,key){
-  _pend={bi,ri,ci,key};const pl=P[key];
-  showSheet(`<div class="sh-body"><div class="ptc-emoji">${pl.e}</div><div class="ptc-name">${pl.n}</div><div class="ptc-hw">Harvest: ${pl.h}${inSeason(key)?'':' · <span style="color:#FF9060">out of season now</span>'}</div>
-    ${plantingHeadsUpHtml(key,bi)}
+// vid: undefined = ask which variety (if the crop has any); null = "not sure"; otherwise the chosen variety
+function choosePlant(bi,ri,ci,key,vid){
+  if(vid===undefined&&varietiesOf(key).length){openVarietyStep(bi,ri,ci,key);return;}
+  vid=vid||null;_pend={bi,ri,ci,key,vid};const pl=P[key],v=varietyOf(key,vid);
+  showSheet(`<div class="sh-body"><div class="ptc-emoji">${v?.e||pl.e}</div><div class="ptc-name">${pl.n}</div>
+    ${varietiesOf(key).length?`<div class="ptc-var">${v?esc(v.n):'Any variety'} · <button class="link-btn" onclick="openVarietyStep(${bi},${ri},${ci},'${key}')">change</button></div>`:''}
+    <div class="ptc-hw">Harvest: ${pl.h}${inSeason(key)?'':' · <span style="color:#FF9060">out of season now</span>'}</div>
+    ${plantingHeadsUpHtml(key,bi,vid)}
     <div class="ptc-q">When was it planted?</div>
     <div class="date-wrap">${datePickHtml('plant-d')}</div>
     <div class="fm-help" style="text-align:center;margin-bottom:12px">Already in the ground? Pick the date you planted it.</div>
@@ -265,11 +273,11 @@ function choosePlant(bi,ri,ci,key){
     <button class="btn btn-cancel btn-full" style="margin-top:8px" onclick="openPicker(${bi},${ri},${ci})">← Back</button></div>`);
 }
 function confirmPlant(st){
-  if(!_pend)return;const{bi,ri,ci,key}=_pend;_pend=null;
+  if(!_pend)return;const{bi,ri,ci,key,vid}=_pend;_pend=null;
   const d=readDate('plant-d'),s=statusForAge(st,d);
-  setCell(bi,ri,ci,{p:key,s,st,d,picks:0});closeSheet();refreshAll();
-  const exp=expectedDate(getCell(bi,ri,ci));
-  toast(`🌱 ${d===localDate()?'Planted':`Added (planted ${fmtDate(d)})`} ${plantName(key)}${exp?` — ready ${exp<=localDate()?'about now':'~'+fmtDate(exp)}`:''}`);
+  setCell(bi,ri,ci,{p:key,v:vid,s,st,d,picks:0});closeSheet();refreshAll();
+  const c=getCell(bi,ri,ci),exp=expectedDate(c);
+  toast(`🌱 ${d===localDate()?'Planted':`Added (planted ${fmtDate(d)})`} ${unesc(cellName(c))}${exp?` — ready ${exp<=localDate()?'about now':'~'+fmtDate(exp)}`:''}`);
 }
 function setPlanted(bi,ri,ci){
   const c=getCell(bi,ri,ci),d=readDate('cell-d');if(d===c.d)return;
@@ -321,4 +329,45 @@ function saveNewPlant(){
   saveState();applyCustomPlants();
   if(_np.key){const{bi,ri,ci}=_np;refreshAll();openCellSheet(bi,ri,ci);toast('Saved '+n);}
   else choosePlant(_np.bi,_np.ri,_np.ci,key);
+}
+
+// ── Varieties ── "Which tomato?" when planting, and to change a planted one's variety.
+// change=true: called from a plant sheet (bi,ri,ci is the planted spot) — picking updates it instead of planting.
+function openVarietyStep(bi,ri,ci,k,change){
+  const pl=P[k],cur=change?getCell(bi,ri,ci).v:null;
+  const vs=[...varietiesOf(k)].sort((a,b)=>(b.tags||[]).includes('b')-(a.tags||[]).includes('b'));
+  const pick=vid=>change?`setVariety(${bi},${ri},${ci},${vid?`'${vid}'`:'null'})`:`choosePlant(${bi},${ri},${ci},'${k}',${vid?`'${vid}'`:'null'})`;
+  const card=v=>{const t={...timing(k),...(v.days?{days:v.days}:{}),...('pick' in v?{pick:v.pick}:{})};
+    return `<button class="var-card${cur===v.id?' on':''}" onclick="${pick(v.id)}"><div class="var-top"><span class="var-e">${v.e||pl.e}</span><span class="var-n">${esc(v.n)}</span><span class="var-d">~${t.days} days</span></div>
+      ${v.tags?.length?`<div class="var-tags">${tagsHtml(v)}</div>`:''}<div class="var-note">${esc(v.note||'')}</div></button>`;};
+  showSheet(`<div class="sh-body"><div class="sh-sticky"><div class="sh-toprow"><div><div class="sh-heading">${pl.e} Which ${pl.n.toLowerCase()}?</div><div class="sh-sub">Not sure? Any is fine — you can change it later</div></div><button class="sh-cancel" onclick="${change?`openCellSheet(${bi},${ri},${ci})`:'closeSheet()'}">✕ ${change?'Back':'Cancel'}</button></div></div>
+    <div class="var-list">${vs.map(card).join('')}
+      <button class="var-card any${change&&!cur?' on':''}" onclick="${pick(null)}"><div class="var-top"><span class="var-e">🤷</span><span class="var-n">Not sure — any ${pl.n.toLowerCase()}</span></div><div class="var-note">Uses typical timing for ${pl.n.toLowerCase()}.</div></button>
+      <button class="var-card mine" onclick="openMyVariety(${bi},${ri},${ci},'${k}',${!!change})"><div class="var-top"><span class="var-e">＋</span><span class="var-n">My own variety</span></div><div class="var-note">From a seed packet or nursery label — just the name, and days if it says.</div></button>
+    </div>
+    ${change?'':`<button class="btn btn-cancel btn-full" style="margin-top:10px" onclick="openPicker(${bi},${ri},${ci})">← Back to plants</button>`}</div>`);
+}
+function setVariety(bi,ri,ci,vid){
+  setCell(bi,ri,ci,{v:vid});refreshAll();openCellSheet(bi,ri,ci);
+  toast(`🏷️ ${vid?esc(varietyOf(getCell(bi,ri,ci).p,vid).n):'Variety cleared'}`);
+}
+// Your own variety: only a name (and optionally days); everything else comes from the crop
+function openMyVariety(bi,ri,ci,k,change){
+  const pl=P[k];
+  showSheet(`<div class="sh-body"><div class="sh-heading">＋ My own ${pl.n.toLowerCase()}</div><div class="sh-sub">Everything else — pests, tips, recipes — comes from ${pl.n.toLowerCase()}</div>
+    <div class="fm-lbl">Variety name</div><input class="fm-in" id="mv-n" maxlength="40" placeholder="e.g. Mortgage Lifter">
+    <div class="fm-lbl">Days to harvest (optional)</div><input class="fm-in" id="mv-d" type="number" inputmode="numeric" min="7" max="400" placeholder="From the seed packet, e.g. 75">
+    <label class="fm-check"><input type="checkbox" id="mv-p"${timing(k).pick?' checked':''}> Keeps producing — pick from it repeatedly</label>
+    <div class="btn-row" style="margin-top:16px"><button class="btn btn-cancel" onclick="openVarietyStep(${bi},${ri},${ci},'${k}',${change})">← Back</button><button class="btn btn-seed" onclick="saveMyVariety(${bi},${ri},${ci},'${k}',${change})">Save</button></div></div>`);
+  if(!('ontouchstart' in window))setTimeout(()=>$('mv-n')?.focus(),50);
+}
+function saveMyVariety(bi,ri,ci,k,change){
+  const n=$('mv-n').value.trim();if(!n){toast('Give it a name');$('mv-n').focus();return;}
+  const list=ST.customVarieties[k]??=[];
+  const same=varietiesOf(k).find(v=>v.n.toLowerCase()===n.toLowerCase());
+  let id=same?.id;
+  if(!id){const base='cv-'+(n.toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'')||'variety');id=base;let i=2;while(varietyOf(k,id))id=base+'-'+i++;
+    const d=parseInt($('mv-d').value,10);
+    list.push({id,n,s:n.length>12?n.slice(0,11)+'…':n,...(d>0?{days:d}:{}),pick:$('mv-p').checked,note:'Your own variety'});saveState();}
+  change?setVariety(bi,ri,ci,id):choosePlant(bi,ri,ci,k,id);
 }

@@ -15,7 +15,7 @@ function plantAlertItems(){
     const pl=P[cell.p],ready=cell.s==='ready';
     out.push({kind:'plant',id:k,type:'urgent',cb:true,
       title:ready?`🌾 ${pl.n} in ${esc(bed.name)} — ready to harvest`:`⚠️ ${pl.n} in ${esc(bed.name)} — bolting, harvest now!`,
-      detail:ready?(isLifted(cell.p)?'Tick once you\'ve pulled them — the spots are freed up to replant.':keepsProducing(cell.p)?'Tick when you\'ve picked some — it keeps producing.':'Tick once harvested — it\'s completed, ready to pull out.'):isLifted(cell.p)?'Pull them all now. Tick and the spots are freed up to replant.':'Harvest everything now. Tick and it\'s completed, ready to pull out.'});
+      detail:ready?(isLifted(cell.p)?'Tick once you\'ve pulled them — the spots are freed up to replant.':cellKeepsProducing(cell)?'Tick when you\'ve picked some — it keeps producing.':'Tick once harvested — it\'s completed, ready to pull out.'):isLifted(cell.p)?'Pull them all now. Tick and the spots are freed up to replant.':'Harvest everything now. Tick and it\'s completed, ready to pull out.'});
   });
   return out;
 }
@@ -87,7 +87,8 @@ function tickItem(kind,id,btn){
 // Ticking a ready/bolting alert = a harvest. Repeat croppers stay put; one-off and bolting crops become "finished".
 function harvestFromAlert(k){
   const[p,s]=k.split(':');
-  return doHarvest(plantedCells().filter(x=>x.cell.p===p&&x.cell.s===s),s==='bolting'||!keepsProducing(p));
+  const xs=plantedCells().filter(x=>x.cell.p===p&&x.cell.s===s);
+  return doHarvest(xs,s==='bolting'||!xs.every(x=>cellKeepsProducing(x.cell)));
 }
 // Running late: more than LATE_DAYS past the expected date. Ticking snoozes it for LATE_SNOOZE days.
 const LATE_DAYS=21,LATE_SNOOZE=14;

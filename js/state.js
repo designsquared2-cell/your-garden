@@ -5,6 +5,7 @@ let ST;
 
 // ── Helpers ──
 function dc(o){return JSON.parse(JSON.stringify(o));}
+function unesc(s){const d=document.createElement('textarea');d.innerHTML=s;return d.value;}
 function esc(s){return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
 function localDate(d=new Date()){return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;}
 function addDays(iso,n){const d=new Date(iso+'T00:00');d.setDate(d.getDate()+n);return localDate(d);}
@@ -25,8 +26,26 @@ function migrate(s){
   });
   // Harvest log used to store the bed's position; store its id so deleting a bed can't mislabel entries
   s.log.forEach(l=>{if(l.bid==null&&l.b!=null){l.bid=s.beds[l.b]?.id||null;delete l.b;}});
-  s.v=5;return s;
+  s.customVarieties??={};
+  // v6: plants that were really varieties became one crop each (Cherry Tomato → Tomato › Cherry, …)
+  if((s.v||0)<6){
+    const crop=k=>CROP_ALIAS[k]?.[0]||k;
+    s.beds.forEach(b=>b.rows.forEach(r=>r.forEach(c=>{
+      const a=CROP_ALIAS[c.p];if(a){c.p=a[0];c.v??=a[1];}
+      else if(c.p==='kale')c.v??='tuscan'; // the old "Tuscan Kale"
+    })));
+    s.log.forEach(l=>{l.p=crop(l.p);});
+    s.pestReports.forEach(r=>{r.p=crop(r.p);});
+    Object.keys(s.prices).forEach(k=>{const c=crop(k);if(c!==k){s.prices[c]??=s.prices[k];delete s.prices[k];}});
+    Object.keys(s.alertDone).forEach(k=>{const[p,st]=k.split(':');const c=crop(p);if(c!==p){s.alertDone[c+':'+st]=s.alertDone[k];delete s.alertDone[k];}});
+    Object.values(s.customPlants).forEach(c=>{if(c.nx)c.nx=crop(c.nx);});
+  }
+  s.v=6;return s;
 }
+// Old plant keys → [crop, variety], for saves and backups from before varieties
+const CROP_ALIAS={'cherry-tomato':['tomatoes','tommy-toe'],'dwarf-beans':['beans','dwarf'],'climbing-beans':['beans','blue-lake'],'snake-beans':['beans','snake'],
+  'snow-peas':['peas','snow'],'garden-peas':['peas','shelling'],'silverbeet':['chard','fordhook'],'rainbow-chard':['chard','rainbow'],
+  'red-cabbage':['cabbage','red'],'cos-lettuce':['lettuce','cos']};
 function newId(){return'b'+Date.now().toString(36)+Math.random().toString(36).slice(2,6);}
 function bedById(id){return ST.beds.find(b=>b.id===id);}
 function freshState(){return migrate(dc(DEFAULT));}
@@ -48,7 +67,7 @@ function undo(){
 // ── Cells ──
 function getCell(bi,ri,ci){return ST.beds[bi].rows[ri][ci];}
 function setCell(bi,ri,ci,d){Object.assign(ST.beds[bi].rows[ri][ci],d);saveState();}
-function clearCell(bi,ri,ci){setCell(bi,ri,ci,{p:null,s:'empty',d:null,st:null,picks:0});}
+function clearCell(bi,ri,ci){setCell(bi,ri,ci,{p:null,v:null,s:'empty',d:null,st:null,picks:0});}
 function isEmpty(c){return!c.p||c.s==='empty';}
 function allCells(){const out=[];ST.beds.forEach((bed,bi)=>bed.rows.forEach((row,ri)=>row.forEach((cell,ci)=>out.push({bed,bi,ri,ci,cell}))));return out;}
 function plantedCells(){return allCells().filter(x=>!isEmpty(x.cell)&&P[x.cell.p]);}
@@ -82,7 +101,7 @@ function keepsProducing(k){return!!timing(k).pick;}
 function familyOf(k){return Object.keys(FAMILY).find(f=>FAMILY[f].includes(k));}
 // Expected first harvest. Seedlings (st !== 'seed', including the starting layout) are ~3 weeks ahead.
 function expectedDate(cell){
-  const t=timing(cell.p);if(!t.days||!cell.d)return null;
+  const t=cellTiming(cell);if(!t.days||!cell.d)return null;
   return addDays(cell.d,cell.st==='seed'?t.days:Math.max(14,t.days-21));
 }
 
@@ -92,12 +111,12 @@ function readyLabel(cell,short){
   if(cell.s==='ready'||cell.s==='bolting')return'Ready now';
   if(cell.s==='done')return'Finished';
   if(!exp||COMPANIONS.includes(cell.p))return short?'—':pl.h;
-  if(exp<=localDate())return keepsProducing(cell.p)?'Picking season':'Ready about now';
+  if(exp<=localDate())return cellKeepsProducing(cell)?'Picking season':'Ready about now';
   return(short?'':'Ready ~')+fmtDate(exp);
 }
 // One-off crops that should be ready by now but aren't marked Ready
 function overdueOneOff(cell){
-  if(!['seed','seedling','growing'].includes(cell.s)||keepsProducing(cell.p)||COMPANIONS.includes(cell.p))return false;
+  if(!['seed','seedling','growing'].includes(cell.s)||cellKeepsProducing(cell)||COMPANIONS.includes(cell.p))return false;
   const exp=expectedDate(cell);return!!exp&&exp<=localDate();
 }
 

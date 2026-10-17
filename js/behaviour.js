@@ -16,20 +16,20 @@ const TRAIT_DEF={
   bolts:    {e:'⏱️',t:'Bolts in heat',         d:'Runs to flower and seed when it gets hot. Sow in the cool months and pick often.'},
 };
 const TRAITS={
-  'broad-beans':['tall','stake','nfix'],'snow-peas':['climb','nfix'],'garden-peas':['climb','nfix'],
-  'kale':['heavy'],'cos-lettuce':['bolts'],'spinach':['bolts'],'asian-greens':['bolts'],'bok-choy':['bolts'],
-  'red-cabbage':['big','heavy'],'broccoli':['big','heavy'],'cauliflower':['big','heavy'],
+  'broad-beans':['tall','stake','nfix'],'peas':['climb','nfix'],
+  'kale':['heavy'],'lettuce':['bolts'],'spinach':['bolts'],'asian-greens':['bolts'],'bok-choy':['bolts'],
+  'cabbage':['big','heavy'],'broccoli':['big','heavy'],'cauliflower':['big','heavy'],
   'coriander':['bolts','selfseeds'],'parsley':['selfseeds'],'garlic-chives':['perennial','selfseeds'],'dill':['tall','bolts','selfseeds'],
-  'potato':['big','heavy'],'dwarf-beans':['nfix'],'strawberry':['runners','perennial'],
-  'tomatoes':['tall','stake','heavy'],'cherry-tomato':['tall','stake','heavy'],'capsicum':['stake'],'eggplant':['stake','heavy'],
-  'zucchini':['big','heavy'],'cucumber':['climb'],'climbing-beans':['climb','tall','nfix'],'snake-beans':['climb','tall','nfix'],
+  'potato':['big','heavy'],'strawberry':['runners','perennial'],
+  'tomatoes':['tall','stake','heavy'],'capsicum':['stake'],'eggplant':['stake','heavy'],
+  'zucchini':['big','heavy'],'cucumber':['climb'],'beans':['nfix'],
   'sweet-corn':['tall','heavy'],'pumpkin':['sprawl','big','heavy'],'sweet-potato':['sprawl','big'],
   'thyme':['perennial'],'rosemary':['perennial'],'sage':['perennial'],'oregano':['perennial'],'chives':['perennial'],
   'mint':['spreads','perennial'],'lemongrass':['perennial','big'],
   'marigold':['selfseeds'],'calendula':['selfseeds'],'nasturtium':['sprawl','selfseeds'],'borage':['big','selfseeds'],
 };
 // Harvested by pulling the whole plant up — nothing left to clear afterwards
-const LIFTED=new Set(['beetroot','carrots','radish','turnip','onions','shallots','spring-onions','leek','garlic','potato','sweet-potato','cos-lettuce','bok-choy','asian-greens']);
+const LIFTED=new Set(['beetroot','carrots','radish','turnip','onions','shallots','spring-onions','leek','garlic','potato','sweet-potato','lettuce','bok-choy','asian-greens']);
 function isLifted(k){return LIFTED.has(k);}
 // Spots one plant really needs (default 1)
 const SPOTS={'pumpkin':4,'sweet-potato':3,'zucchini':2,'borage':2};
@@ -37,14 +37,13 @@ const SPOTS={'pumpkin':4,'sweet-potato':3,'zucchini':2,'borage':2};
 // Neighbours. Terms are plant keys or family names (see FAMILY).
 const GOOD_PAIRS=[
   ['tomatoes','basil','Basil is said to improve flavour and its scent confuses pests.'],
-  ['cherry-tomato','basil','Basil is said to improve flavour and its scent confuses pests.'],
   ['nightshade','marigold','Marigolds draw in hoverflies and help deter whitefly.'],
   ['brassica','dill','Dill flowers feed the tiny wasps that attack caterpillars.'],
   ['brassica','nasturtium','Nasturtiums lure cabbage whites and aphids away from your brassicas.'],
   ['cucurbit','nasturtium','Nasturtiums act as a decoy for aphids.'],
   ['carrots','spring-onions','Onion scent helps mask carrots from pests.'],
   ['carrots','chives','Chive scent helps mask carrots from pests.'],
-  ['sweet-corn','climbing-beans','Beans climb the corn and feed the soil it needs.'],
+  ['sweet-corn','beans','Beans climb the corn and feed the soil it needs.'],
   ['sweet-corn','pumpkin','Pumpkin leaves shade the soil and keep moisture in for the corn.'],
   ['strawberry','borage','Borage brings in bees, so more fruit sets.'],
   ['leafy','legume','Beans and peas leave nitrogen behind for hungry leafy greens.'],
@@ -53,9 +52,8 @@ const BAD_PAIRS=[
   ['legume','allium','Onions, garlic and chives slow the growth of beans and peas.'],
   ['potato','nightshade','Potatoes share diseases with tomatoes, capsicum and eggplant.'],
   ['sweet-corn','tomatoes','Both attract the same tomato grub (heliothis).'],
-  ['sweet-corn','cherry-tomato','Both attract the same tomato grub (heliothis).'],
 ];
-function traitsOf(k){return(TRAITS[k]||[]).map(t=>({id:t,...TRAIT_DEF[t]}));}
+function traitsOf(k,vid){return(varietyOf(k,vid)?.traits||TRAITS[k]||[]).map(t=>({id:t,...TRAIT_DEF[t]}));}
 function isTerm(k,term){return k===term||!!FAMILY[term]?.includes(k);}
 // Pairs that involve plant k and plant o (either way round)
 function pairNote(list,k,o){for(const[a,b,why]of list){if((isTerm(k,a)&&isTerm(o,b))||(isTerm(k,b)&&isTerm(o,a)))return why;}return null;}
@@ -86,9 +84,9 @@ function behaviourHtml(k){
 function groupWhy(xs){const g=new Map();xs.forEach(x=>{if(!g.has(x.why))g.set(x.why,[]);g.get(x.why).push(x.o);});return[...g];}
 function andList(ks){const n=ks.map(k=>P[k].n);return n.length>1?n.slice(0,-1).join(', ')+' and '+n.at(-1):n[0];}
 // Planting sheet: only the things worth knowing before it goes in this bed
-function plantingHeadsUpHtml(k,bi){
-  const warn=traitsOf(k).filter(t=>t.warn),{good,bad}=bedNeighbours(k,bi),sp=SPOTS[k];
-  const low=ST.beds[bi].low&&TRAITS[k]?.includes('tall');
+function plantingHeadsUpHtml(k,bi,vid){
+  const ts=traitsOf(k,vid),warn=ts.filter(t=>t.warn),{good,bad}=bedNeighbours(k,bi),sp=varietyOf(k,vid)?.spots||SPOTS[k];
+  const low=ST.beds[bi].low&&ts.some(t=>t.id==='tall');
   if(!warn.length&&!good.length&&!bad.length&&!low)return'';
   return `<div class="heads-up"><div class="hu-t">Heads up</div>
     ${low?`<div class="hu-row bad">📏 This bed is set to low crops only — ${P[k].n} grows tall.</div>`:''}
