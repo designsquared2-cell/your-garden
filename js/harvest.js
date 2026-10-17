@@ -199,7 +199,7 @@ function recipesHtml(k){
   if(COMPANIONS.includes(k)&&!more)return'';
   return `<div class="stat-lbl">🍳 Recipe ideas</div><div class="bpc-harvest" style="margin-bottom:12px">
     <div class="bpc-harvest-txt">${pl.idea}</div>${more?`<div class="bpc-harvest-txt" style="margin-top:6px">${more}</div>`:''}
-    <a class="id-photos" href="https://www.google.com/search?q=${encodeURIComponent(plantName(k)+' recipes')}" target="_blank" rel="noopener">More ${pl.n.toLowerCase()} recipes ↗</a></div>`;
+    <a class="id-photos" href="https://www.google.com/search?q=${encodeURIComponent(plantName(k)+' recipes')}" target="_blank" rel="noopener" onclick="return openLink(event,this)">More ${pl.n.toLowerCase()} recipes ↗</a></div>`;
 }
 // "Not doing what it should?" — the not-producing problems that apply to this plant, most specific first
 function troubleHtml(k){

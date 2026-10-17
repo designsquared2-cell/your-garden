@@ -22,7 +22,7 @@ async function loadWeather(force){
     const j=await r.json();WX={t:Date.now(),lat:loc.lat,lon:loc.lon,daily:j.daily};WX_ERR=false;
     try{localStorage.setItem(WX_K,JSON.stringify(WX));}catch(e){}
   }catch(e){WX_ERR=true;}
-  renderWeather();renderAlerts();renderView();
+  renderWeather();renderAlerts();
 }
 
 function wxVerdict(){

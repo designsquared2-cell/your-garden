@@ -30,12 +30,33 @@ function tickAway(btn,fn){
   setTimeout(fn,350);
 }
 
+// ── Where you were ── phones often unload a backgrounded page (e.g. while you look at photos in another
+// tab) and reload it when you come back. Remember the tab, Problems finder answers and scroll position so
+// a reload puts you back in the same place. Kept for an hour.
+const UI_K='gdn_ui',UI_KEEP_MS=3600e3;
+function saveUI(){
+  try{localStorage.setItem(UI_K,JSON.stringify({t:Date.now(),v:curView,y:scrollY,pt:_pTab,ia:_idArea,is:[..._idSel],ip:_idPlant,
+    open:[...document.querySelectorAll('.view.on details[open][id]')].map(d=>d.id)}));}catch(e){}
+}
+function restoreUI(){
+  let u=null;try{u=JSON.parse(localStorage.getItem(UI_K));}catch(e){}
+  if(!u||Date.now()-u.t>UI_KEEP_MS)return;
+  _pTab=u.pt||'id';_idArea=u.ia||null;_idSel=new Set(u.is||[]);_idPlant=u.ip||null;
+  setView(u.v||'beds');
+  (u.open||[]).forEach(id=>{const d=$(id);if(d)d.open=true;});
+  requestAnimationFrame(()=>window.scrollTo(0,u.y||0));
+}
+// Open links (photos, recipes) in a separate tab so the app stays where it is
+function openLink(e,a){e.preventDefault();saveUI();window.open(a.href,'_blank','noopener');return false;}
+// Re-render a container without collapsing the <details> the user had open
+function keepOpen(el,render){const open=[...el.querySelectorAll('details[open][id]')].map(d=>d.id);render();open.forEach(id=>{const d=$(id);if(d)d.open=true;});}
+
 let curView='beds';
 function setView(name){
   curView=name;
   document.querySelectorAll('.view').forEach(v=>v.classList.toggle('on',v.id==='view-'+name));
   document.querySelectorAll('.nav-btn').forEach(b=>b.classList.toggle('active',b.dataset.view===name));
-  renderView();window.scrollTo(0,0);
+  renderView();window.scrollTo(0,0);saveUI();
 }
 // Each tab has one job: Beds = summary + layout, Jobs = everything to do, Harvest = what's ready & what it's worth,
 // Plants = plant information, Pests = identifying and learning about pests.

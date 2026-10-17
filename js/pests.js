@@ -412,7 +412,7 @@ function idResultHtml({p},i){
     <div class="pest-txt"><b>How to tell:</b> ${p.look}</div>
     ${remedyHtml(p)}
     ${fits?`<div class="pest-txt id-warn">It doesn't usually affect ${plantName(_idPlant)}, so compare the photos.</div>`:''}
-    <div class="id-btns"><a class="id-photos" href="${photosUrl(p)}" target="_blank" rel="noopener">📷 See photos ↗</a>${plantedCells().length?`<button class="task-btn" onclick="openPestReport('${p.id}',${_idPlant?`'${_idPlant}'`:'null'})">✓ That's it — add a job</button>`:''}</div></div>`;
+    <div class="id-btns"><a class="id-photos" href="${photosUrl(p)}" target="_blank" rel="noopener" onclick="return openLink(event,this)">📷 See photos ↗</a>${plantedCells().length?`<button class="task-btn" onclick="openPestReport('${p.id}',${_idPlant?`'${_idPlant}'`:'null'})">✓ That's it — add a job</button>`:''}</div></div>`;
 }
 function identifyHtml(){
   const matches=idMatches();
@@ -424,7 +424,7 @@ function identifyHtml(){
     ${_idArea?`<div class="id-step"><span class="id-num">2</span> What can you see? <span class="hlog-d">tap all that fit</span></div>
       <div class="sym-wrap">${SYMPTOMS.filter(s=>s.a.includes(_idArea)).map(s=>`<button class="sym${_idSel.has(s.id)?' on':''}" onclick="idToggle('${s.id}')">${s.e} ${s.t}</button>`).join('')}</div>`:''}
     ${others.length?`<div class="id-picked"><span class="hlog-d">Also ticked:</span> ${others.map(s=>`<button class="sym on mini" onclick="idToggle('${s.id}')">${s.e} ${s.t} ✕</button>`).join('')}</div>`:''}
-    ${_idArea&&mine.length?`<details class="id-plant"${_idPlant?' open':''}><summary><span class="id-num">3</span> Which plant? <span class="hlog-d">${_idPlant?plantName(_idPlant):'optional'}</span></summary><div class="sym-wrap">${mine.map(k=>`<button class="sym${_idPlant===k?' on':''}" onclick="idPlant('${k}')">${P[k].e} ${P[k].n}</button>`).join('')}</div></details>`:''}
+    ${_idArea&&mine.length?`<details class="id-plant" id="id-plant"${_idPlant?' open':''}><summary><span class="id-num">3</span> Which plant? <span class="hlog-d">${_idPlant?plantName(_idPlant):'optional'}</span></summary><div class="sym-wrap">${mine.map(k=>`<button class="sym${_idPlant===k?' on':''}" onclick="idPlant('${k}')">${P[k].e} ${P[k].n}</button>`).join('')}</div></details>`:''}
     ${_idSel.size||_idPlant||_idArea?'<button class="link-btn" onclick="idClear()">Start again</button>':''}
     ${matches.length?`<button class="id-bar" onclick="$('id-results').scrollIntoView({behavior:'smooth',block:'start'})">See ${matches.length===1?'the likely answer':`${matches.length} likely answers`} ↓</button>`:''}
     <div id="id-results">${matches.length?matches.map(idResultHtml).join(''):_idSel.size?'<div class="set-txt">Nothing in the guide matches that — try fewer signs, or browse the Guide.</div>':_idPlant&&!_idArea?`<div class="set-txt">Looking at your ${plantName(_idPlant)} — where's the problem?</div>`:''}</div>`;
@@ -432,12 +432,12 @@ function identifyHtml(){
 function thisMonthHtml(m){
   const guards=guardItems(m),watch=pestsToWatch(m);
   return `${guards.length?`<div class="mv-st">🛡️ Prevent now</div><div class="pm-list">${guards.map(g=>`<div class="pm-row"><span class="pm-e">${g.icon}</span><div><b>${g.title.replace(/^\S+ /,'')}</b><div class="pm-d">${g.detail}</div></div></div>`).join('')}<button class="link-btn" onclick="setView('jobs')">Tick these off in Jobs ›</button></div>`:''}
-    ${watch.length?`<div class="mv-st"${guards.length?' style="margin-top:14px"':''}>👀 Watch out for in ${MONTHS[m]}</div><div class="pest-guide">${watch.map(p=>`<details class="pg"><summary><span>${p.e} ${p.n}${pestPeak(p,m)?' <span class="peak-tag">peak</span>':''}</span><span class="hlog-d">${plantList(pestCells(p),2)}</span></summary><div class="pg-body"><div class="id-what">${p.what}</div><div class="pest-txt"><b>Look for:</b> ${p.look}</div><div class="pest-txt"><b>Prevent:</b> ${p.prevent}</div></div></details>`).join('')}</div>`
+    ${watch.length?`<div class="mv-st"${guards.length?' style="margin-top:14px"':''}>👀 Watch out for in ${MONTHS[m]}</div><div class="pest-guide">${watch.map(p=>`<details class="pg" id="pw-${p.id}"><summary><span>${p.e} ${p.n}${pestPeak(p,m)?' <span class="peak-tag">peak</span>':''}</span><span class="hlog-d">${plantList(pestCells(p),2)}</span></summary><div class="pg-body"><div class="id-what">${p.what}</div><div class="pest-txt"><b>Look for:</b> ${p.look}</div><div class="pest-txt"><b>Prevent:</b> ${p.prevent}</div></div></details>`).join('')}</div>`
       :'<div class="set-txt">Nothing to watch for on your current plants this month. 🎉</div>'}`;
 }
 function guideHtml(m){
-  const row=p=>`<details class="pg"><summary><span>${p.e} ${p.n}</span><span class="${p.months&&pestActive(p,m)?'now-tag':'hlog-d'}">${p.months?(pestActive(p,m)?'active now':monthsText(p.months)):''}</span></summary>
-    <div class="pg-body"><div class="id-what">${p.what}</div>${p.months?`<div class="pest-txt"><b>When:</b> ${monthsText(p.months)}${p.peak?` · worst ${monthsText(p.peak)}`:''}</div>`:''}<div class="pest-txt"><b>Signs:</b> ${p.signs.map(s=>SYM_BY_ID[s].t.toLowerCase()).join(' · ')}</div><div class="pest-txt"><b>Look for:</b> ${p.look}</div>${remedyHtml(p)}<div class="pest-txt"><b>Prevent:</b> ${p.prevent}</div><a class="id-photos" href="${photosUrl(p)}" target="_blank" rel="noopener">📷 See photos ↗</a></div></details>`;
+  const row=p=>`<details class="pg" id="pg-${p.id}"><summary><span>${p.e} ${p.n}</span><span class="${p.months&&pestActive(p,m)?'now-tag':'hlog-d'}">${p.months?(pestActive(p,m)?'active now':monthsText(p.months)):''}</span></summary>
+    <div class="pg-body"><div class="id-what">${p.what}</div>${p.months?`<div class="pest-txt"><b>When:</b> ${monthsText(p.months)}${p.peak?` · worst ${monthsText(p.peak)}`:''}</div>`:''}<div class="pest-txt"><b>Signs:</b> ${p.signs.map(s=>SYM_BY_ID[s].t.toLowerCase()).join(' · ')}</div><div class="pest-txt"><b>Look for:</b> ${p.look}</div>${remedyHtml(p)}<div class="pest-txt"><b>Prevent:</b> ${p.prevent}</div><a class="id-photos" href="${photosUrl(p)}" target="_blank" rel="noopener" onclick="return openLink(event,this)">📷 See photos ↗</a></div></details>`;
   return `<div class="mv-st">🐛 Pests & diseases</div><div class="pest-guide">${PESTS.map(row).join('')}</div>
     <div class="mv-st" style="margin-top:14px">💧 Growing problems</div><div class="pest-guide">${DISORDERS.filter(d=>!d.late).map(row).join('')}</div>
     <div class="mv-st" style="margin-top:14px">🧺 Not producing or slow</div><div class="pest-guide">${DISORDERS.filter(d=>d.late).map(row).join('')}</div>
@@ -450,7 +450,8 @@ function guideHtml(m){
 function renderPests(){
   const m=curMonth(),g=guardItems(m).length;
   const tabs=[['id','🔍 Identify'],['month',`📅 This month${g?` · ${g}`:''}`],['guide','📖 Guide']];
-  $('pests-content').innerHTML=`<div class="mv-heading">Pests & problems</div>
+  keepOpen($('pests-content'),()=>$('pests-content').innerHTML=`<div class="mv-heading">Pests & problems</div>
     <div class="seg">${tabs.map(([t,l])=>`<button class="seg-b${_pTab===t?' on':''}" onclick="pTab('${t}')">${l}</button>`).join('')}</div>
-    <div class="mv-section">${_pTab==='id'?identifyHtml():_pTab==='month'?thisMonthHtml(m):guideHtml(m)}</div>`;
+    <div class="mv-section">${_pTab==='id'?identifyHtml():_pTab==='month'?thisMonthHtml(m):guideHtml(m)}</div>`);
+  saveUI();
 }
