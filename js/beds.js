@@ -96,9 +96,16 @@ function toggleSelect(bi,ri,ci){const k=`${bi}-${ri}-${ci}`;selected.has(k)?sele
 function selectedCells(){return[...selected].map(k=>k.split('-').map(Number)).filter(([bi,ri,ci])=>!isEmpty(getCell(bi,ri,ci)));}
 function openMultiStatus(){
   const n=selectedCells().length;if(!n){toast('Select some plants first');return;}
-  showSheet(`<div class="sh-body"><div class="sh-heading">Update ${plural(n,'plant')}</div><div class="sh-sub">Set the status or planted date for all selected spots</div><div class="stat-grid">${STATUSES.map(s=>`<button class="stat-opt so-${s}" onclick="doMultiStatus('${s}')">${STATUS_LBL[s]}</button>`).join('')}</div>
-    <div class="stat-lbl">📅 Planted date for all selected</div><div class="date-wrap">${datePickHtml('multi-d')}</div>
-    <button class="btn btn-seed btn-full" style="margin:10px 0 8px" onclick="doMultiDate()">Set planted date</button>
+  showSheet(`<div class="sh-body"><div class="sh-heading">Update ${plural(n,'plant')}</div><div class="sh-sub">Set the status for all selected spots</div><div class="stat-grid">${STATUSES.map(s=>`<button class="stat-opt so-${s}" onclick="doMultiStatus('${s}')">${STATUS_LBL[s]}</button>`).join('')}</div><button class="btn btn-cancel btn-full" onclick="closeSheet()">Cancel</button></div>`);
+}
+function openMultiDate(){
+  const cs=selectedCells();if(!cs.length){toast('Select some plants first');return;}
+  // Start from their shared date if they all match, otherwise today
+  const ds=[...new Set(cs.map(([bi,ri,ci])=>getCell(bi,ri,ci).d).filter(Boolean))];
+  showSheet(`<div class="sh-body"><div class="sh-heading">📅 Planted date</div><div class="sh-sub">${ds.length===1?`${plural(cs.length,'plant')} — currently ${fmtDate(ds[0])}`:`For all ${plural(cs.length,'selected plant')}${ds.length>1?' (they have different dates now)':''}`}</div>
+    <div class="date-wrap">${datePickHtml('multi-d',ds.length===1?ds[0]:null)}</div>
+    <div class="fm-help" style="margin-bottom:12px">Expected harvest dates and jobs update to match.</div>
+    <button class="btn btn-seed btn-full" style="margin-bottom:8px" onclick="doMultiDate()">Set planted date</button>
     <button class="btn btn-cancel btn-full" onclick="closeSheet()">Cancel</button></div>`);
 }
 function doMultiDate(){

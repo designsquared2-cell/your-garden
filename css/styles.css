@@ -65,10 +65,10 @@ body{font-family:'Nunito',system-ui,sans-serif;background:#0F1A08;color:#F0E6CC;
 .legend{display:flex;flex-wrap:wrap;gap:5px;margin-top:8px}
 .leg{display:flex;align-items:center;gap:3px;font-size:9px;color:#5A7040}
 .leg-sq{width:9px;height:9px;border-radius:2px;flex-shrink:0}
-.sel-bar{position:fixed;bottom:0;left:0;right:0;background:#1E2E12;border-top:2px solid #D4A017;padding:10px 12px;padding-bottom:calc(10px + env(safe-area-inset-bottom,0px));z-index:60;display:none;align-items:center;gap:8px}
+.sel-bar{position:fixed;bottom:0;left:0;right:0;background:#1E2E12;border-top:2px solid #D4A017;padding:10px 12px;padding-bottom:calc(10px + env(safe-area-inset-bottom,0px));z-index:60;display:none;align-items:center;gap:6px}
 .sel-bar.on{display:flex}
-.sel-count{font-size:13px;font-weight:800;color:#D4A017;flex:1}
-.sel-act{background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.15);color:#F0E6CC;border-radius:8px;font-family:inherit;font-size:12px;font-weight:700;padding:7px 12px;cursor:pointer}
+.sel-count{font-size:13px;font-weight:800;color:#D4A017;flex:1;min-width:0;white-space:nowrap}
+.sel-act{background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.15);color:#F0E6CC;border-radius:8px;font-family:inherit;font-size:12px;font-weight:700;padding:7px 10px;cursor:pointer;white-space:nowrap}
 .sel-act.danger{background:#301010;color:#FF9090;border-color:#501A1A}
 .sel-done{background:#2E5E20;color:#fff;border:none;border-radius:8px;font-family:inherit;font-size:12px;font-weight:800;padding:7px 14px;cursor:pointer}
 /* MONTHLY */

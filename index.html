@@ -12,7 +12,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="css/styles.css?v=5">
+<link rel="stylesheet" href="css/styles.css?v=6">
 </head>
 <body>
 <header class="hdr">
@@ -52,7 +52,8 @@
 <div class="sel-bar" id="sel-bar">
   <div class="sel-count" id="sel-count">0 selected</div>
   <button class="sel-act" onclick="openMultiStatus()">Status ▾</button>
-  <button class="sel-act danger" onclick="doMultiRemove()">🗑️ Remove</button>
+  <button class="sel-act" onclick="openMultiDate()">📅 Date</button>
+  <button class="sel-act danger" aria-label="Remove selected" title="Remove selected" onclick="doMultiRemove()">🗑️</button>
   <button class="sel-done" onclick="exitSelectMode()">Done</button>
 </div>
 <div class="overlay" id="overlay" onclick="closeSheet()"></div>
@@ -61,16 +62,16 @@
 <div id="confetti"></div>
 
 <!-- Plain scripts (no build step); order matters: data → state → UI → features → startup -->
-<script src="js/data.js?v=5"></script>
-<script src="js/state.js?v=5"></script>
-<script src="js/ui.js?v=5"></script>
-<script src="js/weather.js?v=5"></script>
-<script src="js/pests.js?v=5"></script>
-<script src="js/tasks.js?v=5"></script>
-<script src="js/month.js?v=5"></script>
-<script src="js/plants-view.js?v=5"></script>
-<script src="js/beds.js?v=5"></script>
-<script src="js/settings.js?v=5"></script>
-<script src="js/main.js?v=5"></script>
+<script src="js/data.js?v=6"></script>
+<script src="js/state.js?v=6"></script>
+<script src="js/ui.js?v=6"></script>
+<script src="js/weather.js?v=6"></script>
+<script src="js/pests.js?v=6"></script>
+<script src="js/tasks.js?v=6"></script>
+<script src="js/month.js?v=6"></script>
+<script src="js/plants-view.js?v=6"></script>
+<script src="js/beds.js?v=6"></script>
+<script src="js/settings.js?v=6"></script>
+<script src="js/main.js?v=6"></script>
 </body>
 </html>
