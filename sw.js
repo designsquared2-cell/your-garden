@@ -2,7 +2,7 @@
 // App files: network first, always revalidated (so updates show straight away), falling back to the cache.
 // index.html adds ?v=N to each file; bump it together with CACHE on every release.
 // Weather and fonts are left to the network; the app keeps its own weather cache.
-const CACHE='garden-v12';
+const CACHE='garden-v14';
 const SHELL=['./','index.html','css/styles.css','manifest.webmanifest',
   'js/data.js','js/state.js','js/ui.js','js/weather.js','js/pests.js','js/tasks.js','js/harvest.js','js/plants-view.js','js/behaviour.js','js/beds.js','js/settings.js','js/main.js',
   'icons/icon-192.png','icons/icon-512.png','icons/apple-touch-icon.png'];

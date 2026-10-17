@@ -83,7 +83,7 @@ function harvestFromAlert(k){
   let n=0;beds.forEach((c,bi)=>{logHarvest(p,bi,finish,c);n+=c;});
   ST.alertDone[k]=localDate();
   const v=priceOf(p)*n?` (+${money(priceOf(p)*n)})`:'';
-  return finish?`🧺 Harvested ${plantName(p)}${v} — marked finished`:`🧺 Logged a pick of ${plantName(p)}${v}`;
+  return finish?`🧺 Harvested ${plantName(p)}${v} — marked finished`:`🧺 Harvested some ${plantName(p)}${v}`;
 }
 function runAuto(id){
   const[type,bi,p]=id.split(':');

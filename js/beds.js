@@ -185,10 +185,10 @@ function openCellSheet(bi,ri,ci){
     <div class="sh-tip">💡 ${pl.tip}</div>
     ${pl.nx&&P[pl.nx]?`<div class="sh-next"><div class="sh-nl">→ Plant next</div><div class="sh-nv">${P[pl.nx].e} ${P[pl.nx].n} — ${P[pl.nx].h}</div></div>`:''}
     <div class="btn-row">
-      ${canPick?`<button class="btn btn-harvest" onclick="pickSome(${a})">🧺 Picked some</button>`:''}
+      ${canPick?`<button class="btn btn-harvest" onclick="pickSome(${a})">🧺 Harvest some</button>`:''}
       <button class="btn btn-seed${canPick?'':' btn-full'}" onclick="finishPlant(${a})">${cell.s==='done'?'🧹 Clear this spot':'✅ Finished'}</button>
     </div>
-    <div class="sh-hint">${cell.s==='done'?'Finished plants stay until you clear them.':canPick&&keepsProducing(cell.p)?'Picking keeps the plant growing. Finished clears the spot.':'Finished logs the harvest and clears the spot.'}</div>
+    <div class="sh-hint">${cell.s==='done'?'Finished plants stay until you clear them.':canPick&&keepsProducing(cell.p)?'Harvest some keeps the plant growing. Finished clears the spot.':'Finished logs the harvest and clears the spot.'}</div>
     <div class="btn-row" style="margin-bottom:12px"><button class="btn btn-cancel" onclick="openGrowing('${cell.p}')">📖 Tips & recipes</button><button class="btn btn-cancel" onclick="openPestsFor('${cell.p}')">🐛 Something wrong?</button></div>
     <div class="stat-lbl">Status</div>
     <div class="stat-grid">${STATUSES.map(s=>`<button class="stat-opt so-${s}${cell.s===s?' sel':''}" onclick="doUpdateStatus(${a},'${s}')">${STATUS_LBL[s]}</button>`).join('')}</div>
@@ -203,7 +203,7 @@ function doUpdateStatus(bi,ri,ci,s){setCell(bi,ri,ci,{s});closeSheet();refreshAl
 function pickSome(bi,ri,ci){
   snapshot();const c=getCell(bi,ri,ci);
   c.picks++;logHarvest(c.p,bi,false);ST.alertDone[`${c.p}:${c.s}`]=localDate();saveState();
-  confettiAt(innerWidth/2,innerHeight*.6);closeSheet();refreshAll();toast(`🧺 Logged a pick of ${plantName(c.p)}${priceOf(c.p)?` (+${money(priceOf(c.p))})`:''}`,{undo:true});
+  confettiAt(innerWidth/2,innerHeight*.6);closeSheet();refreshAll();toast(`🧺 Harvested some ${plantName(c.p)}${priceOf(c.p)?` (+${money(priceOf(c.p))})`:''}`,{undo:true});
 }
 function finishPlant(bi,ri,ci){
   snapshot();const c=getCell(bi,ri,ci),p=c.p,nx=P[p].nx;

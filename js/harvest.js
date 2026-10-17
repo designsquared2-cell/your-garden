@@ -145,6 +145,28 @@ function renderHarvest(){
     ${valueLineHtml()}`;
 }
 
+// ── Harvest some / Harvest all ──
+// "Some" = one picking from one plant. "All" = a picking from every plant of this kind; one-off crops
+// (and bolting ones) are then finished, repeat croppers keep growing. Values follow the same count.
+function harvestable(k){return plantedCells().filter(x=>x.cell.p===k&&['growing','ready','bolting'].includes(x.cell.s));}
+function allFinishes(k){return!keepsProducing(k)||harvestable(k).every(x=>x.cell.s==='bolting');}
+function harvestAll(k){
+  const xs=harvestable(k);if(!xs.length)return;
+  snapshot();
+  const beds=new Map();
+  xs.forEach(x=>{
+    const fin=!keepsProducing(k)||x.cell.s==='bolting';
+    x.cell.picks++;if(fin)x.cell.s='done';
+    ST.alertDone[`${k}:ready`]=ST.alertDone[`${k}:bolting`]=localDate();
+    const key=x.bi+':'+fin;beds.set(key,{bi:x.bi,fin,n:(beds.get(key)?.n||0)+1});
+  });
+  beds.forEach(({bi,fin,n})=>logHarvest(k,bi,fin,n));
+  saveState();celebrate();closeSheet();refreshAll();
+  const n=xs.length,v=priceOf(k)*n;
+  toast(`🧺 Harvested ${n>1?`all ${n} `:''}${plantName(k)}${v?` (+${money(v)})`:''}${allFinishedNow(xs)?' — marked finished':''}`,{undo:true});
+}
+function allFinishedNow(xs){return xs.every(x=>x.cell.s==='done');}
+
 // ── Plant-in-your-garden sheet: ready signs, what to look out for now, recipes ──
 const TRAIT_NOW={
   runners:'Pinch off runners to keep fruit coming — or root them in pots for free plants.',
@@ -184,7 +206,8 @@ function openGrowing(k){
     ${readySignHtml(k)}
     ${lookOutHtml(k,xs)}
     ${recipesHtml(k)}
-    ${pickable?`<button class="btn btn-harvest btn-full" style="margin-bottom:8px" onclick="pickSome(${pickable.bi},${pickable.ri},${pickable.ci})">🧺 Log a pick</button>`:''}
+    ${pickable?`<div class="btn-row"><button class="btn btn-harvest" onclick="pickSome(${pickable.bi},${pickable.ri},${pickable.ci})">🧺 Harvest some</button><button class="btn btn-harvest" onclick="harvestAll('${k}')">🧺 Harvest all${harvestable(k).length>1?` (${harvestable(k).length})`:''}</button></div>
+    <div class="sh-hint">${allFinishes(k)?'Harvest all marks them finished, ready to clear.':'Both keep the plants growing — they\'ll produce more.'}</div>`:''}
     <button class="btn btn-cancel btn-full" onclick="openPlantInfo('${k}')">📚 How it grows & neighbours</button>
   </div>`);
 }
