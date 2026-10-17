@@ -339,7 +339,7 @@ function openVarietyStep(bi,ri,ci,k,change){
   const pick=vid=>change?`setVariety(${bi},${ri},${ci},${vid?`'${vid}'`:'null'})`:`choosePlant(${bi},${ri},${ci},'${k}',${vid?`'${vid}'`:'null'})`;
   const card=v=>{const t={...timing(k),...(v.days?{days:v.days}:{}),...('pick' in v?{pick:v.pick}:{})},now=varietyInSeason(k,v);
     return `<button class="var-card${cur===v.id?' on':''}${now?'':' later'}" onclick="${pick(v.id)}"><div class="var-top"><span class="var-e">${v.e||pl.e}</span><span class="var-n">${esc(v.n)}</span><span class="var-d">~${t.days} days</span></div>
-      ${v.tags?.length?`<div class="var-tags">${tagsHtml(v)}</div>`:''}<div class="var-note">${esc(v.note||'')}</div>${now?'':`<div class="var-later">💤 Plant ${monthsText(v.sow||timing(k).sow)}</div>`}</button>`;};
+      ${v.tags?.length?`<div class="var-tags">${tagsHtml(v)}</div>`:''}<div class="var-note">${esc(v.note||'')}</div>${now?'':`<div class="var-later">💤 Plant ${monthsText(varietySow(k,v)||timing(k).sow)}</div>`}</button>`;};
   showSheet(`<div class="sh-body"><div class="sh-sticky"><div class="sh-toprow"><div><div class="sh-heading">${pl.e} Which ${pl.n.toLowerCase()}?</div><div class="sh-sub">Not sure? Any is fine — you can change it later</div></div><button class="sh-cancel" onclick="${change?`openCellSheet(${bi},${ri},${ci})`:'closeSheet()'}">✕ ${change?'Back':'Cancel'}</button></div></div>
     <div class="var-list">${vs.map(card).join('')}
       <button class="var-card any${change&&!cur?' on':''}" onclick="${pick(null)}"><div class="var-top"><span class="var-e">🤷</span><span class="var-n">Not sure — any ${pl.n.toLowerCase()}</span></div><div class="var-note">Uses typical timing for ${pl.n.toLowerCase()}.</div></button>

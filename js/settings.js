@@ -8,6 +8,10 @@ function openSettings(){
     <div id="loc-res"></div>
     <button class="btn btn-cancel btn-full" style="margin-top:7px" onclick="useMyLoc()">📍 Use my current location</button>
 
+    <div class="fm-lbl" style="margin-top:18px">Climate zone</div>
+    <div class="set-txt">Adjusts planting times and pest seasons.${wxLoc()?` Suggested for ${esc(wxLoc().name)}: <b>${ZONES[zoneFromLatLon(wxLoc().lat,wxLoc().lon)].n}</b>.`:''}</div>
+    <select class="fm-in" onchange="ST.zone=this.value;saveState();refreshAll();toast('🌏 Climate zone: '+ZONES[this.value].n)">${Object.entries(ZONES).map(([k,z])=>`<option value="${k}"${zone()===k?' selected':''}>${z.n} — ${z.ex}</option>`).join('')}</select>
+
     <div class="fm-lbl" style="margin-top:18px">Remedies</div>
     <label class="fm-check"><input type="checkbox" id="pref-nat"${ST.prefs.naturalOnly?' checked':''} onchange="ST.prefs.naturalOnly=this.checked;saveState();renderView();toast(this.checked?'🌿 Showing natural remedies only':'Showing all remedies')"> Show natural & home-made remedies only</label>
 

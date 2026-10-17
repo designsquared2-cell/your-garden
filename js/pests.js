@@ -197,8 +197,9 @@ function pestHitsCell(pest,cell){
   return pestOnPlant(pest,cell.p)||(pest.on.includes('*seedlings')&&(cell.s==='seed'||cell.s==='seedling'));
 }
 function pestsFor(k){return PESTS.filter(p=>pestOnPlant(p,k));}
-function pestActive(pest,m=curMonth()){return pest.months?pest.months.includes(m):true;}
-function pestPeak(pest,m=curMonth()){return!!pest.peak?.includes(m);}
+// Pest seasons shift with the climate zone (zones.js)
+function pestActive(pest,m=curMonth()){return pest.months?pestMonthIn(pest.months,m):true;}
+function pestPeak(pest,m=curMonth()){return!!pest.peak&&pestMonthIn(pest.peak,m);}
 function pestCells(pest){return plantedCells().filter(x=>pestHitsCell(pest,x.cell));}
 // Pests active this month that could be on something you're growing now, peak first
 function pestsToWatch(m=curMonth()){
@@ -243,11 +244,11 @@ function guardCells(g){const ps=g.on?[{on:g.on}]:g.pests.map(id=>PEST_BY_ID[id])
 function recentRain(days){if(!WX?.daily)return 0;const d=WX.daily,ti=wxToday(d);let s=0;for(let i=Math.max(0,ti-days+1);i<=ti;i++)s+=d.precipitation_sum[i]||0;return s;}
 // Prevention jobs: in the lead-up to (and early in) each pest's season, for plants you're growing
 function guardItems(m){
-  const out=Object.entries(GUARDS).filter(([id,g])=>g.months.includes(m)&&!guardDone(id)).map(([id,g])=>{
+  const out=Object.entries(GUARDS).filter(([id,g])=>pestMonthIn(g.months,m)&&!guardDone(id)).map(([id,g])=>{
     const cells=guardCells(g);if(!cells.length)return null;
-    const p=PEST_BY_ID[g.pests[0]],coming=g.before.includes(m)&&!pestActive(p,m);
+    const p=PEST_BY_ID[g.pests[0]],coming=pestMonthIn(g.before,m)&&!pestActive(p,m);
     return{kind:'guard',id,type:'guard',cb:true,icon:'🛡️',title:`🛡️ ${g.act}`,
-      detail:`${coming?`${p.n}: season starts in ${MONTHS[p.months[0]]} — get ahead of it.`:`${p.n}: season has started.`} ${g.how} <span class="task-where">For your ${plantList(cells)} · ${bedList(cells)}</span>`};
+      detail:`${coming?`${p.n}: season starts in ${MONTHS[zoneMonthsOut(p.months)[0]]} — get ahead of it.`:`${p.n}: season has started.`} ${g.how} <span class="task-where">For your ${plantList(cells)} · ${bedList(cells)}</span>`};
   }).filter(Boolean);
   // Weather trigger: after a soaking, snails are out tonight
   const cells=pestCells(PEST_BY_ID.snails),rain=recentRain(3);
@@ -436,8 +437,8 @@ function thisMonthHtml(m){
       :'<div class="set-txt">Nothing to watch for on your current plants this month. 🎉</div>'}`;
 }
 function guideHtml(m){
-  const row=p=>`<details class="pg" id="pg-${p.id}"><summary><span>${p.e} ${p.n}</span><span class="${p.months&&pestActive(p,m)?'now-tag':'hlog-d'}">${p.months?(pestActive(p,m)?'active now':monthsText(p.months)):''}</span></summary>
-    <div class="pg-body"><div class="id-what">${p.what}</div>${p.months?`<div class="pest-txt"><b>When:</b> ${monthsText(p.months)}${p.peak?` · worst ${monthsText(p.peak)}`:''}</div>`:''}<div class="pest-txt"><b>Signs:</b> ${p.signs.map(s=>SYM_BY_ID[s].t.toLowerCase()).join(' · ')}</div><div class="pest-txt"><b>Look for:</b> ${p.look}</div>${remedyHtml(p)}<div class="pest-txt"><b>Prevent:</b> ${p.prevent}</div><a class="id-photos" href="${photosUrl(p)}" target="_blank" rel="noopener" onclick="return openLink(event,this)">📷 See photos ↗</a></div></details>`;
+  const row=p=>`<details class="pg" id="pg-${p.id}"><summary><span>${p.e} ${p.n}</span><span class="${p.months&&pestActive(p,m)?'now-tag':'hlog-d'}">${p.months?(pestActive(p,m)?'active now':monthsText(zoneMonthsOut(p.months))):''}</span></summary>
+    <div class="pg-body"><div class="id-what">${p.what}</div>${p.months?`<div class="pest-txt"><b>When:</b> ${monthsText(zoneMonthsOut(p.months))}${p.peak?` · worst ${monthsText(zoneMonthsOut(p.peak))}`:''}</div>`:''}<div class="pest-txt"><b>Signs:</b> ${p.signs.map(s=>SYM_BY_ID[s].t.toLowerCase()).join(' · ')}</div><div class="pest-txt"><b>Look for:</b> ${p.look}</div>${remedyHtml(p)}<div class="pest-txt"><b>Prevent:</b> ${p.prevent}</div><a class="id-photos" href="${photosUrl(p)}" target="_blank" rel="noopener" onclick="return openLink(event,this)">📷 See photos ↗</a></div></details>`;
   return `<div class="mv-st">🐛 Pests & diseases</div><div class="pest-guide">${PESTS.map(row).join('')}</div>
     <div class="mv-st" style="margin-top:14px">💧 Growing problems</div><div class="pest-guide">${DISORDERS.filter(d=>!d.late).map(row).join('')}</div>
     <div class="mv-st" style="margin-top:14px">🧺 Not producing or slow</div><div class="pest-guide">${DISORDERS.filter(d=>d.late).map(row).join('')}</div>

@@ -119,7 +119,7 @@ function cellName(cell){const v=cellVariety(cell);return v?`${P[cell.p].n} · ${
 function cellShort(cell){const v=cellVariety(cell);return v?esc(v.s||v.n):P[cell.p].n;}
 function cellEmoji(cell){return cellVariety(cell)?.e||P[cell.p].e;}
 // Variety overrides on top of the crop's timing and traits
-function cellTiming(cell){const t=timing(cell.p),v=cellVariety(cell);if(!v)return t;return{...t,...(v.days?{days:v.days}:{}),...(v.sow?{sow:v.sow}:{}),...('pick' in v?{pick:v.pick}:{})};}
+function cellTiming(cell){const t=timing(cell.p),v=cellVariety(cell);if(!v)return t;return{...t,...(v.days?{days:v.days}:{}),...(v.sow?{sow:varietySow(cell.p,v)}:{}),...('pick' in v?{pick:v.pick}:{})};}
 function cellTraits(cell){const v=cellVariety(cell);return v?.traits||TRAITS[cell.p]||[];}
 function cellKeepsProducing(cell){return!!cellTiming(cell).pick;}
 function tagsHtml(v){return(v.tags||[]).map(t=>`<span class="vtag" title="${VAR_TAGS[t][1]}">${VAR_TAGS[t][0]} ${VAR_TAGS[t][1]}</span>`).join('');}
