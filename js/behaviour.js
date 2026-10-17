@@ -28,6 +28,9 @@ const TRAITS={
   'mint':['spreads','perennial'],'lemongrass':['perennial','big'],
   'marigold':['selfseeds'],'calendula':['selfseeds'],'nasturtium':['sprawl','selfseeds'],'borage':['big','selfseeds'],
 };
+// Harvested by pulling the whole plant up — nothing left to clear afterwards
+const LIFTED=new Set(['beetroot','carrots','radish','turnip','onions','shallots','spring-onions','leek','garlic','potato','sweet-potato','cos-lettuce','bok-choy','asian-greens']);
+function isLifted(k){return LIFTED.has(k);}
 // Spots one plant really needs (default 1)
 const SPOTS={'pumpkin':4,'sweet-potato':3,'zucchini':2,'borage':2};
 

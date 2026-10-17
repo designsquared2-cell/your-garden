@@ -15,7 +15,7 @@ function plantAlertItems(){
     const pl=P[cell.p],ready=cell.s==='ready';
     out.push({kind:'plant',id:k,type:'urgent',cb:true,
       title:ready?`🌾 ${pl.n} in ${esc(bed.name)} — ready to harvest`:`⚠️ ${pl.n} in ${esc(bed.name)} — bolting, harvest now!`,
-      detail:ready?(keepsProducing(cell.p)?'Tick when you\'ve picked — it stays in the bed and keeps producing.':'Tick once harvested — it\'s marked finished, ready to clear.'):'Harvest everything now. Tick and it\'s marked finished, ready to clear.'});
+      detail:ready?(isLifted(cell.p)?'Tick once you\'ve pulled them — the spots are freed up to replant.':keepsProducing(cell.p)?'Tick when you\'ve picked some — it keeps producing.':'Tick once harvested — it\'s completed, ready to pull out.'):'Harvest everything now. Tick and it\'s marked finished, ready to clear.'});
   });
   return out;
 }
@@ -36,14 +36,23 @@ function autoItems(m){
   groupCells(x=>x.cell.s==='done').forEach(g=>{
     const nx=P[g.p].nx,many=g.cells.length>1;
     out.push({kind:'auto',id:`clear:${g.bi}:${g.p}`,type:'soon',cb:true,
-      title:`Clear the finished ${P[g.p].n} from ${esc(g.bed.name)}`,
+      title:`Pull out the completed ${P[g.p].n} in ${esc(g.bed.name)}`,
       detail:`Pull ${many?'them':'it'} out roots and all. ${nx?`${P[nx].n} is a good follow-on.`:'Top up with compost before replanting.'} Tick to clear the ${many?'spots':'spot'}.`});
   });
   groupCells(x=>overdueOneOff(x.cell)).forEach(g=>{
-    const exp=g.cells.map(x=>expectedDate(x.cell)).sort()[0];
-    out.push({kind:'auto',id:`ready:${g.bi}:${g.p}`,type:'soon',cb:true,
-      title:`Check ${P[g.p].n} in ${esc(g.bed.name)} — should be ready`,
-      detail:`Expected around ${fmtDate(exp)}. Tick when it's ready and it moves to your harvest list.`});
+    const exp=g.cells.map(x=>expectedDate(x.cell)).sort()[0],late=daysBetween(exp,td);
+    if(late<=LATE_DAYS){
+      out.push({kind:'auto',id:`ready:${g.bi}:${g.p}`,type:'soon',cb:true,
+        title:`Check ${P[g.p].n} in ${esc(g.bed.name)} — should be ready`,
+        detail:`Expected around ${fmtDate(exp)}. Tick when it's ready and it moves to your harvest list.`});
+      return;
+    }
+    const id=`late:${g.bi}:${g.p}`;if(lateChecked(id))return;
+    const why=lateCauses(g.p),planted=g.cells.map(x=>x.cell.d).filter(Boolean).sort()[0];
+    out.push({kind:'auto',id,type:'soon',cb:true,icon:'🤔',
+      title:`🤔 ${P[g.p].n} in ${esc(g.bed.name)} is running late`,
+      detail:`${planted?`${daysBetween(planted,td)} days in — `:''}expected around ${fmtDate(exp)}.${why.length?` Most likely: ${why.map(p=>p.n.toLowerCase()).join(' or ')}.`:''} Tick if you've checked it — we'll ask again in 2 weeks.`,
+      btn:{label:'What\'s wrong? ›',js:`openGrowing('${g.p}',true)`}});
   });
   ST.beds.forEach((bed,bi)=>{
     const n=emptyCells(bi).length;if(!n)return;
@@ -77,18 +86,19 @@ function tickItem(kind,id,btn){
 }
 // Ticking a ready/bolting alert = a harvest. Repeat croppers stay put; one-off and bolting crops become "finished".
 function harvestFromAlert(k){
-  const[p,s]=k.split(':');const finish=s==='bolting'||!keepsProducing(p);
-  const beds=new Map();
-  plantedCells().filter(x=>x.cell.p===p&&x.cell.s===s).forEach(x=>{x.cell.picks++;if(finish)x.cell.s='done';beds.set(x.bi,(beds.get(x.bi)||0)+1);});
-  let n=0;beds.forEach((c,bi)=>{logHarvest(p,bi,finish,c);n+=c;});
-  ST.alertDone[k]=localDate();
-  const v=priceOf(p)*n?` (+${money(priceOf(p)*n)})`:'';
-  return finish?`🧺 Harvested ${plantName(p)}${v} — marked finished`:`🧺 Harvested some ${plantName(p)}${v}`;
+  const[p,s]=k.split(':');
+  return doHarvest(plantedCells().filter(x=>x.cell.p===p&&x.cell.s===s),s==='bolting'||!keepsProducing(p));
 }
+// Running late: more than LATE_DAYS past the expected date. Ticking snoozes it for LATE_SNOOZE days.
+const LATE_DAYS=21,LATE_SNOOZE=14;
+function lateChecked(id){const d=ST.pestDone[id];return!!d&&daysBetween(d,localDate())<LATE_SNOOZE;}
+// "Not producing" problems that apply to this plant, most specific first
+function lateCauses(k){return DISORDERS.filter(d=>d.late&&pestOnPlant(d,k)&&!d.on.includes('*')).slice(0,2);}
 function runAuto(id){
   const[type,bi,p]=id.split(':');
   const cells=plantedCells().filter(x=>x.bi===+bi&&x.cell.p===p);
   if(type==='clear'){cells.filter(x=>x.cell.s==='done').forEach(x=>clearCell(x.bi,x.ri,x.ci));const nx=P[p].nx;return nx?`Cleared — try ${plantName(nx)} next`:'Cleared — spot ready to replant';}
+  if(type==='late'){ST.pestDone[id]=localDate();return`👍 Checked — we'll look again in ${LATE_SNOOZE} days`;}
   if(type==='ready'){cells.forEach(x=>{if(['seed','seedling','growing'].includes(x.cell.s))x.cell.s='ready';});return`✨ ${plantName(p)} marked ready`;}
   return'✓ Done';
 }
@@ -110,9 +120,10 @@ function cardHtml(it){
 // Jobs tab: everything to do, grouped by urgency
 function jobSections(){
   const m=curMonth(),auto=autoItems(m);
-  return[['🔴 Do this week',urgentItems()],['🛡️ Prevent',guardItems(m)],['🐛 Pest checks',pestCheckItems(m)],['🟡 This month',auto.filter(t=>t.type==='soon')],['🟢 Coming up',auto.filter(t=>t.type==='coming')]];
+  const g=guardItems(m),now=g.filter(x=>x.id==='snails-rain');
+  return[['🔴 Do this week',[...urgentItems(),...now]],['🐛 Pest checks',pestCheckItems(m)],['🟡 This month',[...g.filter(x=>!now.includes(x)),...auto.filter(t=>t.type==='soon')]],['🟢 Coming up',auto.filter(t=>t.type==='coming')]];
 }
-function jobCount(){const[[,u],[,g],[,p],[,s]]=jobSections();return u.length+g.length+p.length+s.filter(t=>t.cb).length;}
+function jobCount(){const[[,u],[,p],[,s]]=jobSections();return u.length+p.length+s.filter(t=>t.cb).length;}
 function renderJobs(){
   const m=curMonth(),secs=jobSections();
   const body=secs.map(([lbl,ts])=>ts.length?`<div class="task-section"><div class="task-sec-title">${lbl}</div>${ts.map(cardHtml).join('')}</div>`:'').join('')

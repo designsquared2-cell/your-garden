@@ -184,11 +184,9 @@ function openCellSheet(bi,ri,ci){
     <div class="planted-row"><span class="sh-cl">📅 Planted</span><input class="fm-in date-in" type="date" id="cell-d" max="${td}" value="${cell.d||td}" onchange="setPlanted(${a})"></div>
     <div class="sh-tip">💡 ${pl.tip}</div>
     ${pl.nx&&P[pl.nx]?`<div class="sh-next"><div class="sh-nl">→ Plant next</div><div class="sh-nv">${P[pl.nx].e} ${P[pl.nx].n} — ${P[pl.nx].h}</div></div>`:''}
-    <div class="btn-row">
-      ${canPick?`<button class="btn btn-harvest" onclick="pickSome(${a})">🧺 Harvest some</button>`:''}
-      <button class="btn btn-seed${canPick?'':' btn-full'}" onclick="finishPlant(${a})">${cell.s==='done'?'🧹 Clear this spot':'✅ Finished'}</button>
-    </div>
-    <div class="sh-hint">${cell.s==='done'?'Finished plants stay until you clear them.':canPick&&keepsProducing(cell.p)?'Harvest some keeps the plant growing. Finished clears the spot.':'Finished logs the harvest and clears the spot.'}</div>
+    ${cell.s==='done'?`<button class="btn btn-seed btn-full" onclick="clearSpot(${a})">🧹 Pulled it out — clear this spot</button><div class="sh-hint">Completed. Pull out what's left, then clear the spot to replant.</div>`
+      :canPick?(isLifted(cell.p)?`<button class="btn btn-harvest btn-full" onclick="harvestCell(${a},true)">🧺 Harvest — pull it up</button><div class="sh-hint">Pulled whole, so the spot is free to replant straight away.</div>`
+        :`<div class="btn-row"><button class="btn btn-harvest" onclick="harvestSome(${a})">🧺 Harvest some</button><button class="btn btn-seed" onclick="harvestCell(${a},true)">✅ Harvest all</button></div><div class="sh-hint">${harvestHint(cell.p)}</div>`):''}
     <div class="btn-row" style="margin-bottom:12px"><button class="btn btn-cancel" onclick="openGrowing('${cell.p}')">📖 Tips & recipes</button><button class="btn btn-cancel" onclick="openPestsFor('${cell.p}')">🐛 Something wrong?</button></div>
     <div class="stat-lbl">Status</div>
     <div class="stat-grid">${STATUSES.map(s=>`<button class="stat-opt so-${s}${cell.s===s?' sel':''}" onclick="doUpdateStatus(${a},'${s}')">${STATUS_LBL[s]}</button>`).join('')}</div>
@@ -200,16 +198,15 @@ function openCellSheet(bi,ri,ci){
   </div>`);
 }
 function doUpdateStatus(bi,ri,ci,s){setCell(bi,ri,ci,{s});closeSheet();refreshAll();toast(`${plantName(getCell(bi,ri,ci).p)} → ${STATUS_LBL[s]}`);}
-function pickSome(bi,ri,ci){
-  snapshot();const c=getCell(bi,ri,ci);
-  c.picks++;logHarvest(c.p,bi,false);ST.alertDone[`${c.p}:${c.s}`]=localDate();saveState();
-  confettiAt(innerWidth/2,innerHeight*.6);closeSheet();refreshAll();toast(`🧺 Harvested some ${plantName(c.p)}${priceOf(c.p)?` (+${money(priceOf(c.p))})`:''}`,{undo:true});
+// One plant's final harvest (or pulling a whole-harvest crop) from the Beds sheet
+function harvestCell(bi,ri,ci,all){
+  snapshot();const x=plantedCells().find(y=>y.bi===bi&&y.ri===ri&&y.ci===ci);
+  const msg=doHarvest([x],all);celebrate();closeSheet();refreshAll();toast(msg,{undo:true});
 }
-function finishPlant(bi,ri,ci){
-  snapshot();const c=getCell(bi,ri,ci),p=c.p,nx=P[p].nx;
-  if(c.s!=='done'&&!['seed','seedling'].includes(c.s)){logHarvest(p,bi,true);celebrate();}
-  clearCell(bi,ri,ci);closeSheet();refreshAll();
-  toast(nx?`🎉 ${plantName(p)} done — try ${plantName(nx)} next`:`🎉 ${plantName(p)} done — spot cleared`,{undo:true});
+// A completed plant has been pulled out — free the spot (already counted in the harvest)
+function clearSpot(bi,ri,ci){
+  snapshot();const p=getCell(bi,ri,ci).p,nx=P[p].nx;clearCell(bi,ri,ci);closeSheet();refreshAll();
+  toast(nx?`🧹 Spot cleared — ${plantName(nx)} would be a good next crop`:'🧹 Spot cleared — ready to replant',{undo:true});
 }
 function removePlant(bi,ri,ci){snapshot();const p=getCell(bi,ri,ci).p;clearCell(bi,ri,ci);closeSheet();refreshAll();toast('Removed '+plantName(p),{undo:true});}
 

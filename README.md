@@ -35,7 +35,7 @@ Keep new features in the tab they belong to: anything you tick off goes in Jobs.
 | `js/ui.js` | Sheet, toast (with Undo), confetti, tab switching |
 | `js/weather.js` | Open-Meteo forecast, watering verdict, location search |
 | `js/pests.js` | Pests + growing problems (`PESTS`, `DISORDERS`), prevention plans (`GUARDS`), remedies (`REMEDIES`: home-made / organic / native), the step-by-step finder, Pests tab |
-| `js/behaviour.js` | How plants grow (`TRAITS`), spots needed, good and bad neighbours |
+| `js/behaviour.js` | How plants grow (`TRAITS`), crops pulled whole (`LIFTED`), spots needed, good and bad neighbours |
 | `js/tasks.js` | Jobs tab, generated from the beds, plant timing, pests and weather; urgent count for the header and tab badge |
 | `js/harvest.js` | Harvest tab: harvest value (`PRICE`, editable), ready / coming up / growing, "ready when" signs (`READY_SIGN`), recipe ideas (`RECIPES`), the tips & recipes sheet |
 | `js/plants-view.js` | Plants tab, plant library and info sheet, bed-aware suggestions |

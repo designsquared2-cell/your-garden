@@ -153,6 +153,39 @@ const DISORDERS=[
    rem:{nat:['Harvest everything worth eating now','Pull it out and plant a warm-season crop in its place','Let one plant flower for the bees, or to save seed']},
    prevent:'Sow cool-season leafy crops early so they finish before the heat, and pick often.'},
 ];
+// Not producing / running late — late:true marks these for the "running late" job and plant sheets
+DISORDERS.push(
+  {id:'no-heading',e:'🥬',n:'Not heading up',late:true,on:['red-cabbage','cauliflower','broccoli'],
+   what:'Cabbage, broccoli and cauliflower only form a head after a lot of leaf growth, and best in cool weather. Big outer leaves with no head usually means it\'s still building up, it was stressed when young, it\'s had too much nitrogen, or the weather warmed up before it could head.',
+   look:'Large, healthy outer leaves but no firm head in the centre — or only a tiny, loose "button" head.',
+   rem:{nat:['Give it time — red cabbage can take 120–150 days from a seedling','Feed for heads, not leaves: compost or sulphate of potash, not manure or blood & bone','Keep the soil evenly moist — dry spells stall heading','If it still hasn\'t headed as the weather warms, eat the leaves like kale — they\'re good braised or in slaw']},
+   prevent:'In Perth, plant brassica seedlings Feb–Apr so they head in the cool months, and don\'t let young plants dry out or sit too long in their punnet.'},
+  {id:'all-leaves',e:'🌳',n:'All leaves, no fruit',late:true,on:['nightshade','cucurbit','legume','strawberry'],
+   what:'Too much nitrogen makes plants grow lush leaves instead of flowers and fruit.',
+   look:'Big, dark green, bushy plants with few flowers or fruit.',
+   rem:{nat:['Stop high-nitrogen feeds (manure, blood & bone, lawn food)','Feed with potash or a tomato/flowering food instead','On tomatoes, pinch out some leafy side shoots']},
+   prevent:'Go easy on manure for fruiting crops — compost is enough.'},
+  {id:'no-fruit-set',e:'🐝',n:'Flowers but no fruit',late:true,on:['cucurbit','nightshade','legume','strawberry'],
+   what:'Fruit only forms when flowers are pollinated. Too few bees, heat over about 32°C, or (for zucchini and pumpkins) only male flowers early in the season all stop fruit from setting.',
+   look:'Plenty of flowers that fall off; baby zucchini that shrivel and rot at the tip.',
+   rem:{nat:['Zucchini & pumpkin: in the morning, brush pollen from a male flower onto the female flowers (the ones with a tiny fruit behind them)','Tomatoes & capsicum: gently shake the plants while flowering','Plant borage, alyssum or native daisies nearby to bring in bees']},
+   prevent:'Grow bee-friendly flowers in every bed, and shade plants in heatwaves.'},
+  {id:'roots-thin',e:'🥕',n:'Roots not swelling',late:true,on:['beetroot','carrots','turnip','radish','onions','shallots','garlic','potato','sweet-potato','leek'],
+   what:'Root crops swell when they have loose soil, room and even watering. Crowding, rich nitrogen feeds and hard soil keep them thin — and stones or fresh manure make carrots fork.',
+   look:'Plenty of leaf but thin or small roots; forked, twisted or hairy carrots.',
+   rem:{nat:['Thin them so each has room — beetroot 10cm apart, carrots 5cm','Stop nitrogen feeds; use potash instead','Water deeply and evenly']},
+   prevent:'Sow into loose, stone-free soil with old compost — never fresh manure.'},
+  {id:'not-ripening',e:'🍅',n:'Fruit not ripening',late:true,on:['tomatoes','cherry-tomato','capsicum','chilli','eggplant','pumpkin'],
+   what:'Tomatoes and capsicums colour up best between about 20 and 30°C. In cool weather — or very hot spells over about 32°C — they stall green.',
+   look:'Full-sized fruit that stays green for weeks.',
+   rem:{nat:['Be patient — they ripen as temperatures settle','Late in the season, pick full-sized green fruit and ripen it indoors in a paper bag with a banana','Late in the season, nip off new flowers so the plant ripens what it has']},
+   prevent:'Plant warm-season crops in Sept–Oct so fruit ripens through summer.'},
+  {id:'slow',e:'🐌',n:'Growing very slowly',late:true,on:['*'],
+   what:'Plants almost stop in cold weather, and warm-season crops planted too early sulk until nights warm up. Hungry or compacted soil slows everything too.',
+   look:'Plants that have barely changed in weeks, often pale or small.',
+   rem:{nat:['Water in a liquid seaweed or worm-tea feed every week or two','Loosen the soil surface and add compost around (not against) the stems','Be patient — growth picks up as the season turns']},
+   prevent:'Plant in season, into compost-rich soil.'},
+);
 DISORDERS.forEach(d=>d.kind='growing');
 const PROBLEMS=[...PESTS,...DISORDERS];
 const PEST_BY_ID=Object.fromEntries(PROBLEMS.map(p=>[p.id,p]));
@@ -264,7 +297,7 @@ function reportPest(id,p,bi){
 }
 
 // ── Finder: "What are you seeing?" ── 1 where → 2 what (any number of signs) → 3 which plant (optional)
-const AREAS=[['bugs','🐛','Bugs I can see'],['leaves','🍃','Leaves'],['fruit','🍅','Fruit or pods'],['seedlings','🌱','Seedlings'],['whole','🥀','The whole plant']];
+const AREAS=[['bugs','🐛','Bugs I can see'],['leaves','🍃','Leaves'],['fruit','🍅','Fruit or pods'],['seedlings','🌱','Seedlings'],['whole','🥀','The whole plant'],['late','🧺','Not producing / slow']];
 const SYMPTOMS=[
   {id:'green-cat',a:['bugs','leaves'],e:'🐛',t:'Small green caterpillars'},
   {id:'white-fly-about',a:['bugs'],e:'🦋',t:'White butterflies or small moths'},
@@ -302,6 +335,15 @@ const SYMPTOMS=[
   {id:'stem-rot',a:['whole','seedlings'],e:'🟫',t:'Soft, dark rot at the base'},
   {id:'bolting',a:['whole'],e:'🌼',t:'Shooting up a flower stalk early'},
   {id:'wilting',a:['whole','fruit'],e:'🥀',t:'Wilting tips or pods dropping'},
+  {id:'no-head',a:['late'],e:'🥬',t:'No head forming (cabbage, broccoli, cauli)'},
+  {id:'button',a:['late'],e:'🔘',t:'Tiny, loose heads'},
+  {id:'leafy-only',a:['late','whole'],e:'🌳',t:'Lots of leaves, few flowers or fruit'},
+  {id:'flowers-no-fruit',a:['late','fruit'],e:'🌼',t:'Flowers but no fruit'},
+  {id:'baby-rot',a:['late','fruit'],e:'🥒',t:'Baby fruit shrivels and rots'},
+  {id:'thin-roots',a:['late'],e:'🥕',t:'Roots small or not swelling'},
+  {id:'forked',a:['late'],e:'🍴',t:'Forked or twisted carrots'},
+  {id:'green-fruit',a:['late','fruit'],e:'🟢',t:'Fruit staying green'},
+  {id:'slow',a:['late','whole'],e:'🐢',t:'Barely grown in weeks'},
 ];
 const SYM_BY_ID=Object.fromEntries(SYMPTOMS.map(s=>[s.id,s]));
 // signs: which symptoms point to each problem; what: plain-language "what am I looking at?"
@@ -323,9 +365,15 @@ const PEST_ID={
   'overwater':{signs:['yellow-lower','wilt-wet','stem-rot','gnats']},
   'underwater':{signs:['wilt-midday','crispy','bolting','yellow-lower']},
   'uneven-water':{signs:['black-bottom','split']},
-  'hungry':{signs:['pale-all','yellow-lower']},
+  'hungry':{signs:['pale-all','yellow-lower','slow']},
   'heat':{signs:['scorched','wilt-midday','crispy']},
   'bolting':{signs:['bolting']},
+  'no-heading':{signs:['no-head','button','leafy-only']},
+  'all-leaves':{signs:['leafy-only','flowers-no-fruit']},
+  'no-fruit-set':{signs:['flowers-no-fruit','baby-rot']},
+  'roots-thin':{signs:['thin-roots','forked','leafy-only']},
+  'not-ripening':{signs:['green-fruit']},
+  'slow':{signs:['slow']},
 };
 PROBLEMS.forEach(p=>Object.assign(p,PEST_ID[p.id]));
 
@@ -391,7 +439,8 @@ function guideHtml(m){
   const row=p=>`<details class="pg"><summary><span>${p.e} ${p.n}</span><span class="${p.months&&pestActive(p,m)?'now-tag':'hlog-d'}">${p.months?(pestActive(p,m)?'active now':monthsText(p.months)):''}</span></summary>
     <div class="pg-body"><div class="id-what">${p.what}</div>${p.months?`<div class="pest-txt"><b>When:</b> ${monthsText(p.months)}${p.peak?` · worst ${monthsText(p.peak)}`:''}</div>`:''}<div class="pest-txt"><b>Signs:</b> ${p.signs.map(s=>SYM_BY_ID[s].t.toLowerCase()).join(' · ')}</div><div class="pest-txt"><b>Look for:</b> ${p.look}</div>${remedyHtml(p)}<div class="pest-txt"><b>Prevent:</b> ${p.prevent}</div><a class="id-photos" href="${photosUrl(p)}" target="_blank" rel="noopener">📷 See photos ↗</a></div></details>`;
   return `<div class="mv-st">🐛 Pests & diseases</div><div class="pest-guide">${PESTS.map(row).join('')}</div>
-    <div class="mv-st" style="margin-top:14px">💧 Growing problems</div><div class="pest-guide">${DISORDERS.map(row).join('')}</div>
+    <div class="mv-st" style="margin-top:14px">💧 Growing problems</div><div class="pest-guide">${DISORDERS.filter(d=>!d.late).map(row).join('')}</div>
+    <div class="mv-st" style="margin-top:14px">🧺 Not producing or slow</div><div class="pest-guide">${DISORDERS.filter(d=>d.late).map(row).join('')}</div>
     <div class="mv-st" style="margin-top:14px">🌏 Native plants that fight pests</div><div class="native-card">
       <div><b>Native daisies (Brachyscome), paper daisies, native bluebells</b> — small flowers that feed hoverflies, ladybirds and tiny wasps, which eat aphids and caterpillars.</div>
       <div><b>Lomandra, logs and rock piles</b> — shelter for blue-tongue lizards and frogs, which eat snails and slugs.</div>

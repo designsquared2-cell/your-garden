@@ -146,26 +146,34 @@ function renderHarvest(){
 }
 
 // ── Harvest some / Harvest all ──
-// "Some" = one picking from one plant. "All" = a picking from every plant of this kind; one-off crops
-// (and bolting ones) are then finished, repeat croppers keep growing. Values follow the same count.
+// Some: pick a few outer leaves or fruit and the plant keeps growing — except crops pulled whole
+//       (beetroot, carrots…), where "some" pulls one plant and frees its spot.
+// All:  the final harvest — the plant is completed. Pulled-whole crops leave nothing behind, so their
+//       spots are cleared; everything else is marked Finished, with a "pull it out" job in Jobs.
+// One picking is counted per plant harvested.
 function harvestable(k){return plantedCells().filter(x=>x.cell.p===k&&['growing','ready','bolting'].includes(x.cell.s));}
-function allFinishes(k){return!keepsProducing(k)||harvestable(k).every(x=>x.cell.s==='bolting');}
-function harvestAll(k){
-  const xs=harvestable(k);if(!xs.length)return;
-  snapshot();
-  const beds=new Map();
+// Shared by the plant sheet, the Beds sheet and ticked jobs. Returns the confirmation message.
+function doHarvest(xs,all){
+  if(!xs.length)return'';
+  const k=xs[0].cell.p,lifted=isLifted(k),done=all||lifted,beds=new Map();
   xs.forEach(x=>{
-    const fin=!keepsProducing(k)||x.cell.s==='bolting';
-    x.cell.picks++;if(fin)x.cell.s='done';
-    ST.alertDone[`${k}:ready`]=ST.alertDone[`${k}:bolting`]=localDate();
-    const key=x.bi+':'+fin;beds.set(key,{bi:x.bi,fin,n:(beds.get(key)?.n||0)+1});
+    beds.set(x.bi,(beds.get(x.bi)||0)+1);
+    if(lifted)clearCell(x.bi,x.ri,x.ci);else{x.cell.picks++;if(all)x.cell.s='done';}
   });
-  beds.forEach(({bi,fin,n})=>logHarvest(k,bi,fin,n));
-  saveState();celebrate();closeSheet();refreshAll();
-  const n=xs.length,v=priceOf(k)*n;
-  toast(`🧺 Harvested ${n>1?`all ${n} `:''}${plantName(k)}${v?` (+${money(v)})`:''}${allFinishedNow(xs)?' — marked finished':''}`,{undo:true});
+  beds.forEach((n,bi)=>logHarvest(k,bi,done,n));
+  ST.alertDone[`${k}:ready`]=ST.alertDone[`${k}:bolting`]=localDate();
+  saveState();
+  const n=xs.length,v=priceOf(k)*n,val=v?` (+${money(v)})`:'';
+  if(lifted)return`🧺 Pulled ${n>1?`${n} `:''}${plantName(k)}${val} — ${n>1?'spots':'spot'} ready to replant`;
+  if(all)return`🧺 Final harvest: ${n>1?`all ${n} `:''}${plantName(k)}${val} — completed`;
+  return`🧺 Harvested some ${plantName(k)}${val} — it keeps growing`;
 }
-function allFinishedNow(xs){return xs.every(x=>x.cell.s==='done');}
+function harvestSome(bi,ri,ci){snapshot();const x=plantedCells().find(y=>y.bi===bi&&y.ri===ri&&y.ci===ci);const msg=doHarvest([x],false);confettiAt(innerWidth/2,innerHeight*.6);closeSheet();refreshAll();toast(msg,{undo:true});}
+function harvestAll(k){const xs=harvestable(k);if(!xs.length)return;snapshot();const msg=doHarvest(xs,true);celebrate();closeSheet();refreshAll();toast(msg,{undo:true});}
+function harvestHint(k){
+  return isLifted(k)?'Harvest some pulls one plant; Harvest all pulls the lot. Either way the spots are free to replant.'
+    :'Harvest some: pick a few outer leaves or fruit — it keeps growing. Harvest all: the final harvest — the plant is completed.';
+}
 
 // ── Plant-in-your-garden sheet: ready signs, what to look out for now, recipes ──
 const TRAIT_NOW={
@@ -193,8 +201,20 @@ function recipesHtml(k){
     <div class="bpc-harvest-txt">${pl.idea}</div>${more?`<div class="bpc-harvest-txt" style="margin-top:6px">${more}</div>`:''}
     <a class="id-photos" href="https://www.google.com/search?q=${encodeURIComponent(plantName(k)+' recipes')}" target="_blank" rel="noopener">More ${pl.n.toLowerCase()} recipes ↗</a></div>`;
 }
+// "Not doing what it should?" — the not-producing problems that apply to this plant, most specific first
+function troubleHtml(k){
+  const ps=DISORDERS.filter(d=>d.late&&pestOnPlant(d,k)).sort((a,b)=>a.on.includes('*')-b.on.includes('*'));
+  if(!ps.length)return'';
+  const xs=plantedCells().filter(x=>x.cell.p===k),lead=xs.length?leadCell(xs):null,exp=lead&&expectedDate(lead);
+  const late=exp&&['seed','seedling','growing'].includes(lead.s)&&daysBetween(exp,localDate())>0?daysBetween(exp,localDate()):0;
+  return `<div class="stat-lbl" id="trouble">🤔 Not doing what it should?</div>
+    ${late?`<div class="hu-row bad" style="margin-bottom:6px">It's ${plural(late,'day')} past when we'd expect it to be ready.</div>`:''}
+    <div class="pest-guide" style="margin-bottom:12px">${ps.map((p,i)=>`<details class="pg"${late&&i===0?' open':''}><summary><span>${p.e} ${p.n}</span></summary><div class="pg-body"><div class="id-what">${p.what}</div><div class="pest-txt"><b>Looks like:</b> ${p.look}</div>${remedyHtml(p)}<div class="pest-txt"><b>Next time:</b> ${p.prevent}</div></div></details>`).join('')}</div>`;
+}
 function readySignHtml(k){return READY_SIGN[k]?`<div class="sh-next"><div class="sh-nl">✅ Ready when</div><div class="sh-nv">${READY_SIGN[k]}</div></div>`:'';}
-function openGrowing(k){
+// focusTrouble: jump straight to "Not doing what it should?" (from a running-late job)
+function openGrowing(k,focusTrouble){
+  if(focusTrouble)setTimeout(()=>$('trouble')?.scrollIntoView({behavior:'smooth',block:'start'}),300);
   const xs=plantedCells().filter(x=>x.cell.p===k);if(!xs.length){openPlantInfo(k);return;}
   const pl=P[k],lead=leadCell(xs),beds=[...new Set(xs.map(x=>x.bed.name))].map(esc).join(', ');
   const planted=xs.map(x=>x.cell.d).filter(Boolean).sort()[0];
@@ -206,8 +226,9 @@ function openGrowing(k){
     ${readySignHtml(k)}
     ${lookOutHtml(k,xs)}
     ${recipesHtml(k)}
-    ${pickable?`<div class="btn-row"><button class="btn btn-harvest" onclick="pickSome(${pickable.bi},${pickable.ri},${pickable.ci})">🧺 Harvest some</button><button class="btn btn-harvest" onclick="harvestAll('${k}')">🧺 Harvest all${harvestable(k).length>1?` (${harvestable(k).length})`:''}</button></div>
-    <div class="sh-hint">${allFinishes(k)?'Harvest all marks them finished, ready to clear.':'Both keep the plants growing — they\'ll produce more.'}</div>`:''}
+    ${troubleHtml(k)}
+    ${pickable?`<div class="btn-row"><button class="btn btn-harvest" onclick="harvestSome(${pickable.bi},${pickable.ri},${pickable.ci})">🧺 Harvest some</button><button class="btn btn-seed" onclick="harvestAll('${k}')">✅ Harvest all${harvestable(k).length>1?` (${harvestable(k).length})`:''}</button></div>
+    <div class="sh-hint">${harvestHint(k)}</div>`:''}
     <button class="btn btn-cancel btn-full" onclick="openPlantInfo('${k}')">📚 How it grows & neighbours</button>
   </div>`);
 }
