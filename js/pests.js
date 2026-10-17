@@ -245,9 +245,9 @@ function recentRain(days){if(!WX?.daily)return 0;const d=WX.daily,ti=wxToday(d);
 function guardItems(m){
   const out=Object.entries(GUARDS).filter(([id,g])=>g.months.includes(m)&&!guardDone(id)).map(([id,g])=>{
     const cells=guardCells(g);if(!cells.length)return null;
-    const p=PEST_BY_ID[g.pests[0]],coming=g.before.includes(m);
+    const p=PEST_BY_ID[g.pests[0]],coming=g.before.includes(m)&&!pestActive(p,m);
     return{kind:'guard',id,type:'guard',cb:true,icon:'🛡️',title:`🛡️ ${g.act}`,
-      detail:`${coming?`${p.n} usually arrive from ${MONTHS[p.months[0]]} — get ahead of them.`:`${p.n} are about now.`} ${g.how} <span class="task-where">For your ${plantList(cells)} · ${bedList(cells)}</span>`};
+      detail:`${coming?`${p.n}: season starts in ${MONTHS[p.months[0]]} — get ahead of it.`:`${p.n}: season has started.`} ${g.how} <span class="task-where">For your ${plantList(cells)} · ${bedList(cells)}</span>`};
   }).filter(Boolean);
   // Weather trigger: after a soaking, snails are out tonight
   const cells=pestCells(PEST_BY_ID.snails),rain=recentRain(3);

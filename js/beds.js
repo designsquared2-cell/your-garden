@@ -15,7 +15,7 @@ function renderBeds(){
       <button class="link-btn" onclick="openSettings()">Have a backup? Import it in Settings</button></div>`;
     return;
   }
-  w.innerHTML=ST.beds.map((bed,bi)=>`<div class="bed-wrap"><div class="bed-card"><div class="bed-top bt${bi%3+1}"><div class="bed-name">${esc(bed.name)}${bed.low?' <span class="bed-tag">low crops</span>':''}</div>${selectMode?'':`<button class="bed-edit" aria-label="Edit ${esc(bed.name)}" onclick="openBedEditor(${bi})">✏️</button>`}</div><div class="grid-bg">${bed.rows.map((row,ri)=>`<div class="grid-row">${row.map((cell,ci)=>renderCell(cell,bi,ri,ci)).join('')}</div>`).join('')}</div></div></div>`).join('')
+  w.innerHTML=ST.beds.map((bed,bi)=>`<div class="bed-wrap"><div class="bed-card"><div class="bed-top bt${bi%3+1}"><div class="bed-name">${esc(bed.name)}${bed.low?' <span class="bed-tag">low crops</span>':''}</div>${selectMode?'':`<button class="bed-edit" aria-label="Edit ${esc(bed.name)}" onclick="openBedEditor(${bi})">✏️</button>`}</div><div class="grid-bg${(bed.rows[0]?.length||0)>=8?' dense':''}">${bed.rows.map((row,ri)=>`<div class="grid-row">${row.map((cell,ci)=>renderCell(cell,bi,ri,ci)).join('')}</div>`).join('')}</div></div></div>`).join('')
     +(selectMode?'':'<button class="add-bed" onclick="openBedEditor()">＋ Add a bed</button>');
 }
 

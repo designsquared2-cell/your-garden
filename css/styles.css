@@ -404,3 +404,7 @@ button.sow-chip:hover{border-color:#5A9A3A}
 .hv-value{text-align:center;font-size:12px;color:#8A9A70;margin:18px 0 4px;line-height:1.6}
 .hv-value b{color:#C8D8B0}
 .hv-value .link-btn{display:block;margin:0 auto;font-size:10.5px;color:#5A7040}
+/* Wide beds (8+ spots per row): icons only — the name shows when you tap */
+.grid-bg.dense .cell-n{display:none}
+.grid-bg.dense .cell-e{font-size:19px}
+.grid-bg.dense .grid-row{gap:3px}

@@ -11,11 +11,11 @@ function alertDone(k){const d=ST.alertDone[k];return!!d&&daysBetween(d,localDate
 function plantAlertItems(){
   const out=[],seen=new Set();
   plantedCells().forEach(({bed,cell})=>{
-    if(!ALERT_ST.includes(cell.s))return;const k=cell.p+':'+cell.s;if(seen.has(k)||alertDone(k))return;seen.add(k);
+    if(!ALERT_ST.includes(cell.s)||COMPANIONS.includes(cell.p))return;const k=cell.p+':'+cell.s;if(seen.has(k)||alertDone(k))return;seen.add(k);
     const pl=P[cell.p],ready=cell.s==='ready';
     out.push({kind:'plant',id:k,type:'urgent',cb:true,
       title:ready?`🌾 ${pl.n} in ${esc(bed.name)} — ready to harvest`:`⚠️ ${pl.n} in ${esc(bed.name)} — bolting, harvest now!`,
-      detail:ready?(isLifted(cell.p)?'Tick once you\'ve pulled them — the spots are freed up to replant.':keepsProducing(cell.p)?'Tick when you\'ve picked some — it keeps producing.':'Tick once harvested — it\'s completed, ready to pull out.'):'Harvest everything now. Tick and it\'s marked finished, ready to clear.'});
+      detail:ready?(isLifted(cell.p)?'Tick once you\'ve pulled them — the spots are freed up to replant.':keepsProducing(cell.p)?'Tick when you\'ve picked some — it keeps producing.':'Tick once harvested — it\'s completed, ready to pull out.'):isLifted(cell.p)?'Pull them all now. Tick and the spots are freed up to replant.':'Harvest everything now. Tick and it\'s completed, ready to pull out.'});
   });
   return out;
 }
@@ -78,7 +78,7 @@ function autoItems(m){
 // ── Ticking ──
 function tickItem(kind,id,btn){
   tickAway(btn,()=>{
-    if(kind==='water'){logWatered();return;}
+    if(kind==='water'){snapshot();logWatered(true);toast('💧 Watering logged',{undo:true});return;}
     snapshot();
     const msg=kind==='plant'?harvestFromAlert(id):kind==='pest'?tickPest(id):kind==='treat'?tickTreat(id):kind==='guard'?tickGuard(id):runAuto(id);
     saveState();refreshAll();toast(msg,{undo:true});

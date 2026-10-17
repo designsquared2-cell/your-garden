@@ -123,7 +123,9 @@ function plantGroupsByKey(){
 function leadCell(xs){const td=localDate(),rank=c=>['ready','bolting'].includes(c.s)?0:c.s==='done'?3:expectedDate(c)&&expectedDate(c)<=td?1:2;
   return xs.map(x=>x.cell).sort((a,b)=>rank(a)-rank(b)||(expectedDate(a)||'z').localeCompare(expectedDate(b)||'z'))[0];}
 function stageOf(c){
-  if(['ready','bolting'].includes(c.s))return'ready';if(c.s==='done')return'done';
+  if(c.s==='done')return'done';
+  if(COMPANIONS.includes(c.p))return'growing'; // companion flowers aren't a harvest
+  if(['ready','bolting'].includes(c.s))return'ready';
   const e=expectedDate(c),td=localDate();
   if(e&&e<=td)return COMPANIONS.includes(c.p)?'growing':'ready';
   return e&&daysBetween(td,e)<=45?'soon':'growing';

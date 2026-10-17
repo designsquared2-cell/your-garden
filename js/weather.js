@@ -74,10 +74,11 @@ function weatherLineHtml(){
 }
 function renderWeather(){renderSummary();if(curView==='jobs')renderJobs();}
 
-function logWatered(){
+// quiet: the caller shows its own message (Jobs adds an Undo)
+function logWatered(quiet){
   const td=localDate();
-  if(ST.lastWatered===td){ST.lastWatered=ST.prevWatered||null;toast('Watering log undone');}
-  else{ST.prevWatered=ST.lastWatered||null;ST.lastWatered=td;toast('💧 Logged — clock reset');}
+  if(ST.lastWatered===td){ST.lastWatered=ST.prevWatered||null;if(!quiet)toast('Watering log undone');}
+  else{ST.prevWatered=ST.lastWatered||null;ST.lastWatered=td;if(!quiet)toast('💧 Logged — clock reset');}
   saveState();renderSummary();renderAlerts();renderView();
 }
 
