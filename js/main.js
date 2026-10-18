@@ -14,6 +14,7 @@ addEventListener('pagehide',saveUI);
 loadState();applyCustomPlants();updateHeader();refreshAll();restoreUI();loadWeather();
 // Signed in on this device? Catch up with other devices, and retry pending changes when back online
 if(signedIn())pullGarden();
+finishLinkSignIn(); // arrived from the sign-in email's link?
 addEventListener('online',()=>{if(signedIn())pushGarden();});
 
 // Offline support + home-screen install (needs https or localhost)

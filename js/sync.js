@@ -16,7 +16,7 @@ function loadLib(){
 async function sb(){
   if(_sb)return _sb;
   await loadLib();
-  _sb=window.supabase.createClient(SB_URL,SB_KEY,{auth:{persistSession:true,autoRefreshToken:true,storageKey:'gdn_auth',detectSessionInUrl:false}});
+  _sb=window.supabase.createClient(SB_URL,SB_KEY,{auth:{persistSession:true,autoRefreshToken:true,storageKey:'gdn_auth',detectSessionInUrl:true,flowType:'implicit'}});
   return _sb;
 }
 const signedIn=()=>!!SYNC.gid&&!!SYNC.email;
@@ -66,15 +66,30 @@ function applyRemote(remote,msg){
   refreshAll();if(msg)toast(msg);
 }
 
-// ── Sign in with an emailed 6-digit code ──
+// Returning from the email link: the address carries the session (#access_token=…) or an error
+async function finishLinkSignIn(){
+  const h=location.hash;
+  if(!/access_token=|error_description=/.test(h))return;
+  const clean=()=>history.replaceState(null,'',location.pathname+location.search);
+  if(/error_description=/.test(h)){const m=decodeURIComponent((h.match(/error_description=([^&]+)/)||[])[1]||'').replace(/\+/g,' ');clean();toast('Sign-in link didn\'t work: '+(m||'it may have expired — send a new one'));return;}
+  try{
+    const c=await sb();const{data:{session}}=await c.auth.getSession();clean();
+    if(!session)throw new Error('no session');
+    SYNC.email=session.user.email;delete SYNC.pendingEmail;saveSync();
+    await afterSignIn();
+  }catch(e){clean();toast('Couldn\'t finish signing in — try sending a new link');}
+}
+
+// ── Sign in with an emailed link or 6-digit code ──
 async function sendCode(){
   const email=$('ac-email').value.trim().toLowerCase();
   if(!/^\S+@\S+\.\S+$/.test(email)){toast('Enter your email address');return;}
   try{
     const c=await sb();$('ac-send').disabled=true;
-    const{error}=await c.auth.signInWithOtp({email,options:{shouldCreateUser:true}});
+    // The email has a link back to this app (and a 6-digit code too, once the template includes {{ .Token }})
+    const{error}=await c.auth.signInWithOtp({email,options:{shouldCreateUser:true,emailRedirectTo:location.origin+location.pathname}});
     if(error)throw error;
-    SYNC.pendingEmail=email;saveSync();openAccount();toast('📧 Code sent — check your email');
+    SYNC.pendingEmail=email;saveSync();openAccount();toast('📧 Sent — check your email');
   }catch(e){$('ac-send')&&($('ac-send').disabled=false);toast(e.message==='offline'?'Can\'t reach the sync service — check your connection':'Couldn\'t send the code: '+(e.message||'try again'));}
 }
 async function verifyCode(){
@@ -137,13 +152,14 @@ async function openAccount(){
   if(!signedIn()){
     const p=SYNC.pendingEmail;
     showSheet(`<div class="sh-body"><div class="sh-sticky"><div class="sh-toprow"><div><div class="sh-heading">☁️ Sign in to sync</div><div class="sh-sub">Back up your garden and share it with your household</div></div><button class="sh-cancel" onclick="openSettings()">✕ Back</button></div></div>
-      ${p?`<div class="set-txt">We sent a 6-digit code to <b>${esc(p)}</b>.</div>
+      ${p?`<div class="set-txt">📧 We emailed <b>${esc(p)}</b>. <b>Tap the link in the email</b> — it opens the app signed in. Open it on this device.</div>
+        <div class="set-txt">If the email has a 6-digit code instead, type it here:</div>
         <input class="fm-in" id="ac-code" inputmode="numeric" autocomplete="one-time-code" maxlength="6" placeholder="123456" style="font-size:22px;letter-spacing:6px;text-align:center">
         <button class="btn btn-seed btn-full" style="margin-top:10px" onclick="verifyCode()">Sign in</button>
         <button class="link-btn" onclick="delete SYNC.pendingEmail;saveSync();openAccount()">Use a different email / send a new code</button>`
       :`<div class="fm-lbl">Your email</div><input class="fm-in" id="ac-email" type="email" autocomplete="email" placeholder="you@example.com">
-        <button class="btn btn-seed btn-full" id="ac-send" style="margin-top:10px" onclick="sendCode()">📧 Email me a sign-in code</button>
-        <div class="set-txt" style="margin-top:8px">No password — we email you a code each time you sign in on a new device.</div>`}
+        <button class="btn btn-seed btn-full" id="ac-send" style="margin-top:10px" onclick="sendCode()">📧 Email me a sign-in link</button>
+        <div class="set-txt" style="margin-top:8px">No password — we email you a sign-in link each time you sign in on a new device.</div>`}
     </div>`);
     return;
   }
