@@ -2,6 +2,7 @@
 'use strict';
 function openSettings(){
   showSheet(`<div class="sh-body"><div class="sh-heading">⚙️ Settings</div>
+    <button class="jobs-link" style="margin:12px 0 4px" onclick="openAccount()"><span>☁️ ${signedIn()?`Account & sync · ${esc(SYNC.email)}`:'Sign in to back up & share your garden'}</span><span>›</span></button>
     <div class="fm-lbl">Weather location</div>
     <div class="set-txt">${wxLoc()?`Currently: <b>${esc(wxLoc().name)}</b>`:'Not set yet — search for your suburb to get watering advice.'}</div>
     <div class="fm-emoji-row"><input class="fm-in" id="loc-q" placeholder="Search a town or suburb" onkeydown="if(event.key==='Enter')searchLoc()"><button class="btn btn-seed btn-inline" onclick="searchLoc()">Search</button></div>
@@ -36,6 +37,7 @@ function confirmStartFresh(){
       <li>Your seed box (${plural(ST.seeds.length,'packet')}) and the planting history used for rotation</li>
       <li>Your harvest log (${ST.log.length} ${ST.log.length===1?'entry':'entries'}), watering log and weather location</li>
     </ul>
+    ${signedIn()?'<div class="set-txt" style="color:#FFB48A"><b>You\'re signed in:</b> this also clears the garden for everyone you share it with.</div>':''}
     <div class="set-txt">Want a copy first? Export a backup — you can import it again later.</div>
     <button class="btn btn-cancel btn-full" onclick="exportBackup()">⬇️ Export a backup first</button>
     <button class="btn btn-reset btn-full" style="margin-top:8px" onclick="startFresh()">Delete everything & start fresh</button>

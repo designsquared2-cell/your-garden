@@ -6,12 +6,15 @@ document.addEventListener('keydown',e=>{if(e.key==='Escape'&&sheetOpen())closeSh
 let _shownDay=localDate();
 document.addEventListener('visibilitychange',()=>{
   if(document.hidden){saveUI();return;}
-  loadWeather();
+  loadWeather();if(typeof pullGarden==='function')pullGarden();
   if(localDate()!==_shownDay){_shownDay=localDate();updateHeader();refreshAll();}
 });
 addEventListener('pagehide',saveUI);
 
 loadState();applyCustomPlants();updateHeader();refreshAll();restoreUI();loadWeather();
+// Signed in on this device? Catch up with other devices, and retry pending changes when back online
+if(signedIn())pullGarden();
+addEventListener('online',()=>{if(signedIn())pushGarden();});
 
 // Offline support + home-screen install (needs https or localhost)
 if('serviceWorker' in navigator&&(location.protocol==='https:'||location.hostname==='localhost'))

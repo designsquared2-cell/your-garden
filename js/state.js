@@ -52,9 +52,10 @@ function bedById(id){return ST.beds.find(b=>b.id===id);}
 function freshState(){return migrate(dc(DEFAULT));}
 function loadState(){
   try{const r=localStorage.getItem(SK);ST=r?JSON.parse(r):dc(DEFAULT);}catch(e){ST=dc(DEFAULT);}
-  migrate(ST);saveState();
+  // save the migrated copy locally only — opening the app isn't a change to sync
+  migrate(ST);try{localStorage.setItem(SK,JSON.stringify(ST));}catch(e){}
 }
-function saveState(){try{localStorage.setItem(SK,JSON.stringify(ST));}catch(e){}}
+function saveState(){try{localStorage.setItem(SK,JSON.stringify(ST));}catch(e){}if(typeof syncAfterSave==='function')syncAfterSave();}
 
 // ── Undo (one step) ── call snapshot() before a destructive change, then toast(msg,{undo:true})
 let _undo=null;

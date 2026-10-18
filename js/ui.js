@@ -63,4 +63,4 @@ function setView(name){
 function renderView(){({jobs:renderJobs,harvest:renderHarvest,plants:renderPlants,pests:renderPests})[curView]?.();}
 // Re-render everything that depends on state
 function refreshAll(){renderBeds();renderSummary();renderAlerts();renderView();}
-function updateHeader(){const d=new Date();$('hdr-sub').textContent=`${MONTHS[d.getMonth()]} ${d.getFullYear()} · saved on this device`;}
+function updateHeader(){const d=new Date();$('hdr-sub').textContent=`${MONTHS[d.getMonth()]} ${d.getFullYear()} · ${typeof syncLabel==='function'?syncLabel():'saved on this device'}`;}
