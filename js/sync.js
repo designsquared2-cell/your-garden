@@ -66,41 +66,69 @@ function applyRemote(remote,msg){
   refreshAll();if(msg)toast(msg);
 }
 
-// Returning from the email link: the address carries the session (#access_token=…) or an error
+// Returning from a password-reset email: the address carries a session (#access_token=…&type=recovery) or an error
 async function finishLinkSignIn(){
   const h=location.hash;
   if(!/access_token=|error_description=/.test(h))return;
   const clean=()=>history.replaceState(null,'',location.pathname+location.search);
-  if(/error_description=/.test(h)){const m=decodeURIComponent((h.match(/error_description=([^&]+)/)||[])[1]||'').replace(/\+/g,' ');clean();toast('Sign-in link didn\'t work: '+(m||'it may have expired — send a new one'));return;}
+  if(/error_description=/.test(h)){const m=decodeURIComponent((h.match(/error_description=([^&]+)/)||[])[1]||'').replace(/\+/g,' ');clean();toast('That email link didn\'t work: '+(m||'it may have expired — ask for a new one'));return;}
   try{
     const c=await sb();const{data:{session}}=await c.auth.getSession();clean();
     if(!session)throw new Error('no session');
-    SYNC.email=session.user.email;delete SYNC.pendingEmail;saveSync();
+    SYNC.email=session.user.email;saveSync();
+    if(/type=recovery/.test(h)){openNewPassword();return;}
     await afterSignIn();
-  }catch(e){clean();toast('Couldn\'t finish signing in — try sending a new link');}
+  }catch(e){clean();toast('Couldn\'t finish signing in — try again');}
 }
 
-// ── Sign in with an emailed link or 6-digit code ──
-async function sendCode(){
-  const email=$('ac-email').value.trim().toLowerCase();
-  if(!/^\S+@\S+\.\S+$/.test(email)){toast('Enter your email address');return;}
-  try{
-    const c=await sb();$('ac-send').disabled=true;
-    // The email has a link back to this app (and a 6-digit code too, once the template includes {{ .Token }})
-    const{error}=await c.auth.signInWithOtp({email,options:{shouldCreateUser:true,emailRedirectTo:location.origin+location.pathname}});
-    if(error)throw error;
-    SYNC.pendingEmail=email;saveSync();openAccount();toast('📧 Sent — check your email');
-  }catch(e){$('ac-send')&&($('ac-send').disabled=false);toast(e.message==='offline'?'Can\'t reach the sync service — check your connection':'Couldn\'t send the code: '+(e.message||'try again'));}
+// ── Sign in with email + password ──
+function authFields(){
+  const email=$('ac-email').value.trim().toLowerCase(),pw=$('ac-pw').value;
+  if(!/^\S+@\S+\.\S+$/.test(email)){toast('Enter your email address');return null;}
+  if(pw.length<6){toast('Passwords need at least 6 characters');return null;}
+  return{email,password:pw};
 }
-async function verifyCode(){
-  const email=SYNC.pendingEmail,token=$('ac-code').value.replace(/\D/g,'');
-  if(token.length<6){toast('Enter the 6-digit code from the email');return;}
+function authError(e){
+  const m=(e&&e.message)||'';
+  if(m==='offline')return'Can\'t reach the sync service — check your connection';
+  if(/invalid login/i.test(m))return'Wrong email or password';
+  if(/already registered|already exists/i.test(m))return'That email already has an account — tap Sign in instead';
+  if(/rate limit/i.test(m))return'Too many tries — wait a few minutes';
+  return m||'Something went wrong — try again';
+}
+async function signInPw(){
+  const f=authFields();if(!f)return;
   try{
-    const c=await sb();const{data,error}=await c.auth.verifyOtp({email,token,type:'email'});
-    if(error)throw error;
-    SYNC.email=data.user.email;delete SYNC.pendingEmail;saveSync();
-    await afterSignIn();
-  }catch(e){toast('That code didn\'t work — check it, or send a new one');}
+    const c=await sb();const{data,error}=await c.auth.signInWithPassword(f);if(error)throw error;
+    SYNC.email=data.user.email;saveSync();await afterSignIn();
+  }catch(e){toast(authError(e));}
+}
+async function signUpPw(){
+  const f=authFields();if(!f)return;
+  try{
+    const c=await sb();const{data,error}=await c.auth.signUp(f);if(error)throw error;
+    // With "Confirm email" switched off in Supabase, a new account is signed in straight away
+    if(!data.session){toast('Account created — check your email to confirm it, then sign in');return;}
+    SYNC.email=data.user.email;saveSync();await afterSignIn();
+  }catch(e){toast(authError(e));}
+}
+async function forgotPw(){
+  const email=$('ac-email').value.trim().toLowerCase();
+  if(!/^\S+@\S+\.\S+$/.test(email)){toast('Type your email above first');return;}
+  try{
+    const c=await sb();const{error}=await c.auth.resetPasswordForEmail(email,{redirectTo:location.origin+location.pathname});if(error)throw error;
+    toast('📧 Sent — open the link in the email on this device');
+  }catch(e){toast(authError(e));}
+}
+function openNewPassword(){
+  showSheet(`<div class="sh-body"><div class="sh-heading">🔑 Choose a new password</div>
+    <input class="fm-in" id="ac-newpw" type="password" autocomplete="new-password" placeholder="At least 6 characters" style="margin-top:12px">
+    <button class="btn btn-seed btn-full" style="margin-top:10px" onclick="saveNewPw()">Save password</button></div>`);
+}
+async function saveNewPw(){
+  const pw=$('ac-newpw').value;if(pw.length<6){toast('Passwords need at least 6 characters');return;}
+  try{const c=await sb();const{error}=await c.auth.updateUser({password:pw});if(error)throw error;toast('🔑 Password saved');await afterSignIn();}
+  catch(e){toast(authError(e));}
 }
 // First sign-in on this device: join invited gardens, then pick or create the garden to sync
 async function afterSignIn(){
@@ -150,16 +178,13 @@ async function inviteMember(){
 // ── The account sheet (from Settings) ──
 async function openAccount(){
   if(!signedIn()){
-    const p=SYNC.pendingEmail;
     showSheet(`<div class="sh-body"><div class="sh-sticky"><div class="sh-toprow"><div><div class="sh-heading">☁️ Sign in to sync</div><div class="sh-sub">Back up your garden and share it with your household</div></div><button class="sh-cancel" onclick="openSettings()">✕ Back</button></div></div>
-      ${p?`<div class="set-txt">📧 We emailed <b>${esc(p)}</b>. <b>Tap the link in the email</b> — it opens the app signed in. Open it on this device.</div>
-        <div class="set-txt">If the email has a 6-digit code instead, type it here:</div>
-        <input class="fm-in" id="ac-code" inputmode="numeric" autocomplete="one-time-code" maxlength="6" placeholder="123456" style="font-size:22px;letter-spacing:6px;text-align:center">
-        <button class="btn btn-seed btn-full" style="margin-top:10px" onclick="verifyCode()">Sign in</button>
-        <button class="link-btn" onclick="delete SYNC.pendingEmail;saveSync();openAccount()">Use a different email / send a new code</button>`
-      :`<div class="fm-lbl">Your email</div><input class="fm-in" id="ac-email" type="email" autocomplete="email" placeholder="you@example.com">
-        <button class="btn btn-seed btn-full" id="ac-send" style="margin-top:10px" onclick="sendCode()">📧 Email me a sign-in link</button>
-        <div class="set-txt" style="margin-top:8px">No password — we email you a sign-in link each time you sign in on a new device.</div>`}
+      <div class="fm-lbl">Email</div><input class="fm-in" id="ac-email" type="email" autocomplete="email" placeholder="you@example.com">
+      <div class="fm-lbl">Password</div><input class="fm-in" id="ac-pw" type="password" autocomplete="current-password" placeholder="At least 6 characters">
+      <button class="btn btn-seed btn-full" style="margin-top:12px" onclick="signInPw()">Sign in</button>
+      <button class="btn btn-cancel btn-full" style="margin-top:8px" onclick="signUpPw()">New here? Create an account</button>
+      <button class="link-btn" onclick="forgotPw()">Forgot password?</button>
+      <div class="set-txt" style="margin-top:8px">Use the same email and password on each phone or computer to see the same garden.</div>
     </div>`);
     return;
   }
