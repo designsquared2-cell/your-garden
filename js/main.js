@@ -15,6 +15,8 @@ loadState();applyCustomPlants();updateHeader();refreshAll();restoreUI();loadWeat
 // Signed in on this device? Catch up with other devices, and retry pending changes when back online
 if(signedIn())pullGarden();
 finishLinkSignIn(); // arrived from the sign-in email's link?
+// First time here with an empty garden: a quick welcome (location → how hands-on → first bed)
+if(!ST.beds.length&&!welcomed()&&!signedIn()&&!/access_token|error_description/.test(location.hash))setTimeout(()=>{if(!sheetOpen()){setView('beds');openWelcome();}},300);
 addEventListener('online',()=>{if(signedIn())pushGarden();});
 
 // Offline support + home-screen install (needs https or localhost)

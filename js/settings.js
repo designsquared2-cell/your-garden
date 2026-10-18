@@ -10,8 +10,10 @@ const MAINT={
 function maint(){try{const v=localStorage.getItem(MAINT_K);return MAINT[v]?v:'std';}catch(e){return'std';}}
 function setMaint(k){try{localStorage.setItem(MAINT_K,k);}catch(e){}refreshAll();openSettings();toast(`${MAINT[k].e} ${MAINT[k].n}`);}
 function openSettings(){
+  _onLoc=null;
   showSheet(`<div class="sh-body"><div class="sh-heading">⚙️ Settings</div>
     <button class="jobs-link" style="margin:12px 0 4px" onclick="openAccount()"><span>☁️ ${signedIn()?`Account & sync · ${esc(SYNC.email)}`:'Sign in to back up & share your garden'}</span><span>›</span></button>
+    <div class="btn-row" style="margin:6px 0 2px"><button class="btn btn-cancel" onclick="openHelp()">❓ Help & tips</button><button class="btn btn-cancel" onclick="openFeedback()">💬 Send feedback</button></div>
     <div class="fm-lbl">How hands-on?</div>
     <div class="maint-opts">${Object.entries(MAINT).map(([k,o])=>`<button class="maint-opt${maint()===k?' on':''}" onclick="setMaint('${k}')"><span class="maint-e">${o.e}</span><span><b>${o.n}</b><span>${o.d}</span></span></button>`).join('')}</div>
     <div class="set-txt">Just for this device — everyone sharing your garden can pick their own.</div>

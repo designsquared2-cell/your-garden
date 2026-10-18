@@ -47,6 +47,7 @@ Keep new features in the tab they belong to: anything you tick off goes in Jobs.
 | `js/feeding.js` | Feeding jobs per bed, from what's growing: leafy, fruiting, root, perennial herb and tree feeds |
 | `js/seeds.js` | Seed box (`seeds`): packets, when to sow, picker and Jobs integration |
 | `js/reminders.js` | Calendar reminders: exports a `.ics` file (weekly check, harvests, prevention, sowing) |
+| `js/help.js` | First-time welcome (location → how hands-on → first bed), Help & tips, and Send feedback (saved to the Supabase `feedback` table — run `supabase/feedback.sql` once) |
 | `js/settings.js` | Maintenance level (No / Low / Standard, saved per device as `gdn_mode`), location, backup export/import, start fresh |
 | `js/main.js` | Startup, service worker |
 | `sw.js`, `manifest.webmanifest`, `icons/` | Offline support and home-screen install |

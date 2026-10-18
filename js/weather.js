@@ -93,7 +93,12 @@ async function searchLoc(){
     out.innerHTML=_locRes.length?_locRes.map((p,i)=>`<button class="loc-res" onclick="setLoc(${i})">📍 ${esc(p.name)}${p.admin1?', '+esc(p.admin1):''}${p.country_code?' · '+esc(p.country_code):''}</button>`).join(''):'<div class="sh-sub" style="margin-top:6px">No places found.</div>';
   }catch(e){out.innerHTML='<div class="sh-sub" style="margin-top:6px">Couldn\'t search — check your connection.</div>';}
 }
-function applyLoc(loc,msg){ST.wx=loc;saveState();closeSheet();toast(msg);WX=null;renderWeather();loadWeather(true);}
+// _onLoc: what to show next (the welcome steps); otherwise the sheet closes. The first location also sets the climate zone.
+let _onLoc=null;
+function applyLoc(loc,msg){
+  ST.wx=loc;if(!ST.zone)ST.zone=zoneFromLatLon(loc.lat,loc.lon);saveState();toast(msg);WX=null;renderWeather();loadWeather(true);
+  if(_onLoc){const f=_onLoc;_onLoc=null;f();}else closeSheet();
+}
 function setLoc(i){const p=_locRes[i];applyLoc({name:p.name+(p.admin1?', '+p.admin1:''),lat:Math.round(p.latitude*100)/100,lon:Math.round(p.longitude*100)/100},'📍 '+p.name);}
 function useMyLoc(){
   if(!navigator.geolocation){toast('Location not available');return;}
