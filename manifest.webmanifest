@@ -1,7 +1,7 @@
 {
   "name": "Your Garden",
   "short_name": "Your Garden",
-  "description": "Plan your beds, know what to do each week, and catch pests early",
+  "description": "Plan your garden beds and learn what to do each week",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",
