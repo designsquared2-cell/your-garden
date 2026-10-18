@@ -61,7 +61,7 @@ function exportReminders(){
   ST.prefs.reminders=r;saveState();
   const ev=reminderEvents(r);
   if(!ev.length){toast('Nothing to add yet — tick at least one option');return;}
-  const ics=['BEGIN:VCALENDAR','VERSION:2.0','PRODID:-//Garden app//EN','CALSCALE:GREGORIAN','METHOD:PUBLISH','X-WR-CALNAME:Garden',...ev.map(icsEvent),'END:VCALENDAR'].join('\r\n');
+  const ics=['BEGIN:VCALENDAR','VERSION:2.0','PRODID:-//Your Garden//EN','CALSCALE:GREGORIAN','METHOD:PUBLISH','X-WR-CALNAME:Your Garden',...ev.map(icsEvent),'END:VCALENDAR'].join('\r\n');
   const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([ics],{type:'text/calendar'}));a.download=`garden-reminders-${localDate()}.ics`;
   document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(a.href),1000);
   closeSheet();toast(`📅 Calendar file ready — ${plural(ev.length,'reminder')}`);

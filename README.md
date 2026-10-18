@@ -1,4 +1,4 @@
-# 🌱 Garden — Bed Planner
+# 🌱 Your Garden
 
 A phone-first planner for three raised beds in the Perth Hills: what's planted where, what needs doing this month, when to water, and what to plant next.
 

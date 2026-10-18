@@ -1,7 +1,7 @@
 {
-  "name": "Garden — Bed Planner",
-  "short_name": "Garden",
-  "description": "Bed planner, tasks and watering for a Perth Hills garden",
+  "name": "Your Garden",
+  "short_name": "Your Garden",
+  "description": "Plan your beds, know what to do each week, and catch pests early",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",
