@@ -481,3 +481,14 @@ button.sow-chip:hover{border-color:#5A9A3A}
 .maint-opt span span{display:block;font-size:11.5px;color:rgba(255,255,255,.62);margin-top:2px;line-height:1.35}
 .tree-st{font-size:9.5px;font-weight:800;color:#C8D8B0;white-space:nowrap}
 .ts-ready .tree-st{color:#FFD54F}
+/* Harvest report */
+.hv-value-go{background:none;border:none;color:inherit;font:inherit;cursor:pointer;line-height:1.6;padding:4px}
+.hv-more{display:block;font-weight:800;color:#8BAA6B;font-size:11.5px}
+.hr-card{background:#1A2412;border:1px solid rgba(255,255,255,.07);border-radius:12px;padding:10px 12px;margin-bottom:8px}
+.hr-top{display:flex;justify-content:space-between;align-items:center;gap:8px}
+.hr-name{font-weight:800;font-size:13px;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.hr-val{font-weight:800;color:#FFD54F;font-size:14px}
+.hr-bar{height:5px;background:rgba(255,255,255,.06);border-radius:3px;margin:6px 0 8px;overflow:hidden}
+.hr-bar span{display:block;height:100%;background:#8BAA6B;border-radius:3px}
+.hr-row{display:grid;grid-template-columns:1fr auto auto;gap:8px;font-size:12px;padding:3px 0;align-items:baseline}
+.hr-v{min-width:44px;text-align:right;font-weight:700}

@@ -98,8 +98,37 @@ function harvestTotals(){
 function valueLineHtml(){
   if(!ST.log.length)return'';
   const t=harvestTotals();
-  return `<div class="hv-value">🧺 About <b>${money(t.year)}</b> of food grown this year${t.month&&t.month!==t.year?` · ${money(t.month)} this month`:''}${t.kg>=0.1?` · ${t.kg<10?t.kg.toFixed(1):Math.round(t.kg)}kg of fruit`:''}
+  return `<div class="hv-value"><button class="hv-value-go" onclick="openHarvestReport()">🧺 About <b>${money(t.year)}</b> of food grown this year${t.month&&t.month!==t.year?` · ${money(t.month)} this month`:''}${t.kg>=0.1?` · ${t.kg<10?t.kg.toFixed(1):Math.round(t.kg)}kg of fruit`:''} <span class="hv-more">See it bed by bed ›</span></button>
     <button class="link-btn" onclick="openPrices()">Based on typical shop prices — adjust</button></div>`;
+}
+// ── Harvest report ── what each bed and tree grew, and what it was worth
+function amountText(k,n){
+  if(isTree(k)){const kg=n*FRUIT[k].g/1000;return`${fruitUnits(k,n)} · ${kg<1?Math.round(kg*1000)+'g':(kg<10?kg.toFixed(1):Math.round(kg))+'kg'}`;}
+  return plural(n,'picking');
+}
+function openHarvestReport(all){
+  const yk=localDate().slice(0,4),older=ST.log.some(l=>!l.d.startsWith(yk));
+  const logs=all?ST.log:ST.log.filter(l=>l.d.startsWith(yk));
+  // Group by bed/tree, then by crop. Entries from deleted beds are kept together at the end.
+  const g=new Map();
+  logs.filter(l=>P[l.p]).forEach(l=>{
+    const bed=bedById(l.bid),key=bed?bed.id:'gone';
+    if(!g.has(key))g.set(key,{bed,crops:new Map(),total:0});
+    const x=g.get(key),c=x.crops.get(l.p)||{n:0,v:0};
+    c.n+=l.n||1;c.v+=logValue(l);x.crops.set(l.p,c);x.total+=logValue(l);
+  });
+  const groups=[...g.values()].sort((a,b)=>(!a.bed)-(!b.bed)||b.total-a.total),max=Math.max(...groups.map(x=>x.total),1);
+  const total=groups.reduce((s,x)=>s+x.total,0),kg=fruitKg(logs),picks=logs.reduce((s,l)=>s+(isTree(l.p)?0:l.n||1),0);
+  const icon=bed=>!bed?'🗂️':isTreeBed(bed)?cellEmoji(treeCell(bed)):'🥕';
+  showSheet(`<div class="sh-body"><div class="sh-sticky"><div class="sh-toprow"><div><div class="sh-heading">🧺 ${all?'Everything you’ve grown':'Grown this year'}</div><div class="sh-sub">By bed and tree, at typical shop prices</div></div><button class="sh-cancel" onclick="closeSheet()">✕ Close</button></div>
+    ${older?`<div class="seg">${[[0,'This year'],[1,'All time']].map(([a,l])=>`<button class="seg-b${!!a===!!all?' on':''}" onclick="openHarvestReport(${a})">${l}</button>`).join('')}</div>`:''}</div>
+    <div class="pi-facts"><div><div class="sh-cl">Worth</div><div class="pi-v">${money(total)}</div></div><div><div class="sh-cl">Veg pickings</div><div class="pi-v">${picks||'—'}</div></div><div><div class="sh-cl">Fruit</div><div class="pi-v">${kg>=0.1?(kg<10?kg.toFixed(1):Math.round(kg))+'kg':'—'}</div></div></div>
+    ${groups.length?groups.map(x=>`<div class="hr-card"><div class="hr-top"><span class="hr-name">${icon(x.bed)} ${x.bed?esc(x.bed.name):'Beds you’ve removed'}${x.bed&&isTreeBed(x.bed)&&x.bed.n>1?` <span class="hlog-d">×${x.bed.n}</span>`:''}</span><span class="hr-val">${money(x.total)}</span></div>
+      <div class="hr-bar"><span style="width:${Math.max(3,Math.round(x.total/max*100))}%"></span></div>
+      ${[...x.crops].sort((a,b)=>b[1].v-a[1].v).map(([k,c])=>`<div class="hr-row"><span>${x.bed&&isTreeBed(x.bed)?'🧺 Picked':`${P[k].e} ${P[k].n}`}</span><span class="hlog-d">${amountText(k,c.n)}</span><span class="hr-v">${money(c.v)}</span></div>`).join('')}</div>`).join('')
+      :`<div class="set-txt">Nothing harvested ${all?'yet':'this year yet'}. Use “Harvest some” on a plant, or log fruit on a tree's card, and it shows up here.</div>`}
+    <button class="link-btn" style="margin-top:10px" onclick="openPrices()">Prices are typical shop prices — adjust them</button>
+  </div>`);
 }
 function openPrices(){
   const ks=[...new Set([...ST.log.map(l=>l.p),...plantedCells().map(x=>x.cell.p)])].filter(k=>P[k]);
