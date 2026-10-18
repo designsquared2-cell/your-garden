@@ -176,6 +176,20 @@ FRUIT_KEYS.forEach(k=>{
 });
 CATS.fruit=[...FRUIT_KEYS];CAT_LBL.fruit='Fruit trees, berries & vines';CAT_SOW.fruit=ALL_YEAR;
 
+// ── Planting season by climate zone ── the FRUIT months are for temperate (Perth) gardens.
+//   Deciduous trees go in bare-root while dormant everywhere; evergreens dodge each zone's hardest season.
+function fruitZoneSow(k,sow,z){
+  const f=FRUIT[k];
+  if(f.dec)return z==='tropical'||z==='subtropical'?[5,6]:z==='cool'?[5,6,7]:sow;      // bare-root, shorter in warm winters
+  if(z==='cool')return[8,9,10];                                                      // spring only — no frost on new roots
+  if(z==='subtropical')return f.frost?[2,3,8,9,10]:[2,3,4,8,9];                      // autumn or spring, not the wet summer
+  if(z==='tropical')return[10,11,0];                                                 // start of the wet season
+  if(z==='arid')return f.frost?[2,3,8]:[2,3,7,8];                                    // autumn or late winter, never into summer heat
+  return sow;
+}
+// Months until it's next a good time to plant (0 = now)
+function monthsToPlant(k,m=curMonth()){const sow=timing(k).sow||ALL_YEAR;return Math.min(...sow.map(s=>(s-m+12)%12));}
+
 // ── Tree helpers ──
 function isTree(k){return!!FRUIT[k];}
 function isTreeBed(bed){return bed?.kind==='tree';}
@@ -237,8 +251,10 @@ function openTreePicker(q=''){
 function renderTreePicker(q){
   const t=q.trim().toLowerCase(),m=curMonth();
   const html=FRUIT_GRP.map(([g,l])=>{
-    const ks=FRUIT_KEYS.filter(k=>FRUIT[k].grp===g&&(!t||P[k].n.toLowerCase().includes(t)||varietiesOf(k).some(v=>v.n.toLowerCase().includes(t))));
-    return ks.length?`<div class="picker-cat">${l}</div>${ks.map(k=>`<button class="pick-item${inSeason(k,m)?' pick-on':''}" onclick="openTreeForm('${k}')"><div class="pick-e">${P[k].e}</div><div class="pick-n">${P[k].n}</div><div class="pick-why">${treeBadHere(k)?'⚠️ tricky here':inSeason(k,m)?'plant now':'plant '+monthsText(FRUIT[k].sow)}</div></button>`).join('')}`:'';
+    const ks=FRUIT_KEYS.filter(k=>FRUIT[k].grp===g&&(!t||P[k].n.toLowerCase().includes(t)||varietiesOf(k).some(v=>v.n.toLowerCase().includes(t))))
+      .sort((a,b)=>monthsToPlant(a,m)-monthsToPlant(b,m));
+    return ks.length?`<div class="picker-cat">${l}</div>${ks.map(k=>{const away=monthsToPlant(k,m);
+      return`<button class="pick-item ${away?'pick-off':'pick-on'}"${away?` style="opacity:${away<=1?.8:away<=3?.6:.42}"`:''} onclick="openTreeForm('${k}')"><div class="pick-e">${P[k].e}</div><div class="pick-n">${P[k].n}</div><div class="pick-why">${treeBadHere(k)?'⚠️ tricky here':!away?'plant now':away===1?'plant next month':'plant '+monthsText(timing(k).sow)}</div></button>`;}).join('')}`:'';
   }).join('');
   $('tree-grid').innerHTML=html||`<div class="pick-empty">No fruit called “${esc(q)}” — try another name.</div>`;
 }
@@ -249,7 +265,7 @@ function openTreeForm(k,bi){
   const back=bed?`openTreeSheet(${bi})`:`openTreePicker(_tq)`;
   showSheet(`<div class="sh-body"><div class="sh-sticky"><div class="sh-toprow"><div><div class="sh-heading">${f.e} ${bed?'Edit '+esc(bed.name):f.n}</div><div class="sh-sub">${bed?'Changes update the card and its jobs':'One card for all your '+f.n.toLowerCase()+' trees'}</div></div><button class="sh-cancel" onclick="${back}">${bed?'✕ Back':'← Back'}</button></div></div>
     ${treeBadHere(k)?`<div class="hu-row bad" style="margin-bottom:8px">⚠️ ${f.badWhy}</div>`:''}
-    ${!bed&&!inSeason(k,m)?`<div class="set-txt">Best planted ${monthsText(f.sow)}${f.dec?' (bare-root, while it\'s dormant)':''}. A potted tree can go in now if you keep it well watered.</div>`:''}
+    ${!bed&&!inSeason(k,m)?`<div class="set-txt">Best planted ${monthsText(timing(k).sow)}${f.dec?' (bare-root, while it\'s dormant)':''}. A potted tree can go in now if you keep it well watered.</div>`:''}
     ${vs.length?`<div class="fm-lbl">Variety</div><div class="var-list compact">${vs.map(v=>`<label class="var-card tree-var"><input type="radio" name="tf-v" value="${v.id}"${c?.v===v.id?' checked':''}><div><div class="var-top"><span class="var-n">${esc(v.n)}</span></div>${v.tags?.length?`<div class="var-tags">${tagsHtml(v)}</div>`:''}<div class="var-note">${esc(v.note||'')}</div></div></label>`).join('')}
       <label class="var-card tree-var"><input type="radio" name="tf-v" value=""${c&&!c.v?' checked':''}><div><div class="var-top"><span class="var-n">Not sure / another variety</span></div></div></label></div>`:''}
     <div class="fm-2col"><div><div class="fm-lbl">How many?</div><div class="stepper"><button onclick="stepNum('tf-n',-1,50)" aria-label="Fewer">−</button><input class="fm-in" id="tf-n" type="number" inputmode="numeric" min="1" max="50" value="${bed?.n||1}"><button onclick="stepNum('tf-n',1,50)" aria-label="More">+</button></div></div>

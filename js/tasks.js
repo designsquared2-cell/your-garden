@@ -73,6 +73,12 @@ function autoItems(m){
   const opening=[...COOL_VEG,...WARM_VEG].filter(k=>!P[k].custom&&inSeason(k,nm)&&!inSeason(k,m));
   if(opening.length)out.push({kind:'auto',id:'next-month',type:'coming',cb:false,icon:'📆',
     title:`From ${MONTHS[nm]} you can start sowing`,detail:opening.slice(0,8).map(k=>P[k].n).join(', ')+'.'});
+  const fruit=FRUIT_KEYS.filter(k=>!treeBadHere(k)&&inSeason(k,nm)&&!inSeason(k,m));
+  if(fruit.length){const bare=fruit.filter(k=>FRUIT[k].dec).length>fruit.length/2;
+    out.push({kind:'auto',id:'fruit-season',type:'coming',cb:false,icon:'🌳',
+      title:bare?`Bare-root season starts in ${MONTHS[nm]}`:`From ${MONTHS[nm]} it's a good time to plant fruit`,
+      detail:`${fruit.map(k=>P[k].n).join(', ')}.${bare?' Nurseries sell deciduous trees bare-root while they’re dormant — the cheapest time to buy, and they settle in before spring.':''}`,
+      btn:{label:'See fruit ›',js:"setView('beds');openTreePicker()"}});}
   out.push(...seedItems(m));
   return out;
 }

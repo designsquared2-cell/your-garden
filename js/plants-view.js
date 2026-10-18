@@ -102,7 +102,7 @@ function varietyListHtml(k){
 // Fruit info sheet: planting, first fruit, season and size instead of days and spacing
 function openFruitInfo(k){
   const pl=P[k],f=FRUIT[k],m=curMonth(),growing=plantedCells().filter(x=>x.cell.p===k),pests=pestsFor(k);
-  const facts=[['When to plant',monthsText(f.sow)+(f.dec?' (bare-root)':'')],['First fruit',`about ${plural(f.yrs,'year')} after planting`],['Fruit',monthsText(zoneMonthsOut(f.pick))],['Size',f.size]];
+  const facts=[['When to plant',monthsText(timing(k).sow)+(f.dec?' (bare-root)':'')],['First fruit',`about ${plural(f.yrs,'year')} after planting`],['Fruit',monthsText(zoneMonthsOut(f.pick))],['Size',f.size]];
   showSheet(`<div class="sh-body"><div class="sh-sticky"><div class="sh-toprow"><div class="pi-hdr"><span class="sh-pe">${pl.e}</span><div><div class="sh-pn">${pl.n}</div><div class="sh-sub">${inSeason(k,m)?'<span class="now-tag">plant now</span>':'Not the season to plant'} · ${f.dec?'loses its leaves in winter':'evergreen'}${growing.length?` · growing: ${[...new Set(growing.map(x=>esc(x.bed.name)))].join(', ')}`:''}</div></div></div><button class="sh-cancel" onclick="closeSheet()">✕ Close</button></div></div>
     ${treeBadHere(k)?`<div class="hu-row bad" style="margin-bottom:10px">⚠️ ${f.badWhy}</div>`:''}
     <div class="pi-facts">${facts.map(([a,b])=>`<div><div class="sh-cl">${a}</div><div class="pi-v">${b}</div></div>`).join('')}</div>
