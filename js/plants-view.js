@@ -33,12 +33,12 @@ function renderPlants(){
   const m=curMonth(),td=localDate();
   const here=new Set(plantedCells().map(x=>x.cell.p));
   const stories=(STORIES[m]||[]).map(s=>storyCardHtml(s,here)).join('');
-  const now=[...COOL_VEG,...WARM_VEG,...HERBS].filter(k=>!P[k].custom&&inSeason(k,m));
+  const now=[...new Set([...COOL_VEG,...WARM_VEG,...HERBS])].filter(k=>!P[k].custom&&inSeason(k,m)),fruitNow=FRUIT_KEYS.filter(k=>inSeason(k,m)&&!treeBadHere(k));
   const guides=[...here].map(k=>plantGuideHtml(k,td)).join('');
   $('plants-content').innerHTML=`<div class="mv-heading">Plants</div>
     <div class="mv-intro">What to plant now, how your plants are doing, and everything in the plant library.</div>
     ${stories}
-    ${now.length?`<div class="mv-section"><div class="mv-st">🌱 Plant now in ${MONTHS[m]}</div><div class="sow-chips">${now.map(k=>`<button class="sow-chip" onclick="openPlantInfo('${k}')">${P[k].e} ${P[k].n}</button>`).join('')}</div></div>`:''}
+    ${now.length?`<div class="mv-section"><div class="mv-st">🌱 Plant now in ${MONTHS[m]}</div><div class="sow-chips">${now.map(k=>`<button class="sow-chip" onclick="openPlantInfo('${k}')">${P[k].e} ${P[k].n}</button>`).join('')}</div>${fruitNow.length?`<div class="sow-sub">🌳 Good time to plant fruit</div><div class="sow-chips">${fruitNow.map(k=>`<button class="sow-chip" onclick="openPlantInfo('${k}')">${P[k].e} ${P[k].n}</button>`).join('')}</div>`:''}</div>`:''}
     ${seedBoxHtml()}
     <div class="mv-section"><div class="mv-st">🌿 What you're growing</div>${guides||`<div class="pv-none">${ST.beds.length?'Nothing planted yet — tap an empty spot in Beds to plant.':'No beds yet — add one on the Beds tab.'}</div>`}</div>
     <div class="mv-section"><div class="mv-st">📚 Plant library</div>
@@ -61,7 +61,7 @@ function plantGuideHtml(k,td){
 }
 function renderLibrary(){
   const t=_libQ.trim().toLowerCase(),m=curMonth();
-  const groups=seasonCats(m).map(([cat,keys])=>{
+  const groups=[...seasonCats(m),['fruit',CATS.fruit]].map(([cat,keys])=>{
     const ks=keys.filter(k=>P[k]&&(!t||plantName(k).toLowerCase().includes(t)));
     return ks.length?`<div class="lib-cat">${CAT_LBL[cat]}</div><div class="lib-grid">${ks.map(k=>`<button class="lib-item" onclick="openPlantInfo('${k}')"><span>${P[k].e}</span><span class="lib-n">${P[k].n}</span>${inSeason(k,m)?'<span class="lib-dot" aria-label="plant now"></span>':''}</button>`).join('')}</div>`:'';
   }).join('');
@@ -70,6 +70,7 @@ function renderLibrary(){
 }
 // Plant info sheet: everything about one plant
 function openPlantInfo(k){
+  if(isTree(k)){openFruitInfo(k);return;}
   const pl=P[k],t=timing(k),m=curMonth();
   const growing=plantedCells().filter(x=>x.cell.p===k);
   const fam=familyOf(k);
@@ -96,5 +97,23 @@ function openPlantInfo(k){
 function varietyListHtml(k){
   const vs=[...varietiesOf(k)].sort((a,b)=>(b.tags||[]).includes('b')-(a.tags||[]).includes('b'));
   if(!vs.length)return'';
-  return `<div class="stat-lbl">🏷️ Varieties</div><div class="var-list compact">${vs.map(v=>`<div class="var-card static"><div class="var-top"><span class="var-n">${esc(v.n)}</span><span class="var-d">~${v.days||timing(k).days} days</span></div>${v.tags?.length?`<div class="var-tags">${tagsHtml(v)}</div>`:''}<div class="var-note">${esc(v.note||'')}</div></div>`).join('')}</div>`;
+  return `<div class="stat-lbl">🏷️ Varieties</div><div class="var-list compact">${vs.map(v=>`<div class="var-card static"><div class="var-top"><span class="var-n">${esc(v.n)}</span>${isTree(k)?(v.pk?`<span class="var-d">${monthsText(zoneMonthsOut(v.pk))}</span>`:''):`<span class="var-d">~${v.days||timing(k).days} days</span>`}</div>${v.tags?.length?`<div class="var-tags">${tagsHtml(v)}</div>`:''}<div class="var-note">${esc(v.note||'')}</div></div>`).join('')}</div>`;
+}
+// Fruit info sheet: planting, first fruit, season and size instead of days and spacing
+function openFruitInfo(k){
+  const pl=P[k],f=FRUIT[k],m=curMonth(),growing=plantedCells().filter(x=>x.cell.p===k),pests=pestsFor(k);
+  const facts=[['When to plant',monthsText(f.sow)+(f.dec?' (bare-root)':'')],['First fruit',`about ${plural(f.yrs,'year')} after planting`],['Fruit',monthsText(zoneMonthsOut(f.pick))],['Size',f.size]];
+  showSheet(`<div class="sh-body"><div class="sh-sticky"><div class="sh-toprow"><div class="pi-hdr"><span class="sh-pe">${pl.e}</span><div><div class="sh-pn">${pl.n}</div><div class="sh-sub">${inSeason(k,m)?'<span class="now-tag">plant now</span>':'Not the season to plant'} · ${f.dec?'loses its leaves in winter':'evergreen'}${growing.length?` · growing: ${[...new Set(growing.map(x=>esc(x.bed.name)))].join(', ')}`:''}</div></div></div><button class="sh-cancel" onclick="closeSheet()">✕ Close</button></div></div>
+    ${treeBadHere(k)?`<div class="hu-row bad" style="margin-bottom:10px">⚠️ ${f.badWhy}</div>`:''}
+    <div class="pi-facts">${facts.map(([a,b])=>`<div><div class="sh-cl">${a}</div><div class="pi-v">${b}</div></div>`).join('')}</div>
+    <div class="sh-tip">💡 ${pl.tip}</div>
+    <div class="sh-next"><div class="sh-nl">✂️ Pruning — ${monthsText(zoneMonthsOut(f.prune))}</div><div class="sh-nv">${f.pruneHow}</div></div>
+    ${f.thin?`<div class="sh-next"><div class="sh-nl">👐 Thinning — ${monthsText(zoneMonthsOut(f.thin))}</div><div class="sh-nv">${f.thinHow}</div></div>`:''}
+    <div class="sh-next"><div class="sh-nl">🍽️ Feeding — ${monthsText(zoneMonthsOut(f.feed))}</div><div class="sh-nv">${treeFeed(k).why}</div></div>
+    ${readySignHtml(k)}
+    ${recipesHtml(k)}
+    ${varietyListHtml(k)}
+    ${pests.length?`<div class="set-txt">🐛 Can be bothered by ${pests.map(p=>p.n.toLowerCase()).join(', ')}. <button class="link-btn" onclick="openPestsFor('${k}')">See the Pests tab ›</button></div>`:''}
+    <button class="btn btn-seed btn-full" style="margin-top:8px" onclick="openTreeForm('${k}')">🌳 Add ${pl.n.toLowerCase()} to my garden</button>
+  </div>`);
 }

@@ -1,6 +1,6 @@
 // Problems tab: pests + growing problems, the beginner finder, prevention, remedies, pest-check jobs.
 // Timing is typical for Perth / the Perth Hills; it shifts with the weather each year.
-//   on:    plant keys, family names (see FAMILY), or '*seedlings' for anything at seed/seedling stage
+//   on:    plant keys, family names (see FAMILY), fruit groups (FRUIT_GROUPS, fruit.js), or '*seedlings' for anything at seed/seedling stage
 //   months: when to watch (0 = Jan); peak: when it's worst
 'use strict';
 const PESTS=[
@@ -14,7 +14,7 @@ const PESTS=[
    where:'Undersides of leaves, growing tips and inside heads.',
    fix:'Bt or spinosad sprays, alternated — they quickly become resistant to any one spray. Remove heavily infested plants.',
    prevent:'Fine insect netting. Flares up as the weather warms, so net early.'},
-  {id:'aphids',e:'🐜',n:'Aphids',on:['brassica','leafy','legume','nightshade','cucurbit','basil','coriander','parsley','dill','calendula','nasturtium'],months:[7,8,9,10,2,3,4],peak:[8,9],
+  {id:'aphids',e:'🐜',n:'Aphids',on:['brassica','leafy','legume','nightshade','cucurbit','basil','coriander','parsley','dill','calendula','nasturtium','citrus','stone'],months:[7,8,9,10,2,3,4],peak:[8,9],
    look:'Clusters of tiny green, black or grey-waxy insects. Curled or puckered new leaves, sticky honeydew, and ants running up the stems.',
    where:'New shoots, flower buds and leaf undersides. Grey waxy ones hide deep in cabbage and kale leaves.',
    fix:'Blast off with the hose, squash by hand, or spray soap/eco-oil. Ladybirds and hoverflies will clean up the rest if you don\'t spray broad insecticides.',
@@ -34,11 +34,11 @@ const PESTS=[
    where:'Hiding in mulch, under pots and in tight leaf joints.',
    fix:'Trap them in rolled-up damp newspaper or a small tin of oil sunk to soil level; empty each morning.',
    prevent:'Pull mulch back from new seedlings until they\'re established.'},
-  {id:'medfly',e:'🪰',n:'Mediterranean fruit fly (Medfly)',on:['tomatoes','capsicum','chilli','eggplant','strawberry'],months:[9,10,11,0,1,2,3,4],peak:[0,1,2,3],
-   look:'Tiny sting marks on ripening fruit, soft sunken patches, then maggots inside. Mostly a fruit-tree pest, but fruiting veg can be stung.',
+  {id:'medfly',e:'🪰',n:'Fruit fly',on:['tomatoes','capsicum','chilli','eggplant','strawberry','citrus','stone','pome','fig','mango','grape'],months:[9,10,11,0,1,2,3,4],peak:[0,1,2,3],
+   look:'Tiny sting marks on ripening fruit, soft sunken patches, then maggots inside. Mostly a fruit-tree pest — stone fruit, figs, apples and citrus — but fruiting veg can be stung too.',
    where:'Ripening fruit, and fruit that\'s fallen to the ground.',
    fix:'Pick fruit as it ripens. Bag or bin stung and fallen fruit sealed — never compost it.',
-   prevent:'Start bait traps in spring as the weather warms. Medfly control is mandatory in the Kalamunda and Mundaring shires.'},
+   prevent:'Start bait traps in spring as the weather warms, and pick up fallen fruit every few days. Medfly is the WA species; Queensland fruit fly is the one in the eastern states. Medfly control is mandatory in the Kalamunda and Mundaring shires.'},
   {id:'two-spot-mite',e:'🕷️',n:'Two-spotted mite',on:['legume','cucurbit','eggplant','tomatoes','strawberry'],months:[10,11,0,1,2],peak:[11,0,1],
    look:'Fine yellow or silvery speckling on leaves, then fine webbing underneath. Leaves turn bronze and dry out.',
    where:'Undersides of leaves — use a magnifier. Worst on dusty, water-stressed plants.',
@@ -64,16 +64,41 @@ const PESTS=[
    where:'Tips, pods and fruit — sunny side of the plant.',
    fix:'Early morning, while they\'re sluggish, knock them into a bucket of soapy water.',
    prevent:'Check and squash egg rafts (neat hexagon clusters) on leaf undersides.'},
-  {id:'powdery-mildew',e:'🍄',n:'Powdery mildew',disease:true,on:['cucurbit','peas'],months:[8,9,0,1,2,3],peak:[1,2],
+  {id:'powdery-mildew',e:'🍄',n:'Powdery mildew',disease:true,on:['cucurbit','peas','grape'],months:[8,9,0,1,2,3],peak:[1,2],
    look:'White, flour-like patches on leaves that spread until leaves yellow and die.',
    where:'Older leaves first, especially in crowded, humid spots.',
    fix:'Remove the worst leaves. Spray weekly with 1 part milk to 9 parts water, or potassium bicarbonate.',
    prevent:'Water the soil, not the leaves, and give plants room for air to move.'},
-  {id:'birds',e:'🐦',n:'Birds',on:['strawberry','peas','brassica','*seedlings'],months:[8,9,10,11],peak:[9,10],
+  {id:'birds',e:'🐦',n:'Birds',on:['strawberry','peas','brassica','*seedlings','stone','pome','fig','grape','berries'],months:[8,9,10,11,0,1,2,3],peak:[9,10,0,1],
    look:'Fruit pecked as it colours, seedlings pulled out, pea shoots stripped.',
-   where:'Ripening strawberries and fresh seedlings.',
+   where:'Ripening strawberries and tree fruit, and fresh seedlings.',
    fix:'Net over a frame (so they can\'t reach through) as soon as fruit starts colouring.',
    prevent:'Net strawberries from flowering, and cover new seedlings for their first couple of weeks.'},
+  {id:'gall-wasp',e:'🐝',n:'Citrus gall wasp',on:['citrus'],months:[7,8,9,10],peak:[8,9],
+   look:'Lumpy, swollen woody lumps (galls) on young stems, sometimes with tiny exit holes. Branches beyond a gall weaken and fruit poorly.',
+   where:'Thin stems that grew last spring.',
+   fix:'Cut out galls in winter, before the tiny wasps hatch in spring. Bag and bin them — don\'t compost.',
+   prevent:'Check stems every winter, and go easy on spring feeding — it grows the soft shoots they lay eggs in.'},
+  {id:'scale',e:'🟤',n:'Scale insects',on:['citrus','olive','mango','avocado','fig','stone','grape','blueberry'],months:[9,10,11,0,1,2,3],peak:[11,0,1],
+   look:'Small brown, white or waxy bumps stuck to stems and leaf undersides, sticky leaves, black sooty mould, and ants running up the trunk.',
+   where:'Stems and the undersides of leaves, often along the middle vein.',
+   fix:'Scrape off light infestations. Spray eco-oil or horticultural oil, covering every bump, two or three times two weeks apart.',
+   prevent:'Stop ants farming them — a sticky band around the trunk keeps the ants, and so the scale, down.'},
+  {id:'leafminer',e:'〰️',n:'Citrus leafminer',on:['citrus'],months:[1,2,3,9,10],peak:[2,3],
+   look:'Silvery, wiggly trails inside soft new leaves, which curl and twist. Older, hardened leaves aren\'t touched.',
+   where:'New growth flushes, mainly late summer and autumn.',
+   fix:'Mostly cosmetic on established trees — you can leave it. On young trees, spray soft new growth with eco-oil weekly.',
+   prevent:'Avoid pruning or heavy feeding in late summer, which pushes out soft new leaves just as leafminer peaks.'},
+  {id:'lbam',e:'🐛',n:'Light brown apple moth',on:['pome','grape','citrus','stone','blueberry'],months:[8,9,10,2,3],peak:[9,10],
+   look:'Small green caterpillars that wriggle fast when disturbed, hiding in leaves webbed or rolled together. Shallow scarred patches on fruit where a leaf touches it.',
+   where:'Rolled leaves, and where a leaf or another fruit touches the fruit.',
+   fix:'Squash the caterpillars inside rolled leaves. Spray Bt while they\'re small.',
+   prevent:'Check for rolled leaves in spring, and keep weeds down under the tree.'},
+  {id:'leaf-curl',e:'🍑',n:'Peach leaf curl',disease:true,on:['peach','nectarine'],months:[7,8,9],peak:[8],
+   look:'New spring leaves thicken, pucker and blister, turning red or purple, then drop. Badly hit trees fruit poorly.',
+   where:'New leaves as they open in spring.',
+   fix:'Once you can see it, it\'s too late to spray this year. Pick off and bin affected leaves, then feed and water so the tree regrows.',
+   prevent:'Spray copper (or lime sulphur) over the whole tree at bud swell in late winter, before the buds open.'},
 ];
 
 // ── Prevention ── act before a pest arrives. Several pests can share one action (one net covers both caterpillars).
@@ -89,7 +114,7 @@ const GUARDS={
   'collars':{pests:['cutworm'],on:['*seedlings'],months:[7,8,9,10],before:[7],
     act:'Put collars on new seedlings',how:'Slip a cardboard tube (a toilet-roll inner) over each seedling, pushed 2cm into the soil.'},
   'medfly-traps':{pests:['medfly'],months:[7,8,9],before:[7,8],
-    act:'Hang Medfly bait traps',how:'Hang traps in spring as the weather warms, before fruit starts to colour. Control is mandatory in the Kalamunda and Mundaring shires.'},
+    act:'Hang fruit fly bait traps',how:'Hang traps in spring as the weather warms, before fruit starts to colour. Control is mandatory in the Kalamunda and Mundaring shires.'},
   'mite-mulch':{pests:['two-spot-mite','russet-mite'],months:[9,10],before:[9],
     act:'Mulch thickly before summer',how:'Spread 5–7cm of mulch and water deeply. Mites boom on dry, dusty, stressed plants.'},
   'sticky-traps':{pests:['whitefly'],months:[9,10],before:[9],
@@ -98,6 +123,12 @@ const GUARDS={
     act:'Give zucchini and pumpkins air',how:'Thin out crowded leaves and water the soil, not the leaves. Start a weekly milk spray before mildew shows up.'},
   'net-fruit':{pests:['birds'],on:['strawberry'],months:[8,9,10],before:[8],
     act:'Net strawberries before they colour',how:'Net over a frame as soon as flowers appear, so birds can\'t reach through.'},
+  'leaf-curl-spray':{pests:['leaf-curl'],months:[6,7],before:[6,7],
+    act:'Spray peaches & nectarines for leaf curl',how:'Spray copper over every branch at bud swell — when the buds are fat but not yet open. Once the leaves curl it\'s too late for this year.'},
+  'gall-wasp-prune':{pests:['gall-wasp'],months:[5,6,7],before:[5,6],
+    act:'Cut out citrus gall wasp galls',how:'Look along the stems for lumpy swellings and cut them out before the wasps hatch in spring. Bag and bin them.'},
+  'ant-bands':{pests:['scale'],months:[8,9],before:[8],
+    act:'Put sticky bands on fruit tree trunks',how:'A band of horticultural glue or tape around each trunk stops ants carrying scale and aphids up into the tree.'},
 };
 const GUARD_DONE_DAYS=150; // one job done covers the season
 
@@ -116,7 +147,12 @@ const REMEDIES={
   'heliothis':{nat:['Pick off caterpillars and damaged fruit'],org:['Bt while caterpillars are small'],native:'Native daisies feed the tiny wasps that attack caterpillars.'},
   'shield-bugs':{nat:['Early morning, knock them into a bucket of soapy water','Squash the neat egg rafts under leaves'],org:['Pyrethrum — a last resort, as it also kills helpful insects']},
   'powdery-mildew':{nat:['Milk spray: 1 part milk to 9 parts water, weekly','Remove the worst leaves','Water the soil, not the leaves'],org:['Potassium bicarbonate (e.g. Eco-Fungicide)','Wettable sulphur (not in heat)']},
-  'birds':{nat:['Netting over a frame','Reflective tape or old CDs (works for a while)'],native:'Grevilleas and kangaroo paws planted away from the veg give honeyeaters a better option.'},
+  'birds':{nat:['Netting over a frame — use wildlife-safe netting you can\'t poke a finger through','Reflective tape or old CDs (works for a while)'],native:'Grevilleas and kangaroo paws planted away from the veg give honeyeaters a better option.'},
+  'gall-wasp':{nat:['Cut out galls in winter and bag them for the bin'],org:['There\'s no effective home spray — pruning is the cure']},
+  'scale':{nat:['Scrape off small patches with a fingernail or soft brush','A sticky band around the trunk to stop ants'],org:['Eco-oil or horticultural oil, 2–3 sprays two weeks apart'],native:'Ladybirds and tiny parasitic wasps eat scale — avoid broad-spectrum sprays that kill them.'},
+  'leafminer':{nat:['Leave it on established trees — it\'s mostly cosmetic','Pick off badly curled new shoots on young trees'],org:['Eco-oil on soft new growth, weekly, on young trees']},
+  'lbam':{nat:['Squash caterpillars in rolled leaves','Keep weeds down under the tree'],org:['Bt while caterpillars are small'],native:'Native daisies feed the tiny wasps that attack caterpillars.'},
+  'leaf-curl':{nat:['Pick off and bin curled leaves','Feed and water well so the tree regrows'],org:['Copper or lime sulphur at bud swell in late winter (prevention only)']},
 };
 PESTS.forEach(p=>Object.assign(p,{kind:'pest',rem:REMEDIES[p.id]||{nat:[p.fix]}}));
 
@@ -132,7 +168,7 @@ const DISORDERS=[
    look:'Leaves droop in the afternoon and perk up overnight, crisp brown edges, dry dusty soil, leafy greens bolting, woody roots.',
    rem:{nat:['Water deeply in the early morning so it soaks 20cm down','Mulch 5–7cm thick to hold the water in','Shade cloth over the hottest afternoons']},
    prevent:'Mulch before summer and follow the watering card in Jobs.'},
-  {id:'uneven-water',e:'🍅',n:'Uneven watering',on:['nightshade','cucurbit'],
+  {id:'uneven-water',e:'🍅',n:'Uneven watering',on:['nightshade','cucurbit','citrus','pomegranate'],
    what:'When soil swings between dry and soaked, fruit can\'t take up calcium evenly (black bottoms) or swells too fast and splits.',
    look:'A dark, leathery, sunken patch on the bottom of tomatoes, capsicums or zucchini; fruit cracking after rain or a big water.',
    rem:{nat:['Pick off the damaged fruit — the next ones will be fine','Water on a steady schedule and keep the mulch thick']},
@@ -152,6 +188,11 @@ const DISORDERS=[
    look:'A tall flower stalk shooting up from the middle; leaves turning small, tough and bitter.',
    rem:{nat:['Harvest everything worth eating now','Pull it out and plant a warm-season crop in its place','Let one plant flower for the bees, or to save seed']},
    prevent:'Sow cool-season leafy crops early so they finish before the heat, and pick often.'},
+  {id:'collar-rot',e:'🪵',n:'Collar rot',on:['citrus','avocado'],
+   what:'A fungus that rots the bark at the base of the trunk when soil or mulch stays wet against it.',
+   look:'Gum oozing from cracked, darkened bark at the base of the trunk; yellowing leaves; a tree that slowly goes downhill.',
+   rem:{nat:['Pull mulch and soil 10cm back from the trunk','Scrape off rotten bark back to healthy wood and let it dry out','Water less often but more deeply'],org:['Paint the cleaned area with a copper-based paste']},
+   prevent:'Keep mulch a hand-width from the trunk and make sure water drains away.'},
 ];
 // Not producing / running late — late:true marks these for the "running late" job and plant sheets
 DISORDERS.push(
@@ -180,6 +221,16 @@ DISORDERS.push(
    look:'Full-sized fruit that stays green for weeks.',
    rem:{nat:['Be patient — they ripen as temperatures settle','Late in the season, pick full-sized green fruit and ripen it indoors in a paper bag with a banana','Late in the season, nip off new flowers so the plant ripens what it has']},
    prevent:'Plant warm-season crops in Sept–Oct so fruit ripens through summer.'},
+  {id:'fruit-drop',e:'🍂',n:'Fruit dropping early',late:true,on:['citrus','stone','pome','avocado','mango'],
+   what:'Trees drop some baby fruit naturally to thin themselves. Lots of drop usually means stress — a dry spell, a heatwave or a hungry tree.',
+   look:'Small green fruit falling, sometimes masses of it after hot weather.',
+   rem:{nat:['Some drop is normal — the tree is thinning itself','Water deeply once a week through summer, and mulch','Feed on time — see the tree\'s card for when']},
+   prevent:'Deep, regular summer watering and thick mulch.'},
+  {id:'tree-no-fruit',e:'🌳',n:'Tree not fruiting',late:true,on:['fruit'],
+   what:'Young trees take a few years to fruit. Older trees may be missing a pollination partner or enough winter cold, or have had too much nitrogen. Some (mandarins, apples) crop heavily one year and lightly the next.',
+   look:'A healthy-looking tree with few or no flowers, or flowers that don\'t turn into fruit.',
+   rem:{nat:['Check its age — most trees fruit 2–4 years after planting','Plant a second variety nearby if it needs a pollination partner','Stop high-nitrogen feeds (manure, lawn food) and use a fruit-tree or citrus food','Avoid hard pruning — it swaps fruit for leafy growth']},
+   prevent:'Choose varieties that suit your climate (low-chill in warm areas) and check the label for pollination needs.'},
   {id:'slow',e:'🐌',n:'Growing very slowly',late:true,on:['*'],
    what:'Plants almost stop in cold weather, and warm-season crops planted too early sulk until nights warm up. Hungry or compacted soil slows everything too.',
    look:'Plants that have barely changed in weeks, often pale or small.',
@@ -191,9 +242,13 @@ const PROBLEMS=[...PESTS,...DISORDERS];
 const PEST_BY_ID=Object.fromEntries(PROBLEMS.map(p=>[p.id,p]));
 const PEST_SNOOZE_DAYS=7,PEST_RECHECK_DAYS=3;
 
-function pestOnPlant(pest,k){return pest.on.some(t=>t==='*'||t===k||FAMILY[t]?.includes(k));}
-function pestHitsCell(pest,cell){
+function pestOnPlant(pest,k){return pest.on.some(t=>t==='*'||t===k||FAMILY[t]?.includes(k)||FRUIT_GROUPS[t]?.includes(k));}
+// Pests that go for the fruit itself only matter on a tree while it has fruit on it —
+// but prevention (early=true, e.g. spring fruit fly traps) starts on any tree old enough to fruit
+const FRUIT_EATERS=['medfly','birds'];
+function pestHitsCell(pest,cell,early){
   if(isEmpty(cell)||cell.s==='done')return false;
+  if(isTree(cell.p)&&FRUIT_EATERS.includes(pest.id)&&!(early?treeBearing(cell):['forming','ready'].includes(treeStage(cell))))return false;
   return pestOnPlant(pest,cell.p)||(pest.on.includes('*seedlings')&&(cell.s==='seed'||cell.s==='seedling'));
 }
 function pestsFor(k){return PESTS.filter(p=>pestOnPlant(p,k));}
@@ -240,7 +295,7 @@ function pestCheckItems(m){
   });
 }
 function guardDone(id){const d=ST.guardDone[id];return!!d&&daysBetween(d,localDate())<GUARD_DONE_DAYS;}
-function guardCells(g){const ps=g.on?[{on:g.on}]:g.pests.map(id=>PEST_BY_ID[id]);return plantedCells().filter(x=>ps.some(p=>pestHitsCell(p,x.cell)));}
+function guardCells(g){const ps=g.on?[{on:g.on}]:g.pests.map(id=>PEST_BY_ID[id]);return plantedCells().filter(x=>ps.some(p=>pestHitsCell(p,x.cell,true)));}
 function recentRain(days){if(!WX?.daily)return 0;const d=WX.daily,ti=wxToday(d);let s=0;for(let i=Math.max(0,ti-days+1);i<=ti;i++)s+=d.precipitation_sum[i]||0;return s;}
 // Prevention jobs: in the lead-up to (and early in) each pest's season, for plants you're growing
 function guardItems(m){
@@ -345,6 +400,14 @@ const SYMPTOMS=[
   {id:'forked',a:['late'],e:'🍴',t:'Forked or twisted carrots'},
   {id:'green-fruit',a:['late','fruit'],e:'🟢',t:'Fruit staying green'},
   {id:'slow',a:['late','whole'],e:'🐢',t:'Barely grown in weeks'},
+  {id:'scale-bumps',a:['bugs','leaves'],e:'🟤',t:'Small bumps stuck to stems or leaves'},
+  {id:'rolled',a:['leaves','bugs'],e:'🌯',t:'Leaves rolled or webbed together'},
+  {id:'trails',a:['leaves'],e:'〰️',t:'Silvery wiggly trails in new leaves'},
+  {id:'blisters',a:['leaves'],e:'🔴',t:'Red, puckered, blistered new leaves'},
+  {id:'galls',a:['whole'],e:'🪵',t:'Woody lumps on stems'},
+  {id:'bark-gum',a:['whole'],e:'🟫',t:'Gum or rotten bark at the base of the trunk'},
+  {id:'fruit-falling',a:['fruit','late'],e:'🍂',t:'Fruit falling before it\'s ripe'},
+  {id:'tree-barren',a:['late'],e:'🌳',t:'Tree grows but doesn\'t fruit'},
 ];
 const SYM_BY_ID=Object.fromEntries(SYMPTOMS.map(s=>[s.id,s]));
 // signs: which symptoms point to each problem; what: plain-language "what am I looking at?"
@@ -362,7 +425,15 @@ const PEST_ID={
   'heliothis':{signs:['green-cat','fruit-holes','droppings','holes'],what:'Caterpillars of a brown moth. Unlike leaf-eaters, they bore into tomatoes, beans and corn cobs.'},
   'shield-bugs':{signs:['shield-bug','wilting','fruit-holes'],what:'Sap-sucking bugs shaped like a little shield. Their babies are round and spotty black, white and orange — they look like a different bug.'},
   'powdery-mildew':{signs:['powder'],what:'Not a bug at all — a fungus. It loves warm days, cool nights and crowded, leafy plants.'},
-  'birds':{signs:['birds','pecked','seedling-cut'],what:'Wattlebirds and parrots love ripe strawberries; blackbirds scratch up fresh seedlings looking for worms.'},
+  'birds':{signs:['birds','pecked','seedling-cut'],what:'Wattlebirds and parrots love ripe strawberries and tree fruit; blackbirds scratch up fresh seedlings looking for worms.'},
+  'gall-wasp':{signs:['galls'],what:'A tiny native wasp that lays its eggs inside young citrus stems. The stem swells into a woody gall around the growing grubs.'},
+  'scale':{signs:['scale-bumps','sticky','ants'],what:'Sap-sucking insects that glue themselves to stems under a protective shell, so they look more like bumps than bugs. Ants guard them for their sweet honeydew.'},
+  'leafminer':{signs:['trails','curled'],what:'The tiny caterpillar of a moth, tunnelling between the top and bottom surface of soft new citrus leaves.'},
+  'lbam':{signs:['rolled','green-cat','fruit-holes'],what:'Caterpillars of a small brown moth that roll leaves together with silk to hide, and graze the skin of fruit underneath.'},
+  'leaf-curl':{signs:['blisters','curled'],what:'A fungus that infects peach and nectarine buds over winter. By the time leaves curl in spring, it can\'t be sprayed away.'},
+  'collar-rot':{signs:['bark-gum','yellow-lower']},
+  'fruit-drop':{signs:['fruit-falling']},
+  'tree-no-fruit':{signs:['tree-barren','flowers-no-fruit']},
   'overwater':{signs:['yellow-lower','wilt-wet','stem-rot','gnats']},
   'underwater':{signs:['wilt-midday','crispy','bolting','yellow-lower']},
   'uneven-water':{signs:['black-bottom','split']},
@@ -404,7 +475,7 @@ function idMatches(){
     return{p,score};
   }).filter(Boolean).sort((a,b)=>b.score-a.score).slice(0,3);
 }
-function photosUrl(p){return'https://www.google.com/search?tbm=isch&q='+encodeURIComponent(p.n+(p.kind==='growing'?' vegetable plant symptoms':' garden pest Australia'));}
+function photosUrl(p){return'https://www.google.com/search?tbm=isch&q='+encodeURIComponent(p.n+(p.kind==='growing'?' plant symptoms':' garden pest Australia'));}
 function idResultHtml({p},i){
   const fits=_idPlant&&!pestOnPlant(p,_idPlant);
   return `<div class="id-res${i===0?' top':''}"><div class="pest-hdr"><span class="pest-e">${p.e}</span><div><div class="id-lead">${i===0?'Most likely':'Could also be'}</div><div class="pest-n">${p.n}</div></div></div>
@@ -431,7 +502,7 @@ function identifyHtml(){
     <div id="id-results">${matches.length?matches.map(idResultHtml).join(''):_idSel.size?'<div class="set-txt">Nothing in the guide matches that — try fewer signs, or browse the Guide.</div>':_idPlant&&!_idArea?`<div class="set-txt">Looking at your ${plantName(_idPlant)} — where's the problem?</div>`:''}</div>`;
 }
 function thisMonthHtml(m){
-  const guards=guardItems(m),watch=pestsToWatch(m);
+  const guards=maint()==='std'?guardItems(m):[],watch=pestsToWatch(m);
   return `${guards.length?`<div class="mv-st">🛡️ Prevent now</div><div class="pm-list">${guards.map(g=>`<div class="pm-row"><span class="pm-e">${g.icon}</span><div><b>${g.title.replace(/^\S+ /,'')}</b><div class="pm-d">${g.detail}</div></div></div>`).join('')}<button class="link-btn" onclick="setView('jobs')">Tick these off in Jobs ›</button></div>`:''}
     ${watch.length?`<div class="mv-st"${guards.length?' style="margin-top:14px"':''}>👀 Watch out for in ${MONTHS[m]}</div><div class="pest-guide">${watch.map(p=>`<details class="pg" id="pw-${p.id}"><summary><span>${p.e} ${p.n}${pestPeak(p,m)?' <span class="peak-tag">peak</span>':''}</span><span class="hlog-d">${plantList(pestCells(p),2)}</span></summary><div class="pg-body"><div class="id-what">${p.what}</div><div class="pest-txt"><b>Look for:</b> ${p.look}</div><div class="pest-txt"><b>Prevent:</b> ${p.prevent}</div></div></details>`).join('')}</div>`
       :'<div class="set-txt">Nothing to watch for on your current plants this month. 🎉</div>'}`;
@@ -449,7 +520,7 @@ function guideHtml(m){
     <div class="pg-note">Pest timing is typical for Perth and shifts with each season's weather. For declared pests like Medfly, check DPIRD for current advice.</div>`;
 }
 function renderPests(){
-  const m=curMonth(),g=guardItems(m).length;
+  const m=curMonth(),g=maint()==='std'?guardItems(m).length:0;
   const tabs=[['id','🔍 Identify'],['month',`📅 This month${g?` · ${g}`:''}`],['guide','📖 Guide']];
   keepOpen($('pests-content'),()=>$('pests-content').innerHTML=`<div class="mv-heading">Pests & problems</div>
     <div class="seg">${tabs.map(([t,l])=>`<button class="seg-b${_pTab===t?' on':''}" onclick="pTab('${t}')">${l}</button>`).join('')}</div>

@@ -44,7 +44,7 @@ function wxVerdict(){
   const tmrRain=rain(ti+1),tmrProb=d.precipitation_probability_max[ti+1]||0;
   const sd=shallow?' Seeds and seedlings have shallow roots — they dry out first.':'';
   if(def>=mid&&tmrRain>=6&&tmrProb>=70)return{lv:'y',msg:`Beds are drying (${def}mm short ${since}), but ${Math.round(tmrRain)}mm of rain is likely tomorrow — hold off.`};
-  if(def>=hi||(tmax>=35&&def>=mid))return{lv:'r',msg:`💧 Water today — about ${def}mm lost to evaporation ${since}${tmax>=35?`, and it's ${Math.round(tmax)}° today`:''}.${sd}`};
+  if(def>=hi||(tmax>=35&&def>=mid))return{lv:'r',urgent:def>=hi*1.5||tmax>=35,msg:`💧 Water today — about ${def}mm lost to evaporation ${since}${tmax>=35?`, and it's ${Math.round(tmax)}° today`:''}.${sd}`};
   if(def>=mid)return{lv:'y',msg:`💧 Water tomorrow morning — beds are ${def}mm short ${since}.${sd}`};
   return{lv:'g',msg:`Soil moisture looks fine ${since} (${Math.max(0,def)}mm short).`};
 }

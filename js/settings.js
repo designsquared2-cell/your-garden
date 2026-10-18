@@ -1,9 +1,21 @@
-// Settings sheet: weather location, backup/restore, reset.
+// Settings sheet: maintenance level, weather location, backup/restore, reset.
 'use strict';
+// How hands-on the app asks you to be. Saved on this device only, so each person sharing a garden can choose.
+const MAINT_K='gdn_mode';
+const MAINT={
+  none:{e:'😌',n:'No maintenance',d:'Set and forget. Plan your beds and see when things are ready to pick — no jobs, just a watering alert in a heatwave.'},
+  low:{e:'🙂',n:'Low maintenance',d:'The essentials: harvesting, clearing, planting, watering, a spring and autumn feed and the yearly prune. No pest protection.'},
+  std:{e:'🌿',n:'Standard',d:'The full guide: pest checks and prevention, feeding, netting and seasonal jobs.'},
+};
+function maint(){try{const v=localStorage.getItem(MAINT_K);return MAINT[v]?v:'std';}catch(e){return'std';}}
+function setMaint(k){try{localStorage.setItem(MAINT_K,k);}catch(e){}refreshAll();openSettings();toast(`${MAINT[k].e} ${MAINT[k].n}`);}
 function openSettings(){
   showSheet(`<div class="sh-body"><div class="sh-heading">⚙️ Settings</div>
     <button class="jobs-link" style="margin:12px 0 4px" onclick="openAccount()"><span>☁️ ${signedIn()?`Account & sync · ${esc(SYNC.email)}`:'Sign in to back up & share your garden'}</span><span>›</span></button>
-    <div class="fm-lbl">Weather location</div>
+    <div class="fm-lbl">How hands-on?</div>
+    <div class="maint-opts">${Object.entries(MAINT).map(([k,o])=>`<button class="maint-opt${maint()===k?' on':''}" onclick="setMaint('${k}')"><span class="maint-e">${o.e}</span><span><b>${o.n}</b><span>${o.d}</span></span></button>`).join('')}</div>
+    <div class="set-txt">Just for this device — everyone sharing your garden can pick their own.</div>
+    <div class="fm-lbl" style="margin-top:18px">Weather location</div>
     <div class="set-txt">${wxLoc()?`Currently: <b>${esc(wxLoc().name)}</b>`:'Not set yet — search for your suburb to get watering advice.'}</div>
     <div class="fm-emoji-row"><input class="fm-in" id="loc-q" placeholder="Search a town or suburb" onkeydown="if(event.key==='Enter')searchLoc()"><button class="btn btn-seed btn-inline" onclick="searchLoc()">Search</button></div>
     <div id="loc-res"></div>
@@ -32,7 +44,7 @@ function confirmStartFresh(){
   showSheet(`<div class="sh-body"><div class="sh-heading">🧹 Start a fresh garden?</div>
     <div class="set-txt" style="margin-top:8px">This deletes everything saved on this device:</div>
     <ul class="fresh-list">
-      <li>${plural(ST.beds.length,'bed')} and ${plural(n,'plant')}</li>
+      <li>${plural(vegBedCount(),'bed')}, ${plural(ST.beds.length-vegBedCount(),'fruit tree card')} and ${plural(n,'plant')}</li>
       <li>${plural(own,'plant')} you added to the plant list</li>
       <li>Your seed box (${plural(ST.seeds.length,'packet')}) and the planting history used for rotation</li>
       <li>Your harvest log (${ST.log.length} ${ST.log.length===1?'entry':'entries'}), watering log and weather location</li>

@@ -10,13 +10,13 @@ function renderBeds(){
   if(!ST.beds.length){
     w.innerHTML=`<div class="setup"><div class="setup-e">🌱</div><div class="setup-t">Start your garden plan</div>
       <div class="setup-s">Add each bed, patch or pot group, then tap a spot to plant it.</div>
-      <button class="btn btn-seed" onclick="openBedEditor()">＋ Add your first bed</button>
+      <button class="btn btn-seed" onclick="openAddChoice()">＋ Add your first bed or tree</button>
       ${ST.wx?'':'<button class="btn btn-cancel" onclick="openSettings()">📍 Set your location for watering advice</button>'}
       <button class="link-btn" onclick="openSettings()">Have a backup? Import it in Settings</button></div>`;
     return;
   }
-  w.innerHTML=ST.beds.map((bed,bi)=>`<div class="bed-wrap"><div class="bed-card"><div class="bed-top bt${bi%3+1}"><div class="bed-name">${esc(bed.name)}${bed.low?' <span class="bed-tag">low crops</span>':''}</div>${selectMode?'':`<button class="bed-edit" aria-label="Edit ${esc(bed.name)}" onclick="openBedEditor(${bi})">✏️</button>`}</div><div class="grid-bg${(bed.rows[0]?.length||0)>=8?' dense':''}">${bed.rows.map((row,ri)=>`<div class="grid-row">${row.map((cell,ci)=>renderCell(cell,bi,ri,ci)).join('')}</div>`).join('')}</div></div></div>`).join('')
-    +(selectMode?'':'<button class="add-bed" onclick="openBedEditor()">＋ Add a bed</button>');
+  w.innerHTML=ST.beds.map((bed,bi)=>isTreeBed(bed)?'':`<div class="bed-wrap"><div class="bed-card"><div class="bed-top bt${bi%3+1}"><div class="bed-name">${esc(bed.name)}${bed.low?' <span class="bed-tag">low crops</span>':''}</div>${selectMode?'':`<button class="bed-edit" aria-label="Edit ${esc(bed.name)}" onclick="openBedEditor(${bi})">✏️</button>`}</div><div class="grid-bg${(bed.rows[0]?.length||0)>=8?' dense':''}">${bed.rows.map((row,ri)=>`<div class="grid-row">${row.map((cell,ci)=>renderCell(cell,bi,ri,ci)).join('')}</div>`).join('')}</div></div></div>`).join('')
+    +treesSectionHtml()+(selectMode?'':'<button class="add-bed" onclick="openAddChoice()">＋ Add a bed or fruit tree</button>');
 }
 
 // ── Summary ── weather at a glance, how things are growing, links to Jobs and Pests
@@ -24,24 +24,25 @@ const SUM_ST=[['seed','🌱','Seeds'],['seedling','🪴','Seedlings'],['growing'
 function renderSummary(){
   const el=$('beds-summary');
   if(!ST.beds.length){el.innerHTML='';return;}
-  const cells=plantedCells(),empty=allCells().length-cells.length;
+  const cells=plantedCells().filter(x=>!isTreeBed(x.bed)),empty=allCells().length-plantedCells().length,trees=treeBeds().reduce((n,x)=>n+(x.bed.n||1),0);
   const counts=SUM_ST.map(([s,e,l])=>[s,e,l,cells.filter(x=>x.cell.s===s).length]).filter(x=>x[3]);
-  const urgent=urgentItems().length,jobs=jobCount(),pests=pestsToWatch().length;
+  const urgent=urgentItems().length,jobs=jobCount(),pests=pestsToWatch().length,mode=maint();
   el.innerHTML=`<div class="sum">
     ${wxLoc()?weatherLineHtml():`<button class="sum-wx sum-link" onclick="openSettings()">📍 Set your location for watering advice ›</button>`}
-    <div class="sum-counts">${counts.map(([s,e,l,n])=>`<span class="sum-c sc-${s}"><b>${n}</b> ${e} ${l}</span>`).join('')}${empty?`<span class="sum-c sc-empty"><b>${empty}</b> ▫️ Empty</span>`:''}</div>
+    <div class="sum-counts">${counts.map(([s,e,l,n])=>`<span class="sum-c sc-${s}"><b>${n}</b> ${e} ${l}</span>`).join('')}${empty?`<span class="sum-c sc-empty"><b>${empty}</b> ▫️ Empty</span>`:''}${trees?`<span class="sum-c sc-tree"><b>${trees}</b> 🌳 ${trees===1?'Tree':'Trees'}</span>`:''}</div>
     <div class="sum-links">
-      <button class="sum-go${urgent?' hot':''}" onclick="setView('jobs')">🐝 ${jobs?`${plural(jobs,'job')}${urgent?` · ${urgent} urgent`:''}`:'No jobs'} ›</button>
-      <button class="sum-go" onclick="setView('pests')">🐛 ${pests?`${plural(pests,'pest')} to watch`:'Pest guide'} ›</button>
+      <button class="sum-go${urgent?' hot':''}" onclick="setView('jobs')">🐝 ${mode==='none'?(jobs?`${jobs} to pick or water`:'Nothing to pick yet'):jobs?`${plural(jobs,'job')}${urgent?` · ${urgent} urgent`:''}`:'No jobs'} ›</button>
+      <button class="sum-go" onclick="setView('pests')">🐛 ${pests&&mode==='std'?`${plural(pests,'pest')} to watch`:'Pest guide'} ›</button>
     </div></div>`;
 }
 
 // ── Add / edit beds ──
 const BED_MAX_ROWS=8,BED_MAX_COLS=10;
+function vegBedCount(){return ST.beds.filter(b=>!isTreeBed(b)).length;}
 const emptyCell=()=>({p:null,s:'empty',d:null,st:null,picks:0});
 function openBedEditor(bi){
   const bed=bi==null?null:ST.beds[bi];
-  const v=bed?{name:bed.name,r:bed.rows.length,c:bed.rows[0]?.length||1,low:bed.low,spot:bed.spot||30}:{name:`Bed ${ST.beds.length+1}`,r:2,c:6,low:false,spot:30};
+  const v=bed?{name:bed.name,r:bed.rows.length,c:bed.rows[0]?.length||1,low:bed.low,spot:bed.spot||30}:{name:`Bed ${vegBedCount()+1}`,r:2,c:6,low:false,spot:30};
   const stepper=(id,val,max)=>`<div class="stepper"><button onclick="stepNum('${id}',-1,${max})" aria-label="Fewer">−</button><input class="fm-in" id="${id}" type="number" inputmode="numeric" min="1" max="${max}" value="${val}"><button onclick="stepNum('${id}',1,${max})" aria-label="More">+</button></div>`;
   showSheet(`<div class="sh-body"><div class="sh-sticky"><div class="sh-toprow"><div><div class="sh-heading">${bed?'✏️ Edit bed':'＋ New bed'}</div><div class="sh-sub">${bed?'Shrinking a bed removes plants outside the new size':'You can change this any time'}</div></div><button class="sh-cancel" onclick="closeSheet()">✕ Cancel</button></div></div>
     <div class="fm-lbl">Name</div><input class="fm-in" id="bed-n" maxlength="30" placeholder="e.g. Bed 1 — South" value="${esc(v.name)}">
@@ -56,13 +57,13 @@ function openBedEditor(bi){
 }
 function stepNum(id,d,max){const el=$(id);el.value=Math.min(max,Math.max(1,(+el.value||1)+d));}
 function saveBed(bi){
-  const name=$('bed-n').value.trim()||`Bed ${(bi??ST.beds.length)+1}`;
+  const name=$('bed-n').value.trim()||(bi==null?`Bed ${vegBedCount()+1}`:ST.beds[bi].name);
   const r=Math.min(BED_MAX_ROWS,Math.max(1,+$('bed-r').value||1)),c=Math.min(BED_MAX_COLS,Math.max(1,+$('bed-c').value||1));
   const low=$('bed-low').checked,spot=Math.min(200,Math.max(10,parseInt($('bed-spot').value,10)||30));
   if(bi==null){
     ST.beds.push({id:newId(),name,low,spot,rows:Array.from({length:r},()=>Array.from({length:c},emptyCell))});
     saveState();closeSheet();refreshAll();toast(`＋ Added ${name}`);
-    $('beds-wrap').lastElementChild?.previousElementSibling?.scrollIntoView({behavior:'smooth',block:'center'});
+    [...document.querySelectorAll('#beds-wrap .bed-wrap')].at(-1)?.scrollIntoView({behavior:'smooth',block:'center'});
     return;
   }
   snapshot();const bed=ST.beds[bi];

@@ -440,3 +440,44 @@ button.sow-chip:hover{border-color:#5A9A3A}
 /* Seed box */
 .seed-warn{color:#FFB48A;font-weight:800}
 .pick-seed{border-color:#8A6A30;background:rgba(196,144,16,.1)}
+
+/* ── Fruit trees ── one card per type, about the size of four bed spots */
+.tree-sec{margin-bottom:12px}
+.tree-hdr{font-size:12px;font-weight:800;margin:4px 2px 8px;color:#C8D8B0}
+.tree-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(108px,1fr));gap:8px}
+.tree-card{position:relative;height:116px;border-radius:12px;border:2px solid #3A6E20;background:#1A3A0E;color:inherit;font-family:inherit;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;padding:6px;cursor:pointer;min-width:0;transition:transform .1s}
+.tree-card:active{transform:scale(.94)}
+.tree-card:disabled{opacity:.45;cursor:default}
+.tree-card.ts-ready{background:#402800;border-color:#C49010;animation:rdy 2s ease-in-out infinite}
+.tree-card.ts-forming,.tree-card.ts-flowering{border-color:#5A8E30}
+.tree-card.ts-dormant,.tree-card.ts-rest{background:#1C2414;border-color:#34421F}
+.tree-card.ts-young{background:#14300C;border-color:#2E5E20}
+.tree-e{font-size:36px;line-height:1}
+.ts-dormant .tree-e{opacity:.6}
+.tree-name{font-size:11.5px;font-weight:800;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.tree-sub{font-size:9.5px;font-weight:700;color:rgba(255,255,255,.6);max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.tree-count{position:absolute;top:6px;left:8px;font-size:10px;font-weight:800;color:#FFD54F}
+.tree-card .cell-pip{top:8px;right:8px;width:7px;height:7px}
+.sc-tree{color:#B8E08A}
+.tree-quick{display:flex;gap:6px;margin-bottom:6px;flex-wrap:wrap}
+.tree-quick .btn{flex:1;min-width:52px;margin:0;padding-left:6px;padding-right:6px}
+.tree-quick .fm-in{flex:2;min-width:0;margin:0}
+.tree-var{display:flex;gap:10px;align-items:flex-start;cursor:pointer;text-align:left}
+.tree-var input{margin-top:3px;accent-color:#8BAA6B}
+.tree-var:has(input:checked){border-color:#8BAA6B;background:rgba(139,170,107,.12)}
+.sow-sub{font-size:11px;font-weight:800;color:#C8D8B0;margin:10px 0 6px}
+/* "Add to your garden" choice */
+.add-opt{display:flex;gap:12px;align-items:center;width:100%;text-align:left;background:#1E2C14;border:1px solid #3A5C22;border-radius:12px;padding:14px;margin-top:10px;color:inherit;font-family:inherit;cursor:pointer}
+.add-opt:hover{background:#243618}
+.add-opt-e{font-size:30px}
+.add-opt b{display:block;font-size:14px}
+.add-opt span span{display:block;font-size:12px;color:rgba(255,255,255,.6);margin-top:2px}
+/* Maintenance level */
+.maint-opts{display:flex;flex-direction:column;gap:6px;margin:6px 0}
+.maint-opt{display:flex;gap:10px;align-items:flex-start;width:100%;text-align:left;background:#1A2412;border:1.5px solid rgba(255,255,255,.08);border-radius:10px;padding:10px 12px;color:inherit;font-family:inherit;cursor:pointer}
+.maint-opt.on{border-color:#8BAA6B;background:rgba(139,170,107,.14)}
+.maint-e{font-size:20px;line-height:1.2}
+.maint-opt b{display:block;font-size:13px}
+.maint-opt span span{display:block;font-size:11.5px;color:rgba(255,255,255,.62);margin-top:2px;line-height:1.35}
+.tree-st{font-size:9.5px;font-weight:800;color:#C8D8B0;white-space:nowrap}
+.ts-ready .tree-st{color:#FFD54F}

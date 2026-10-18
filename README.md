@@ -43,9 +43,11 @@ Keep new features in the tab they belong to: anything you tick off goes in Jobs.
 | `js/beds.js` | Beds summary, bed grid, add/edit/resize beds, select mode, drag & drop, plant sheet, picker, custom plants |
 | `js/zones.js` | Climate zones (`ZONES`): adjusts planting months and pest seasons from the temperate/Perth data |
 | `js/rotation.js` | Spacing per spot (`PER_SPOT` in data.js, bed `spot` size) and crop rotation from planting `history` |
+| `js/fruit.js` | Fruit trees, berries & vines (`FRUIT`): seasons, first fruit, pruning, thinning, netting, feeding, varieties. Each type is one card (a bed with `kind:'tree'`), plus tree jobs and harvest logging by count or bowl |
+| `js/feeding.js` | Feeding jobs per bed, from what's growing: leafy, fruiting, root, perennial herb and tree feeds |
 | `js/seeds.js` | Seed box (`seeds`): packets, when to sow, picker and Jobs integration |
 | `js/reminders.js` | Calendar reminders: exports a `.ics` file (weekly check, harvests, prevention, sowing) |
-| `js/settings.js` | Location, backup export/import, start fresh |
+| `js/settings.js` | Maintenance level (No / Low / Standard, saved per device as `gdn_mode`), location, backup export/import, start fresh |
 | `js/main.js` | Startup, service worker |
 | `sw.js`, `manifest.webmanifest`, `icons/` | Offline support and home-screen install |
 

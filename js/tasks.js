@@ -11,6 +11,7 @@ function alertDone(k){const d=ST.alertDone[k];return!!d&&daysBetween(d,localDate
 function plantAlertItems(){
   const out=[],seen=new Set();
   plantedCells().forEach(({bed,cell})=>{
+    if(isTree(cell.p))return; // trees have their own seasonal reminder (fruit.js)
     if(!ALERT_ST.includes(cell.s)||COMPANIONS.includes(cell.p))return;const k=cell.p+':'+cell.s;if(seen.has(k)||alertDone(k))return;seen.add(k);
     const pl=P[cell.p],ready=cell.s==='ready';
     out.push({kind:'plant',id:k,type:'urgent',cb:true,
@@ -21,7 +22,7 @@ function plantAlertItems(){
 }
 function urgentItems(){
   const out=[...plantAlertItems(),...treatItems()],v=wxVerdict();
-  if(v?.lv==='r')out.push({kind:'water',id:'water',type:'urgent',cb:true,title:'💧 Water the beds today',detail:v.msg.replace(/^💧 Water today — /,'')+' Tick when done.'});
+  if(v?.lv==='r'&&(maint()!=='none'||v.urgent))out.push({kind:'water',id:'water',type:'urgent',cb:true,title:'💧 Water the beds today',detail:v.msg.replace(/^💧 Water today — /,'')+' Tick when done.'});
   return out;
 }
 
@@ -81,7 +82,7 @@ function tickItem(kind,id,btn){
   tickAway(btn,()=>{
     if(kind==='water'){snapshot();logWatered(true);toast('💧 Watering logged',{undo:true});return;}
     snapshot();
-    const msg=kind==='plant'?harvestFromAlert(id):kind==='pest'?tickPest(id):kind==='treat'?tickTreat(id):kind==='guard'?tickGuard(id):runAuto(id);
+    const msg=kind==='plant'?harvestFromAlert(id):kind==='pest'?tickPest(id):kind==='treat'?tickTreat(id):kind==='guard'?tickGuard(id):kind==='tree'?tickTree(id):kind==='feed'?tickFeed(id):runAuto(id);
     saveState();refreshAll();toast(msg,{undo:true});
   });
 }
@@ -119,18 +120,26 @@ function cardHtml(it){
   const lead=it.cb?`<button class="task-cb-area" aria-label="Mark done" onclick="tickItem('${it.kind}','${it.id}',this)"><div class="task-cb">○</div></button>`:`<div class="task-cb-area"><div class="task-ico">${it.icon||'•'}</div></div>`;
   return `<div class="${cls}">${lead}<div class="task-content"><div class="task-title">${it.title}</div><div class="task-detail">${it.detail||''}</div>${it.btn?`<button class="task-btn" onclick="${it.btn.js}">${it.btn.label}</button>`:''}</div></div>`;
 }
-// Jobs tab: everything to do, grouped by urgency
+// Jobs tab: everything to do, grouped by urgency. How much shows depends on the maintenance level (Settings):
+//   none: only what's ready to pick, and watering in a heatwave
+//   low:  harvesting, clearing, planting, watering, a spring & autumn feed and the yearly prune — no pest jobs
+//   std:  everything
 function jobSections(){
-  const m=curMonth(),auto=autoItems(m);
+  const m=curMonth(),mode=maint();
+  if(mode==='none')return[['🧺 Ready to pick',[...urgentItems(),...treeReadyItems()]]];
+  const auto=autoItems(m),soon=auto.filter(t=>t.type==='soon'),coming=['🟢 Coming up',auto.filter(t=>t.type==='coming')];
+  if(mode==='low')return[['🔴 Do this week',urgentItems()],['🟡 This month',[...treeReadyItems(),...soon.filter(t=>!t.id.startsWith('late:')),...treeJobItems(m),...lowFeedItems(m)]],coming];
   const g=guardItems(m),now=g.filter(x=>x.id==='snails-rain');
-  return[['🔴 Do this week',[...urgentItems(),...now]],['🐛 Pest checks',pestCheckItems(m)],['🟡 This month',[...g.filter(x=>!now.includes(x)),...auto.filter(t=>t.type==='soon')]],['🟢 Coming up',auto.filter(t=>t.type==='coming')]];
+  return[['🔴 Do this week',[...urgentItems(),...now]],['🐛 Pest checks',pestCheckItems(m)],['🟡 This month',[...treeReadyItems(),...g.filter(x=>!now.includes(x)),...soon,...treeJobItems(m),...feedItems(m)]],coming];
 }
-function jobCount(){const[[,u],[,p],[,s]]=jobSections();return u.length+p.length+s.filter(t=>t.cb).length;}
+// Everything you can tick, apart from "coming up"
+function jobCount(){return jobSections().filter(([l])=>!l.includes('Coming up')).reduce((n,[,ts])=>n+ts.filter(t=>t.cb).length,0);}
 function renderJobs(){
   const m=curMonth(),secs=jobSections();
   const body=secs.map(([lbl,ts])=>ts.length?`<div class="task-section"><div class="task-sec-title">${lbl}</div>${ts.map(cardHtml).join('')}</div>`:'').join('')
     ||(ST.beds.length?`<div class="all-done">All done for now 🐝<br><span>The garden is doing its thing.</span></div>`
-      :cardHtml({type:'soon',icon:'🌱',title:'Add your first bed',detail:'Jobs, harvest dates, pest checks and watering advice appear here once you start planting.',btn:{label:'＋ Add a bed',js:"setView('beds');openBedEditor()"}}));
+      :cardHtml({type:'soon',icon:'🌱',title:'Add your first bed',detail:'Jobs, harvest dates, pest checks and watering advice appear here once you start planting.',btn:{label:'＋ Add a bed',js:"setView('beds');openAddChoice()"}}));
   const n=jobCount();
-  $('jobs-content').innerHTML=`<div class="mv-heading">Jobs to do</div><div class="mv-intro">${n?`${plural(n,'job')} for ${MONTHS[m]}. Tick them off as you go.`:'Nothing needs doing right now.'}</div>${weatherCardHtml()}${ST.beds.length?'<button class="jobs-link" onclick="openReminders()"><span>📅 Add reminders to my calendar</span><span>›</span></button>':''}${body}`;
+  const none=maint()==='none';
+  $('jobs-content').innerHTML=`<div class="mv-heading">${none?'Ready to pick':'Jobs to do'}</div><div class="mv-intro">${none?`You're on <b>No maintenance</b> — only harvests and heatwave watering show here. <button class="link-btn" onclick="openSettings()">Change</button>`:n?`${plural(n,'job')} for ${MONTHS[m]}. Tick them off as you go.`:'Nothing needs doing right now.'}</div>${!none||wxVerdict()?.urgent?weatherCardHtml():''}${ST.beds.length?'<button class="jobs-link" onclick="openReminders()"><span>📅 Add reminders to my calendar</span><span>›</span></button>':''}${body}`;
 }

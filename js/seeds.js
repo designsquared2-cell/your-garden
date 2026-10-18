@@ -48,7 +48,7 @@ function removeSeed(id){snapshot();ST.seeds=ST.seeds.filter(x=>x.id!==id);saveSt
 // Add / edit a packet
 function openSeedForm(id){
   const s=id?ST.seeds.find(x=>x.id===id):{p:'',v:null,vn:'',sowBy:'',note:''};
-  const crops=Object.keys(P).sort((a,b)=>P[a].n.localeCompare(P[b].n));
+  const crops=Object.keys(P).filter(k=>!isTree(k)).sort((a,b)=>P[a].n.localeCompare(P[b].n));
   showSheet(`<div class="sh-body"><div class="sh-sticky"><div class="sh-toprow"><div><div class="sh-heading">🌰 ${id?'Edit packet':'Add a seed packet'}</div><div class="sh-sub">Everything's on the back of the packet</div></div><button class="sh-cancel" onclick="${id?`openSeed('${id}')`:'closeSheet()'}">✕ Cancel</button></div></div>
     <div class="fm-lbl">Plant</div><select class="fm-in" id="sd-p" onchange="seedVarOptions()"><option value="">Choose a plant…</option>${crops.map(k=>`<option value="${k}"${s.p===k?' selected':''}>${P[k].e} ${P[k].n}</option>`).join('')}</select>
     <div id="sd-vwrap"></div>

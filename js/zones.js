@@ -17,6 +17,7 @@ const span=(...ms)=>ms;
 function zoneSow(k,sow,heat){
   const z=zone();if(z==='temperate'||!sow)return sow;
   const cat=catOf(k),hot=heat||HEAT_LOVERS.includes(k);
+  if(cat==='fruit')return sow;
   const keep=(ms,allowed)=>{const r=ms.filter(m=>allowed.includes(m));return r.length?r:allowed;};
   if(z==='cool'){
     if(cat==='warm')return keep(sow,span(9,10,11));                       // short frost-free summer

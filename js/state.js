@@ -26,7 +26,7 @@ function migrate(s){
   });
   // Harvest log used to store the bed's position; store its id so deleting a bed can't mislabel entries
   s.log.forEach(l=>{if(l.bid==null&&l.b!=null){l.bid=s.beds[l.b]?.id||null;delete l.b;}});
-  s.customVarieties??={};s.history??=[];s.seeds??=[];
+  s.customVarieties??={};s.history??=[];s.seeds??=[];s.treeDone??={};s.fed??={};
   s.beds.forEach(b=>{b.spot??=30;}); // spot size in cm
   // v6: plants that were really varieties became one crop each (Cherry Tomato → Tomato › Cherry, …)
   if((s.v||0)<6){
@@ -117,6 +117,7 @@ function expectedDate(cell){
 
 // Short "when" label, shared by the plant sheet, Harvest and Plants tabs
 function readyLabel(cell,short){
+  if(isTree(cell.p))return treeReadyLabel(cell,short);
   const pl=P[cell.p],exp=expectedDate(cell);
   if(cell.s==='ready'||cell.s==='bolting')return'Ready now';
   if(cell.s==='done')return'Finished';

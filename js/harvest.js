@@ -80,7 +80,9 @@ const RECIPES={
   'rosemary':'Rosemary salt for roast potatoes.','thyme':'Thyme and honey roasted carrots.','lemongrass':'Lemongrass and ginger tea.',
 };
 function priceOf(k){return ST.prices[k]??PRICE[k]??(P[k]?.custom?2:0);}
-function logValue(l){return priceOf(l.p)*(l.n||1);}
+// Fruit is priced per kg: count × typical weight
+function logValue(l){return priceOf(l.p)*(l.n||1)*(isTree(l.p)?FRUIT[l.p].g/1000:1);}
+function fruitKg(ls){return ls.reduce((s,l)=>s+(isTree(l.p)?(l.n||1)*FRUIT[l.p].g/1000:0),0);}
 function money(v){return'$'+(v>=100?Math.round(v):v.toFixed(v%1?2:0));}
 
 // ── Value ──
@@ -89,21 +91,21 @@ function harvestTotals(){
   const sum=ls=>ls.reduce((s,l)=>s+logValue(l),0);
   const year=ST.log.filter(l=>l.d.startsWith(yk));
   const by={};year.forEach(l=>{by[l.p]=(by[l.p]||0)+logValue(l);});
-  return{month:sum(ST.log.filter(l=>l.d.startsWith(mk))),year:sum(year),all:sum(ST.log),picks:year.reduce((s,l)=>s+(l.n||1),0),
+  return{month:sum(ST.log.filter(l=>l.d.startsWith(mk))),year:sum(year),all:sum(ST.log),picks:year.reduce((s,l)=>s+(l.n||1),0),kg:fruitKg(year),
     top:Object.entries(by).sort((a,b)=>b[1]-a[1]).slice(0,3)};
 }
 // A quiet line at the bottom of the Harvest tab — useful, but the plants come first
 function valueLineHtml(){
   if(!ST.log.length)return'';
   const t=harvestTotals();
-  return `<div class="hv-value">🧺 About <b>${money(t.year)}</b> of food grown this year${t.month&&t.month!==t.year?` · ${money(t.month)} this month`:''}
+  return `<div class="hv-value">🧺 About <b>${money(t.year)}</b> of food grown this year${t.month&&t.month!==t.year?` · ${money(t.month)} this month`:''}${t.kg>=0.1?` · ${t.kg<10?t.kg.toFixed(1):Math.round(t.kg)}kg of fruit`:''}
     <button class="link-btn" onclick="openPrices()">Based on typical shop prices — adjust</button></div>`;
 }
 function openPrices(){
   const ks=[...new Set([...ST.log.map(l=>l.p),...plantedCells().map(x=>x.cell.p)])].filter(k=>P[k]);
   showSheet(`<div class="sh-body"><div class="sh-sticky"><div class="sh-toprow"><div><div class="sh-heading">🏷️ Your prices</div><div class="sh-sub">What one picking would cost you at the shops</div></div><button class="sh-cancel" onclick="closeSheet()">✕ Close</button></div></div>
-    ${ks.map(k=>`<label class="price-row"><span>${P[k].e} ${P[k].n}</span><span class="price-in">$<input class="fm-in" type="number" inputmode="decimal" min="0" step="0.5" value="${priceOf(k)}" onchange="setPrice('${k}',this.value)"></span></label>`).join('')||'<div class="set-txt">Plant something first.</div>'}
-    <div class="fm-help" style="margin-top:10px">A "picking" is one bunch, handful, head or a few fruit.</div></div>`);
+    ${ks.map(k=>`<label class="price-row"><span>${P[k].e} ${P[k].n}</span><span class="price-in">$<input class="fm-in" type="number" inputmode="decimal" min="0" step="0.5" value="${priceOf(k)}" onchange="setPrice('${k}',this.value)">${isTree(k)?'<span class="hlog-d">/kg</span>':''}</span></label>`).join('')||'<div class="set-txt">Plant something first.</div>'}
+    <div class="fm-help" style="margin-top:10px">A "picking" is one bunch, handful, head or a few fruit. Fruit from trees is priced per kg.</div></div>`);
 }
 function setPrice(k,v){const n=parseFloat(v);if(isNaN(n)||n<0)return;ST.prices[k]=Math.round(n*100)/100;saveState();renderView();}
 
@@ -118,6 +120,7 @@ function plantGroupsByKey(){
 function leadCell(xs){const td=localDate(),rank=c=>['ready','bolting'].includes(c.s)?0:c.s==='done'?3:expectedDate(c)&&expectedDate(c)<=td?1:2;
   return xs.map(x=>x.cell).sort((a,b)=>rank(a)-rank(b)||(expectedDate(a)||'z').localeCompare(expectedDate(b)||'z'))[0];}
 function stageOf(c){
+  if(isTree(c.p))return{ready:'ready',forming:'soon'}[treeStage(c)]||'growing';
   if(c.s==='done')return'done';
   if(COMPANIONS.includes(c.p))return'growing'; // companion flowers aren't a harvest
   if(['ready','bolting'].includes(c.s))return'ready';
@@ -126,9 +129,10 @@ function stageOf(c){
   return e&&daysBetween(td,e)<=45?'soon':'growing';
 }
 function harvestRowHtml({k,xs,lead}){
-  const pl=P[k],beds=[...new Set(xs.map(x=>x.bed.name))].map(esc).join(', ');
+  // a tree card's name is usually just the fruit's name — only show it if it's been renamed
+  const pl=P[k],beds=[...new Set(xs.map(x=>x.bed.name))].filter(b=>b!==pl.n).map(esc).join(', '),n=xs.reduce((s,x)=>s+(isTreeBed(x.bed)?x.bed.n||1:1),0);
   const vs=[...new Set(xs.map(x=>cellVariety(x.cell)?.s).filter(Boolean))].map(esc);
-  return `<button class="hv-row" onclick="openGrowing('${k}')"><span class="hv-e">${pl.e}</span><span class="hv-mid"><span class="hv-n">${pl.n}${xs.length>1?` <span class="hlog-d">×${xs.length}</span>`:''}</span><span class="hv-m">${vs.length?vs.join(', ')+' · ':''}${beds}</span></span><span class="hv-w">${readyLabel(lead,false).replace('Ready ~','~')}</span><span class="hv-go">›</span></button>`;
+  return `<button class="hv-row" onclick="openGrowing('${k}')"><span class="hv-e">${pl.e}</span><span class="hv-mid"><span class="hv-n">${pl.n}${n>1?` <span class="hlog-d">×${n}</span>`:''}</span><span class="hv-m">${[vs.join(', '),beds].filter(Boolean).join(' · ')}</span></span><span class="hv-w">${readyLabel(lead,false).replace('Ready ~','~')}</span><span class="hv-go">›</span></button>`;
 }
 function renderHarvest(){
   const groups=plantGroupsByKey();
@@ -139,7 +143,7 @@ function renderHarvest(){
     ${sec('✨ Ready to pick',by('ready'))}
     ${sec('⏳ Coming up',by('soon').sort((a,b)=>(expectedDate(a.lead)||'').localeCompare(expectedDate(b.lead)||'')),'Ready within about 6 weeks')}
     ${sec('🌿 Growing',by('growing'))}
-    ${sec('✅ Finished',by('done'),'Clear these when you\'re ready — Jobs has a reminder.')}
+    ${sec('✅ Finished',by('done'),maint()==='none'?'Tap one in Beds and clear the spot when you\'ve pulled it out.':'Clear these when you\'re ready — Jobs has a reminder.')}
     ${valueLineHtml()}`;
 }
 
@@ -215,6 +219,7 @@ function readySignHtml(k){return READY_SIGN[k]?`<div class="sh-next"><div class=
 function openGrowing(k,focusTrouble){
   if(focusTrouble)setTimeout(()=>$('trouble')?.scrollIntoView({behavior:'smooth',block:'start'}),300);
   const xs=plantedCells().filter(x=>x.cell.p===k);if(!xs.length){openPlantInfo(k);return;}
+  if(isTree(k)){openTreeSheet(xs[0].bi);return;}
   const pl=P[k],lead=leadCell(xs),beds=[...new Set(xs.map(x=>x.bed.name))].map(esc).join(', ');
   const planted=xs.map(x=>x.cell.d).filter(Boolean).sort()[0];
   const picks=ST.log.filter(l=>l.p===k).reduce((s,l)=>s+(l.n||1),0);
