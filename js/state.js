@@ -115,9 +115,30 @@ function expectedDate(cell){
   return addDays(cell.d,cell.st==='seed'?t.days:Math.max(14,t.days-21));
 }
 
+// Seeds and seedlings move on by themselves once they've had time to establish.
+// Saved on this device only — every device works out the same thing.
+function advanceStatuses(){
+  let changed=false;const td=localDate();
+  ST.beds.forEach(b=>{if(b.kind==='tree')return;b.rows.forEach(r=>r.forEach(c=>{
+    if(!c.d||!['seed','seedling'].includes(c.s))return;
+    const a=daysBetween(c.d,td),s=c.s==='seed'?(a>=21?'growing':a>=10?'seedling':'seed'):(a>=14?'growing':'seedling');
+    if(s!==c.s){c.s=s;changed=true;}
+  }));});
+  if(changed)try{localStorage.setItem(SK,JSON.stringify(ST));}catch(e){}
+}
+// Plants you pick from don't crop forever: roughly how many weeks of picking before they're spent.
+// Perennials (herbs, strawberries) keep going.
+const PICK_WEEKS={'broad-beans':8,'peas':8,'kale':20,'chard':40,'lettuce':6,'spinach':6,'coriander':6,'parsley':30,'dill':8,'basil':16,
+  'tomatoes':16,'zucchini':12,'cucumber':10,'beans':8,'capsicum':20,'eggplant':20,'chilli':26,'broccoli':6};
+function pickingOver(cell){
+  if(isTree(cell.p)||!cellKeepsProducing(cell)||cellTraits(cell).includes('perennial')||COMPANIONS.includes(cell.p))return false;
+  const exp=expectedDate(cell);return!!exp&&daysBetween(exp,localDate())>(PICK_WEEKS[cell.p]??16)*7;
+}
+
 // Short "when" label, shared by the plant sheet, Harvest and Plants tabs
 function readyLabel(cell,short){
   if(isTree(cell.p))return treeReadyLabel(cell,short);
+  if(cell.s!=='done'&&pickingOver(cell))return short?'Done?':'Probably finished';
   const pl=P[cell.p],exp=expectedDate(cell);
   if(cell.s==='ready'||cell.s==='bolting')return'Ready now';
   if(cell.s==='done')return'Finished';

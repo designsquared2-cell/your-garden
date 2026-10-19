@@ -11,7 +11,7 @@ function alertDone(k){const d=ST.alertDone[k];return!!d&&daysBetween(d,localDate
 function plantAlertItems(){
   const out=[],seen=new Set();
   plantedCells().forEach(({bed,cell})=>{
-    if(isTree(cell.p))return; // trees have their own seasonal reminder (fruit.js)
+    if(isTree(cell.p)||pickingOver(cell))return; // trees have their own reminder; spent plants get "probably finished"
     if(!ALERT_ST.includes(cell.s)||COMPANIONS.includes(cell.p))return;const k=cell.p+':'+cell.s;if(seen.has(k)||alertDone(k))return;seen.add(k);
     const pl=P[cell.p],ready=cell.s==='ready';
     out.push({kind:'plant',id:k,type:'urgent',cb:true,
@@ -39,6 +39,12 @@ function autoItems(m){
     out.push({kind:'auto',id:`clear:${g.bi}:${g.p}`,type:'soon',cb:true,
       title:`Pull out the completed ${P[g.p].n} in ${esc(g.bed.name)}`,
       detail:`Pull ${many?'them':'it'} out roots and all. ${nx?`${P[nx].n} is a good follow-on.`:'Top up with compost before replanting.'} Tick to clear the ${many?'spots':'spot'}.`});
+  });
+  groupCells(x=>x.cell.s!=='done'&&pickingOver(x.cell)).forEach(g=>{
+    const wk=PICK_WEEKS[g.p]??16,many=g.cells.length>1;
+    out.push({kind:'auto',id:`spent:${g.bi}:${g.p}`,type:'soon',cb:true,icon:'🍂',
+      title:`🍂 ${P[g.p].n} in ${esc(g.bed.name)} has probably finished`,
+      detail:`${many?'They’ve':'It’s'} been cropping for about ${wk} weeks — most plants are spent by now. Pull ${many?'them':'it'} out once ${many?'they stop':'it stops'} producing, and tick to clear the ${many?'spots':'spot'}. Still going strong? Leave this for now.`});
   });
   groupCells(x=>overdueOneOff(x.cell)).forEach(g=>{
     const exp=g.cells.map(x=>expectedDate(x.cell)).sort()[0],late=daysBetween(exp,td);
@@ -106,6 +112,7 @@ function lateCauses(k){return DISORDERS.filter(d=>d.late&&pestOnPlant(d,k)&&!d.o
 function runAuto(id){
   const[type,bi,p]=id.split(':');
   const cells=plantedCells().filter(x=>x.bi===+bi&&x.cell.p===p);
+  if(type==='spent'){cells.forEach(x=>clearCell(x.bi,x.ri,x.ci));const nx=P[p].nx;return`🧹 Cleared — ${nx?`try ${plantName(nx)} next`:'spot ready to replant'}`;}
   if(type==='clear'){cells.filter(x=>x.cell.s==='done').forEach(x=>clearCell(x.bi,x.ri,x.ci));const nx=P[p].nx;return nx?`Cleared — try ${plantName(nx)} next`:'Cleared — spot ready to replant';}
   if(type==='late'){ST.pestDone[id]=localDate();return`👍 Checked — we'll look again in ${LATE_SNOOZE} days`;}
   if(type==='ready'){cells.forEach(x=>{if(['seed','seedling','growing'].includes(x.cell.s))x.cell.s='ready';});return`✨ ${plantName(p)} marked ready`;}

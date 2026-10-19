@@ -46,10 +46,13 @@ function pestShift(){return ZONES[zone()].pest;}
 function zoneMonthsOut(ms){const s=pestShift();return ms.map(m=>(m+s+12)%12);}   // for display
 function pestMonthIn(ms,m){const s=pestShift();return ms.includes((m-s+12)%12);}  // is month m in a pest's season?
 // Suggest a zone from the weather location (latitude/longitude)
-function zoneFromLatLon(lat,lon){
-  if(lat>-19)return'tropical';
-  if(lat>-29&&lon>150)return'subtropical';
-  if(lon>119&&lon<149&&lat>-32.5&&lat<-19)return'arid';
-  if(lat<-36.5||(lat<-35&&lon>145&&lon<150))return'cool';
-  return'temperate';
+// Height matters too: 500m+ is a step cooler (Toowoomba gets frosts; the Atherton Tablelands aren't tropical lowlands)
+function zoneFromLatLon(lat,lon,elev){
+  let z='temperate';
+  if(lat>-19)z='tropical';
+  else if(lat>-29&&lon>150)z='subtropical';
+  else if(lon>119&&lon<149&&lat>-32.5&&lat<-19)z='arid';
+  else if(lat<-36.5||(lat<-35&&lon>145&&lon<150))z='cool';
+  if(elev>=500)z={tropical:'subtropical',subtropical:'temperate',temperate:elev>=900?'cool':'temperate'}[z]||z;
+  return z;
 }

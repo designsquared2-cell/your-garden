@@ -88,7 +88,7 @@ const FRUIT={
     tip:'Avocados need perfect drainage — plant on a mound. Wet feet causes root rot. Mulch thickly, but keep it off the trunk.',
     idea:'Smashed on toast with lemon and chilli, of course — or blitzed into a green goddess dressing.',
     ready:'Avocados don\'t soften on the tree. Pick one full-sized fruit and leave it on the bench: if it softens in about a week without shrivelling, the rest are ready.',recipe:'Guacamole with lime, coriander and chilli.'},
-  mango:{e:'🥭',n:'Mango',grp:'sub',sow:[8,9,10],pick:[11,0,1,2],flower:[6,7,8],yrs:4,unit:'mango',us:'mangoes',g:350,kg:6,
+  mango:{e:'🥭',n:'Mango',grp:'sub',sow:[8,9,10],pick:[11,0,1,2],trop:[8,9,10,11],flower:[6,7,8],yrs:4,unit:'mango',us:'mangoes',g:350,kg:6,
     prune:[2,3],pruneHow:'After harvest: tip-prune to keep it bushy and low enough to pick.',
     feed:[7,1],frost:true,bad:['cool','temperate'],badWhy:'Mangoes need warmth. In Perth and similar climates they can fruit in a hot, sheltered, north-facing spot; in cooler areas they rarely fruit.',size:'5–10m, or 2–3m for dwarf types',
     tip:'Water well while fruit is forming, then ease off in autumn and winter.',
@@ -195,7 +195,9 @@ function isTree(k){return!!FRUIT[k];}
 function isTreeBed(bed){return bed?.kind==='tree';}
 function treeCell(bed){return bed.rows[0][0];}
 function treeYears(c){return c.d?Math.max(0,daysBetween(c.d,localDate()))/365.25:0;}
-function treePick(c){return cellVariety(c)?.pk||FRUIT[c.p].pick;}
+// trop: the fruit season in the tropics, earlier than the zone shift allows (Darwin mangoes: Sep–Dec)
+function fruitPick(k){const f=FRUIT[k];return zone()==='tropical'&&f.trop||f.pick;}
+function treePick(c){return cellVariety(c)?.pk||fruitPick(c.p);}
 function treeBearing(c){return treeYears(c)>=FRUIT[c.p].yrs-0.25;}
 function firstFruitYear(c){return new Date((c.d||localDate())+'T00:00').getFullYear()+FRUIT[c.p].yrs;}
 // Fruit seasons shift with the climate zone, the same way pest seasons do

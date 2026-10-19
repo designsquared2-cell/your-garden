@@ -285,14 +285,16 @@ function remedyText(p){const r=p.rem||{};return[...(r.nat||[]).slice(0,2),...(ST
 
 // ── Jobs ──
 function pestDoneRecently(id){const d=ST.pestDone[id];return!!d&&daysBetween(d,localDate())<PEST_SNOOZE_DAYS;}
+// One weekly "pest walk" instead of a card per pest: the worst few to look for, the rest on the Pests tab
+const WALK_SHOW=4;
 function pestCheckItems(m){
-  return pestsToWatch(m).filter(p=>!pestDoneRecently(p.id)&&!ST.pestReports.some(r=>r.pest===p.id)).map(p=>{
-    const cells=pestCells(p);
-    return{kind:'pest',id:p.id,type:'pest',cb:true,icon:p.e,
-      title:`${p.e} Check for ${p.n.toLowerCase()} on ${plantList(cells)}${pestPeak(p,m)?' <span class="peak-tag">peak</span>':''}`,
-      detail:`<b>Look for:</b> ${p.look} <b>Where:</b> ${p.where} <span class="task-where">${bedList(cells)}</span>`,
-      btn:{label:'🐛 Found some',js:`openPestReport('${p.id}')`}};
-  });
+  const ps=pestsToWatch(m).filter(p=>!pestDoneRecently(p.id)&&!ST.pestReports.some(r=>r.pest===p.id));
+  if(!ps.length)return[];
+  const show=ps.slice(0,WALK_SHOW),more=ps.length-show.length;
+  return[{kind:'pest',id:'walk',type:'pest',cb:true,icon:'🔍',
+    title:`🔍 Weekly pest walk: ${show.map(p=>p.n.toLowerCase()).join(', ')}${more?` +${more} more`:''}`,
+    detail:`${show.map(p=>`<b>${p.e} ${p.n}${pestPeak(p,m)?' <span class="peak-tag">peak</span>':''}</b> — ${p.look.split('. ')[0].replace(/\.$/,'')}. <span class="task-where">${plantList(pestCells(p),2)}</span>`).join('<br>')}<br>Tick once you’ve had a look around.${more?' The rest are on the Pests tab → This month.':''}`,
+    btn:{label:'🐛 Found something',js:"openPestsFor(null)"}}];
 }
 function guardDone(id){const d=ST.guardDone[id];return!!d&&daysBetween(d,localDate())<GUARD_DONE_DAYS;}
 function guardCells(g){const ps=g.on?[{on:g.on}]:g.pests.map(id=>PEST_BY_ID[id]);return plantedCells().filter(x=>ps.some(p=>pestHitsCell(p,x.cell,true)));}
@@ -320,7 +322,10 @@ function treatItems(){
       detail:`${remedyText(p)} Tick once done — we'll remind you to check again in ${PEST_RECHECK_DAYS} days.`};
   }).filter(Boolean);
 }
-function tickPest(id){ST.pestDone[id]=localDate();return`✓ All clear — next ${PEST_BY_ID[id].n.toLowerCase()} check in a week`;}
+function tickPest(id){
+  if(id==='walk'){pestsToWatch(curMonth()).forEach(p=>{ST.pestDone[p.id]=localDate();});return'🔍 Pest walk done — next one in a week';}
+  ST.pestDone[id]=localDate();return`✓ All clear — next ${PEST_BY_ID[id].n.toLowerCase()} check in a week`;
+}
 function tickGuard(id){
   if(id==='snails-rain'){ST.pestDone[id]=localDate();return'🐌 Patrol done — good work';}
   ST.guardDone[id]=localDate();return'🛡️ Done — your plants are protected';

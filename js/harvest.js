@@ -150,7 +150,7 @@ function leadCell(xs){const td=localDate(),rank=c=>['ready','bolting'].includes(
   return xs.map(x=>x.cell).sort((a,b)=>rank(a)-rank(b)||(expectedDate(a)||'z').localeCompare(expectedDate(b)||'z'))[0];}
 function stageOf(c){
   if(isTree(c.p))return{ready:'ready',forming:'soon'}[treeStage(c)]||'growing';
-  if(c.s==='done')return'done';
+  if(c.s==='done'||pickingOver(c))return'done';
   if(COMPANIONS.includes(c.p))return'growing'; // companion flowers aren't a harvest
   if(['ready','bolting'].includes(c.s))return'ready';
   const e=expectedDate(c),td=localDate();
