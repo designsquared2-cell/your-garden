@@ -26,7 +26,7 @@ function migrate(s){
   });
   // Harvest log used to store the bed's position; store its id so deleting a bed can't mislabel entries
   s.log.forEach(l=>{if(l.bid==null&&l.b!=null){l.bid=s.beds[l.b]?.id||null;delete l.b;}});
-  s.customVarieties??={};s.history??=[];s.seeds??=[];s.treeDone??={};s.fed??={};
+  s.customVarieties??={};s.history??=[];s.seeds??=[];s.treeDone??={};s.fed??={};s.projDone??={};
   s.beds.forEach(b=>{b.spot??=30;}); // spot size in cm
   // v6: plants that were really varieties became one crop each (Cherry Tomato → Tomato › Cherry, …)
   if((s.v||0)<6){
@@ -103,9 +103,11 @@ function seasonCats(m=curMonth()){return(warmSeasonNow(m)?['warm','herb','comp',
 function plantName(k){return ST.customPlants[k]?.n??P[k]?.n??k;}
 // Planting months are adjusted for the climate zone (see zones.js)
 function timing(k){const t=TIMING[k];return t?{...t,sow:zoneSow(k,t.sow)}:{};}
-function varietySow(k,v){return v?.sow?zoneSow(k,v.sow,(v.tags||[]).includes('h')):null;}
+function varietySow(k,v){return v?.sow?zoneSow(k,v.sow,(v.tags||[]).includes('h'),true):null;}
 // A crop is in season if it — or any of its varieties (e.g. summer spinaches) — can be planted this month
-function inSeason(k,m=curMonth()){const t=timing(k);return(t.sow?t.sow.includes(m):true)||varietiesOf(k).some(v=>varietySow(k,v)?.includes(m));}
+// warmOnly crops (taro, cassava) only grow in the subtropics and tropics
+function warmOnlyHere(k){return!!P[k]?.warmOnly&&!['subtropical','tropical'].includes(zone());}
+function inSeason(k,m=curMonth()){if(warmOnlyHere(k))return false;const t=timing(k);return(t.sow?t.sow.includes(m):true)||varietiesOf(k).some(v=>varietySow(k,v)?.includes(m));}
 function varietyInSeason(k,v,m=curMonth()){const sow=varietySow(k,v)||timing(k).sow;return sow?sow.includes(m):true;}
 function keepsProducing(k){return!!timing(k).pick;}
 function familyOf(k){return Object.keys(FAMILY).find(f=>FAMILY[f].includes(k));}

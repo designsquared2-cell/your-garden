@@ -45,6 +45,7 @@ Keep new features in the tab they belong to: anything you tick off goes in Jobs.
 | `js/rotation.js` | Spacing per spot (`PER_SPOT` in data.js, bed `spot` size) and crop rotation from planting `history` |
 | `js/fruit.js` | Fruit trees, berries & vines (`FRUIT`): seasons, first fruit, pruning, thinning, netting, feeding, varieties. Each type is one card (a bed with `kind:'tree'`), plus tree jobs and harvest logging by count or bowl |
 | `js/crops2.js` | Extra crops testers asked for (rocket, sunflower, okra, Asian greens, Pacific staples…) and extra varieties (popcorn, daikon, wombok, runner beans, Thai basil, collards) |
+| `js/seasons.js` | Year-round content: a story for every month in every climate, seasonal projects in Jobs, the “Plan next season” sheet and the month card in Jobs |
 | `js/feeding.js` | Feeding jobs per bed, from what's growing: leafy, fruiting, root, perennial herb and tree feeds |
 | `js/seeds.js` | Seed box (`seeds`): packets, when to sow, picker and Jobs integration |
 | `js/reminders.js` | Calendar reminders: exports a `.ics` file (weekly check, harvests, prevention, sowing) |

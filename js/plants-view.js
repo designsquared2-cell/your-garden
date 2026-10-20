@@ -32,7 +32,7 @@ let _libQ='';
 function renderPlants(){
   const m=curMonth(),td=localDate();
   const here=new Set(plantedCells().map(x=>x.cell.p));
-  const stories=(STORIES[m]||[]).map(s=>storyCardHtml(s,here)).join('');
+  const stories=storiesFor(m).map(s=>storyCardHtml(s,here)).join('');
   const now=[...new Set([...COOL_VEG,...WARM_VEG,...HERBS])].filter(k=>!P[k].custom&&inSeason(k,m)),fruitNow=FRUIT_KEYS.filter(k=>inSeason(k,m)&&!treeBadHere(k));
   const guides=[...here].map(k=>plantGuideHtml(k,td)).join('');
   $('plants-content').innerHTML=`<div class="mv-heading">Plants</div>

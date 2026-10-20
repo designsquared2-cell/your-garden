@@ -13,9 +13,20 @@ const HEAT_LOVERS=['sweet-potato','eggplant','chilli','lemongrass','basil','pump
 function zone(){return ZONES[ST.zone]?ST.zone:'temperate';}
 function catOf(k){return Object.keys(CATS).find(c=>CATS[c].includes(k));}
 const span=(...ms)=>ms;
-// Adjust a crop's (or variety's) planting months for the climate zone
-function zoneSow(k,sow,heat){
+// Crop-by-crop planting months where the broad zone rules below are too blunt.
+// Subtropics (south-east Queensland, northern NSW): summer is hot and wet, so tomatoes and bush beans
+// go in autumn and late winter; corn, pumpkin, melons and cucumbers go in before the wet; greens with shade most of the year.
+const ZONE_SOW={subtropical:{
+  'tomatoes':[1,2,3,6,7,8],'capsicum':[7,8,9,10,11,0,1],'zucchini':[1,2,3,7,8,9],'cucumber':[7,8,9,10,11,0,1,2],'beans':[1,2,3,6,7,8],
+  'sweet-corn':[7,8,9,10,11,0,1],'pumpkin':[7,8,9,10,11,0],'watermelon':[7,8,9,10,11],'sunflower':[7,8,9,10,11,0,1],
+  'lettuce':[2,3,4,5,6,7],'chard':[1,2,3,4,5,6,7,8],'asian-greens':[1,2,3,4,5,6,7,8],'bok-choy':[1,2,3,4,5,6,7,8],'choy-sum':[1,2,3,4,5,6,7,8],
+  'rocket':[2,3,4,5,6,7],'potato':[1,6,7],'peas':[3,4,5],'broad-beans':[2,3,4],'garlic':[2,3],'strawberry':[2,3,4],
+}};
+// Adjust a crop's (or variety's) planting months for the climate zone. isVariety: a variety's own months
+// (e.g. snake beans) skip the crop-wide overrides and follow the general rules.
+function zoneSow(k,sow,heat,isVariety){
   const z=zone();if(z==='temperate'||!sow)return sow;
+  if(!isVariety&&ZONE_SOW[z]?.[k])return ZONE_SOW[z][k];
   const cat=catOf(k),hot=heat||HEAT_LOVERS.includes(k);
   if(cat==='fruit')return fruitZoneSow(k,sow,z);
   const keep=(ms,allowed)=>{const r=ms.filter(m=>allowed.includes(m));return r.length?r:allowed;};

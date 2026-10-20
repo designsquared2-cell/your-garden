@@ -235,7 +235,7 @@ function renderPickerGrid(q){
   // In-season plants first (current season's group leading), then everything out of season at the bottom
   html+=groups.map(([cat,ks])=>[cat,ks.filter(k=>inSeason(k))]).filter(([,ks])=>ks.length).map(([cat,ks])=>`<div class="picker-cat">🟢 ${CAT_LBL[cat]} — plant now</div>${ks.map(k=>pickTile(k,'',' pick-on')).join('')}`).join('');
   const off=groups.flatMap(([,ks])=>ks.filter(k=>!inSeason(k)));
-  if(off.length)html+=`<div class="picker-cat pick-off-hdr">💤 Out of season — better planted later</div>${off.map(k=>pickTile(k,timing(k).sow?'Plant '+monthsText(timing(k).sow):'Out of season',' pick-off')).join('')}`;
+  if(off.length)html+=`<div class="picker-cat pick-off-hdr">💤 Out of season — better planted later</div>${off.map(k=>pickTile(k,warmOnlyHere(k)?'Needs a warm climate':timing(k).sow?'Plant '+monthsText(timing(k).sow):'Out of season',' pick-off')).join('')}`;
   // Varieties whose name matches the search (e.g. "Grosse Lisse" → Tomato › Grosse Lisse)
   const vm=t?Object.keys(P).flatMap(k=>varietiesOf(k).filter(v=>v.n.toLowerCase().includes(t.toLowerCase())).map(v=>[k,v])):[];
   if(vm.length)html=`<div class="picker-cat">🏷️ Varieties</div>${vm.map(([k,v])=>`<button class="pick-item pick-on" onclick="choosePlant(${_pk.bi},${_pk.ri},${_pk.ci},'${k}','${v.id}')"><div class="pick-e">${v.e||P[k].e}</div><div class="pick-n">${P[k].n} › ${esc(v.n)}</div></button>`).join('')}`+html;

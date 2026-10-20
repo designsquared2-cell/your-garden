@@ -64,11 +64,11 @@ const NEW={
   'taro':['🥔','Taro','Jun–Sep','warm',[8,9,10,11],240,false,'root',1,['big'],6,
     'A tropical root that loves heat, water and rich soil — almost boggy is fine. Needs a long warm season.',
     'Always cook it — raw taro irritates the mouth. Boil and serve with coconut cream, or make chips.',
-    'Leaves yellow and die back, usually 8–10 months after planting. Dig the corms gently.','Taro in coconut cream.',{heat:true,lifted:true}],
+    'Leaves yellow and die back, usually 8–10 months after planting. Dig the corms gently.','Taro in coconut cream.',{heat:true,lifted:true,warmOnly:true}],
   'cassava':['🍠','Cassava','Jun–Sep','warm',[8,9,10],300,false,'root',1,['tall','big'],5,
     'Grows from stem cuttings in warm, frost-free areas. Very drought-hardy once established.',
     'Always peel and cook it well — raw cassava is toxic. Boil, then fry or mash.',
-    'Roots are ready 8–12 months after planting. Dig the whole plant and use the roots within a few days.','Cassava chips.',{heat:true,lifted:true,spots:2}],
+    'Roots are ready 8–12 months after planting. Dig the whole plant and use the roots within a few days.','Cassava chips.',{heat:true,lifted:true,spots:2,warmOnly:true}],
   'island-cabbage':['🥬','Island cabbage (bele)','Year-round','warm',[8,9,10,11,0,1],60,true,'leafy',1,['perennial','tall'],4,
     'A leafy shrub from the Pacific Islands, grown from cuttings. Loves warmth and water; frost kills it.',
     'Cook the leaves like spinach — in coconut cream with onion is the classic.',
@@ -96,7 +96,7 @@ const NEW={
 };
 Object.entries(NEW).forEach(([k,[e,n,h,cat,sow,days,pick,fam,per,traits,price,tip,idea,ready,recipe,x={}]])=>{
   if(P[k])return;
-  P[k]={e,n,h,nx:null,tip,idea};
+  P[k]={e,n,h,nx:null,tip,idea,...(x.warmOnly?{warmOnly:true}:{})};
   TIMING[k]={sow,days,pick};
   ({cool:COOL_VEG,warm:WARM_VEG,herb:HERBS,comp:COMPANIONS})[cat].push(k);
   if(fam)FAMILY[fam].push(k);
