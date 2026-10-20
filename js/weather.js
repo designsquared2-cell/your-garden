@@ -17,7 +17,7 @@ async function loadWeather(force){
   const same=c&&c.lat===loc.lat&&c.lon===loc.lon;
   if(same){WX=c;renderWeather();if(!force&&Date.now()-c.t<3600e3)return;}else{WX=null;renderWeather();}
   try{
-    const u=`https://api.open-meteo.com/v1/forecast?latitude=${loc.lat}&longitude=${loc.lon}&daily=weather_code,temperature_2m_max,precipitation_sum,precipitation_probability_max,et0_fao_evapotranspiration&timezone=auto&past_days=7&forecast_days=4`;
+    const u=`https://api.open-meteo.com/v1/forecast?latitude=${loc.lat}&longitude=${loc.lon}&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_sum,precipitation_probability_max,et0_fao_evapotranspiration&timezone=auto&past_days=7&forecast_days=4`;
     const r=await fetch(u);if(!r.ok)throw new Error(r.status);
     const j=await r.json();WX={t:Date.now(),lat:loc.lat,lon:loc.lon,daily:j.daily};WX_ERR=false;
     try{localStorage.setItem(WX_K,JSON.stringify(WX));}catch(e){}
@@ -25,6 +25,12 @@ async function loadWeather(force){
   renderWeather();renderAlerts();
 }
 
+// Frost: tomorrow morning's (or the next day's) forecast minimum at 2°C or below
+function frostRisk(){
+  const d=WX?.daily;if(!d?.temperature_2m_min)return null;const ti=wxToday(d);
+  for(const i of [ti+1,ti+2]){const t=d.temperature_2m_min[i];if(t!=null&&t<=2)return{min:Math.round(t),when:i===ti+1?'tonight':'tomorrow night',date:d.time[i]};}
+  return null;
+}
 function wxVerdict(){
   if(!WX?.daily)return null;
   const d=WX.daily,td=localDate(),ti=wxToday(d);

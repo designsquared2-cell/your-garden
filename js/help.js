@@ -25,7 +25,7 @@ function openWelcome(step=1){
   if(step===2){
     const loc=wxLoc();
     showSheet(`<div class="sh-body wl">${welcomeDots(2)}
-      ${loc?`<div class="wl-ok">📍 ${esc(loc.name)} · ${ZONES[zone()].n} climate</div>`:''}
+      ${loc?`<div class="wl-ok">📍 ${esc(loc.name)}</div><div class="fm-lbl">Your climate — change it if this doesn’t sound right</div><select class="fm-in" id="wl-zone" onchange="ST.zone=this.value;saveState();refreshAll()">${Object.entries(ZONES).map(([k,z])=>`<option value="${k}"${zone()===k?' selected':''}>${z.n} — ${z.ex}</option>`).join('')}</select>`:''}
       <div class="wl-h">How hands-on do you want to be?</div>
       <div class="wl-s">You can change this any time in ⚙️ Settings.</div>
       <div class="maint-opts">${Object.entries(MAINT).map(([k,o])=>`<button class="maint-opt${maint()===k?' on':''}" onclick="welcomeMaint('${k}')"><span class="maint-e">${o.e}</span><span><b>${o.n}</b><span>${o.d}</span></span></button>`).join('')}</div>
@@ -104,6 +104,10 @@ function openFeedback(){
     <input class="fm-in" id="fb-e" type="email" maxlength="200" placeholder="Only if you’d like a reply" value="${esc(d.e||SYNC.email||'')}" oninput="fbSaveDraft()">
     <div class="fm-help">We also send which tab you were on, the app version and your type of phone — nothing from your garden except its size.</div>
     <button class="btn btn-seed btn-full" id="fb-send" style="margin-top:12px" onclick="sendFeedback()">Send</button></div>`);
+}
+function requestPlant(name){
+  try{localStorage.setItem(FB_K,JSON.stringify({k:'idea',m:`Please add ${name||'…'} to the plant list.`,e:SYNC.email||''}));}catch(e){}
+  _fbKind='idea';openFeedback();
 }
 function appVersion(){return(document.querySelector('script[src*="main.js"]')?.src.match(/v=(\d+)/)||[])[1]||'?';}
 async function sendFeedback(){

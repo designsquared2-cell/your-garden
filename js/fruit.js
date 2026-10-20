@@ -124,6 +124,12 @@ const FRUIT={
     tip:'Grows as canes — give them a wire or fence to lean on, and pull out suckers that wander.',
     idea:'Eat them warm from the cane. A handful makes any dessert.',
     ready:'Deep colour, and they slip off the white core easily.',recipe:'Raspberry and white chocolate muffins.'},
+  gooseberry:{e:'🟢',n:'Gooseberry',grp:'vine',dec:true,sow:[5,6,7],pick:[10,11],flower:[8],yrs:2,unit:'bowl',us:'bowls',g:250,kg:20,
+    prune:[5,6],pruneHow:'In winter: cut out old, woody stems and keep the centre open so air moves through the bush.',
+    net:true,feed:[8],bad:['tropical','subtropical','arid'],badWhy:'Gooseberries need cold winters and mild summers — they struggle in warm climates.',size:'1–1.5m bush',
+    tip:'A tough, thorny bush for cool gardens. Give it afternoon shade where summers get hot.',
+    idea:'Gooseberry fool — stewed berries folded through whipped cream. Or a tart jam.',
+    ready:'Berries are full-sized and slightly soft; they sweeten and change colour as they ripen. Pick under-ripe ones for cooking.',recipe:'Gooseberry crumble.'},
   passionfruit:{e:'🌺',n:'Passionfruit',grp:'vine',sow:[8,9,10],pick:[0,1,2,3,4,5],flower:[8,9,10],yrs:1,unit:'passionfruit',us:'passionfruit',g:40,kg:15,
     prune:[8],pruneHow:'In early spring: trim it back to keep it tidy — fruit forms on new growth. Never prune hard in winter.',
     feed:[8,11,2],frost:true,bad:['cool'],badWhy:'Passionfruit needs a warm, sunny spot — frost kills it.',size:'Vine, 5m+ along a fence',
@@ -139,7 +145,7 @@ const FRUIT={
 };
 const FRUIT_KEYS=Object.keys(FRUIT);
 // Used in pest "on" lists alongside the veg families
-const FRUIT_GROUPS={citrus:['lemon','lime','orange','mandarin'],stone:['peach','nectarine','plum','apricot','cherry'],pome:['apple','pear'],berries:['mulberry','blueberry','raspberry'],fruit:FRUIT_KEYS};
+const FRUIT_GROUPS={citrus:['lemon','lime','orange','mandarin'],stone:['peach','nectarine','plum','apricot','cherry'],pome:['apple','pear'],berries:['mulberry','blueberry','raspberry','gooseberry'],fruit:FRUIT_KEYS};
 const FRUIT_GRP=[['citrus','🍋 Citrus'],['pome','🍎 Apples & pears'],['stone','🍑 Stone fruit'],['sub','🥭 Subtropical'],['other','🌳 Other trees'],['vine','🍇 Berries & vines']];
 const FRUIT_VARIETIES={
   lemon:[{id:'eureka',n:'Eureka',s:'Eureka',tags:['b'],note:'Fruits on and off all year — the classic backyard lemon.'},{id:'lisbon',n:'Lisbon',s:'Lisbon',tags:['h'],note:'Vigorous and thorny; handles heat and wind well.'},{id:'meyer',n:'Meyer',s:'Meyer',tags:['c'],note:'Sweeter, less acidic, smaller tree — great in a pot.'}],
@@ -160,6 +166,7 @@ const FRUIT_VARIETIES={
   mulberry:[{id:'black-english',n:'Black English',s:'Black',tags:['b'],note:'Big, rich-flavoured black berries.'},{id:'dwarf-mulberry',n:'Dwarf Red Shahtoot',s:'Dwarf',tags:['c'],note:'Long red berries on a compact plant.'}],
   blueberry:[{id:'sunshine-blue',n:'Sunshine Blue',s:'Sunshine',tags:['b','c'],note:'Compact, low-chill and self-fertile — the easiest blueberry for pots.'},{id:'misty',n:'Misty',s:'Misty',note:'Southern highbush; suits mild winters.'},{id:'brightwell',n:'Brightwell (rabbiteye)',s:'Brightwell',tags:['h'],note:'Tough and heat-tolerant; plant with another rabbiteye.'}],
   raspberry:[{id:'heritage',n:'Heritage (autumn)',s:'Heritage',tags:['b'],pk:[1,2,3],note:'Fruits on new canes in late summer and autumn — easy pruning.'},{id:'chilcotin',n:'Chilcotin (summer)',s:'Chilcotin',pk:[10,11],note:'Big summer crop on last year\'s canes.'}],
+  gooseberry:[{id:'invicta',n:'Invicta',s:'Invicta',tags:['b'],note:'Heavy-cropping green berries; resists mildew.'},{id:'captivator',n:'Captivator',s:'Captivator',note:'Almost thornless, with sweet red berries.'}],
   passionfruit:[{id:'panama-red',n:'Panama Red',s:'Panama',tags:['h'],note:'Large, tangy fruit; grafted, so pull out suckers.'},{id:'nellie-kelly',n:'Nellie Kelly (black)',s:'Nellie K.',tags:['b'],note:'The classic sweet black passionfruit.'}],
   grape:[{id:'thompson',n:'Thompson Seedless',s:'Thompson',tags:['b'],note:'Sweet green seedless grapes.'},{id:'crimson',n:'Crimson Seedless',s:'Crimson',note:'Crunchy red seedless grapes, late season.'},{id:'red-globe',n:'Red Globe',s:'Red Globe',note:'Large red grapes with seeds.'}],
 };

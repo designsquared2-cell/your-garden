@@ -20,8 +20,17 @@ function plantAlertItems(){
   });
   return out;
 }
+// Tender plants: warm-season and heat-loving crops, and young frost-tender fruit trees
+function frostTender(){return plantedCells().filter(x=>x.cell.s!=='done'&&(isTree(x.cell.p)?FRUIT[x.cell.p].frost&&treeYears(x.cell)<3:WARM_VEG.includes(x.cell.p)||HEAT_LOVERS.includes(x.cell.p)));}
+function frostItem(){
+  const f=frostRisk();if(!f)return null;const id='frost:'+f.date;if(ST.alertDone[id])return null;
+  const xs=frostTender();if(!xs.length)return null;
+  return{kind:'frost',id,type:'urgent',cb:true,title:`❄️ Frost likely ${f.when} (${f.min}°) — cover tender plants`,
+    detail:`Your ${plantList(xs,4)} could be burnt. In the afternoon, cover them with frost cloth or an old sheet over stakes (not plastic, and not touching the leaves), and water the soil — damp soil holds more warmth. Tick once they’re covered. <span class="task-where">${bedList(xs)}</span>`};
+}
 function urgentItems(){
-  const out=[...plantAlertItems(),...treatItems()],v=wxVerdict();
+  const out=[...plantAlertItems(),...treatItems()],v=wxVerdict(),fr=frostItem();
+  if(fr)out.push(fr);
   if(v?.lv==='r'&&(maint()!=='none'||v.urgent))out.push({kind:'water',id:'water',type:'urgent',cb:true,title:'💧 Water the beds today',detail:v.msg.replace(/^💧 Water today — /,'')+' Tick when done.'});
   return out;
 }
@@ -63,10 +72,11 @@ function autoItems(m){
   });
   ST.beds.forEach((bed,bi)=>{
     const n=emptyCells(bi).length;if(!n)return;
+    const rest=ST.alertDone['rest:'+bed.id];if(rest&&daysBetween(rest,td)<REST_DAYS)return;
     const sug=suggestForBed(bi).map(s=>P[s.k].n);
-    out.push({kind:'auto',id:`fill:${bi}`,type:'soon',cb:false,icon:'🌱',
+    out.push({kind:'auto',id:`fill:${bi}`,type:'soon',cb:true,icon:'🌱',
       title:`Fill ${plural(n,'empty spot')} in ${esc(bed.name)}`,
-      detail:sug.length?`Good fits right now: ${sug.join(', ')}.`:'Nothing in season suits this bed right now.',
+      detail:`${sug.length?`Good fits right now: ${sug.join(', ')}.`:'Nothing in season suits this bed right now.'} Not planting it for now? Tick to let it rest for ${REST_DAYS/7} weeks — mulch it, or sow a green manure like broad beans or mustard to feed the soil.`,
       btn:{label:'Plant ›',js:`goToEmpty(${bi})`}});
   });
   groupCells(x=>['seed','seedling','growing'].includes(x.cell.s)&&!COMPANIONS.includes(x.cell.p)).forEach(g=>{
@@ -94,6 +104,7 @@ function tickItem(kind,id,btn){
   tickAway(btn,()=>{
     if(kind==='water'){snapshot();logWatered(true);toast('💧 Watering logged',{undo:true});return;}
     snapshot();
+    if(kind==='frost'){ST.alertDone[id]=localDate();saveState();refreshAll();toast('❄️ Covered — fingers crossed for a mild night',{undo:true});return;}
     const msg=kind==='plant'?harvestFromAlert(id):kind==='pest'?tickPest(id):kind==='treat'?tickTreat(id):kind==='guard'?tickGuard(id):kind==='tree'?tickTree(id):kind==='feed'?tickFeed(id):runAuto(id);
     saveState();refreshAll();toast(msg,{undo:true});
   });
@@ -105,13 +116,14 @@ function harvestFromAlert(k){
   return doHarvest(xs,s==='bolting'||!xs.every(x=>cellKeepsProducing(x.cell)));
 }
 // Running late: more than LATE_DAYS past the expected date. Ticking snoozes it for LATE_SNOOZE days.
-const LATE_DAYS=21,LATE_SNOOZE=14;
+const LATE_DAYS=21,LATE_SNOOZE=14,REST_DAYS=42;
 function lateChecked(id){const d=ST.pestDone[id];return!!d&&daysBetween(d,localDate())<LATE_SNOOZE;}
 // "Not producing" problems that apply to this plant, most specific first
 function lateCauses(k){return DISORDERS.filter(d=>d.late&&pestOnPlant(d,k)&&!d.on.includes('*')).slice(0,2);}
 function runAuto(id){
   const[type,bi,p]=id.split(':');
   const cells=plantedCells().filter(x=>x.bi===+bi&&x.cell.p===p);
+  if(type==='fill'){ST.alertDone['rest:'+ST.beds[+bi].id]=localDate();return`😴 ${ST.beds[+bi].name} is resting — we’ll remind you in ${REST_DAYS/7} weeks`;}
   if(type==='spent'){cells.forEach(x=>clearCell(x.bi,x.ri,x.ci));const nx=P[p].nx;return`🧹 Cleared — ${nx?`try ${plantName(nx)} next`:'spot ready to replant'}`;}
   if(type==='clear'){cells.filter(x=>x.cell.s==='done').forEach(x=>clearCell(x.bi,x.ri,x.ci));const nx=P[p].nx;return nx?`Cleared — try ${plantName(nx)} next`:'Cleared — spot ready to replant';}
   if(type==='late'){ST.pestDone[id]=localDate();return`👍 Checked — we'll look again in ${LATE_SNOOZE} days`;}

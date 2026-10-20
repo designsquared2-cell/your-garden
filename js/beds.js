@@ -241,7 +241,7 @@ function renderPickerGrid(q){
   if(vm.length)html=`<div class="picker-cat">🏷️ Varieties</div>${vm.map(([k,v])=>`<button class="pick-item pick-on" onclick="choosePlant(${_pk.bi},${_pk.ri},${_pk.ci},'${k}','${v.id}')"><div class="pick-e">${v.e||P[k].e}</div><div class="pick-n">${P[k].n} › ${esc(v.n)}</div></button>`).join('')}`+html;
   if(t&&!total&&!vm.length)html=`<div class="pick-empty">No “${esc(t)}” in your list yet — add it below.</div>`;
   const exact=groups.some(([,ks])=>ks.some(k=>plantName(k).toLowerCase()===t.toLowerCase()));
-  if(!exact&&!vm.length)html+=`<div class="picker-cat">${total?'Not in the list?':'New plant'}</div><button class="pick-item pick-new" onclick="openNewPlant()"><div class="pick-e">＋</div><div class="pick-n">${t?`Add “${esc(t)}”`:'Add a new plant'}</div></button>`;
+  if(!exact&&!vm.length)html+=`<div class="picker-cat">${total?'Not in the list?':'New plant'}</div><button class="pick-item pick-new" onclick="openNewPlant()"><div class="pick-e">＋</div><div class="pick-n">${t?`Add “${esc(t)}”`:'Add a new plant'}</div></button><button class="pick-item pick-new" onclick="requestPlant($('pick-q').value.trim())"><div class="pick-e">💬</div><div class="pick-n">Ask us to add ${t?`“${esc(t)}”`:'a plant'}</div></button>`;
   $('pick-grid').innerHTML=html;
 }
 function pickEnter(){

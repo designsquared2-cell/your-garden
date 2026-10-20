@@ -94,6 +94,47 @@ const PESTS=[
    where:'Rolled leaves, and where a leaf or another fruit touches the fruit.',
    fix:'Squash the caterpillars inside rolled leaves. Spray Bt while they\'re small.',
    prevent:'Check for rolled leaves in spring, and keep weeds down under the tree.'},
+  // Animals: they're obvious once they visit, so they're in Identify and the Guide but not the weekly pest walk (noWatch)
+  {id:'possums',e:'🐾',n:'Possums',noWatch:true,on:['fruit','tomatoes','leafy','brassica','strawberry','beans','sweet-corn'],months:[0,1,2,3,4,8,9,10,11],peak:[0,1,2],
+   look:'Fruit half-eaten or gone overnight, new shoots and leaves stripped from the tops of plants, snapped branches, and dark pellet droppings. You may hear them on the roof or fence at night.',
+   where:'Fruit trees, tomatoes, roses and leafy veg — anything they can reach from a fence, roof or tree.',
+   fix:'Possums are protected native animals — you can’t harm or move them without a permit. Net fruit trees completely, gathered at the trunk, and cover veg beds with netting or a wire cage at night.',
+   prevent:'Keeping them out is the only thing that really works: netting over trees, a roof of netting or wire over beds, and trimming branches that give them a bridge in.'},
+  {id:'rats',e:'🐀',n:'Rats & mice',noWatch:true,on:['sweet-corn','tomatoes','strawberry','pumpkin','fruit','*seedlings'],months:[1,2,3,4,5],peak:[3,4],
+   look:'Gnawed fruit with small teeth marks, corn cobs stripped, pumpkins hollowed out from underneath, seeds dug up, small dark droppings and burrows near the compost.',
+   where:'Low fruit, corn cobs, compost bins and under decking.',
+   fix:'Pick fruit as it ripens and clear fallen fruit. Rat-proof the compost with wire mesh underneath, and use snap traps inside a covered box, away from pets and wildlife.',
+   prevent:'Keep compost enclosed, don’t leave food scraps in open heaps, and clear the clutter where they nest.'},
+  {id:'roos',e:'🦘',n:'Kangaroos, wallabies & rabbits',noWatch:true,on:['*'],months:[0,1,2,3,4,5,6,7,8,9,10,11],peak:[11,0,1,2],
+   look:'Plants grazed to the ground overnight, seedlings gone, neatly clipped stems (rabbits) or trampled beds, and droppings — small round pellets for rabbits, larger oval ones for kangaroos.',
+   where:'Gardens near bush, paddocks or open space, especially in dry spells.',
+   fix:'Fencing is the answer: about 1.8m high for kangaroos, and wire mesh buried 30cm deep for rabbits. Native wildlife is protected — scare it, don’t harm it.',
+   prevent:'Fence or net beds before planting out seedlings.'},
+  {id:'curl-grubs',e:'🪱',n:'Curl grubs',noWatch:true,on:['*'],months:[1,2,3,4],peak:[2,3],
+   look:'Plants wilt and die even though they’re watered. Dig around them and you find fat, white, C-shaped grubs with brown heads eating the roots.',
+   where:'In the soil around the roots — especially beds near lawn or with lots of fresh manure.',
+   fix:'Dig through the soil and pick out the grubs (chooks love them). For a bad patch, water in a beneficial-nematode treatment from a garden centre.',
+   prevent:'Turn the soil before planting, use well-rotted compost rather than fresh manure, and keep beds away from lawn edges.'},
+  {id:'mealybugs',e:'☁️',n:'Mealybugs',on:['citrus','basil','chilli','capsicum','tomatoes','mint','curry-leaf','passionfruit'],months:[0,1,2,3,9,10,11],peak:[0,1],
+   look:'White cottony fluff in leaf joints and under leaves, with small oval white bugs inside. Leaves get sticky, and ants run up the stems.',
+   where:'Leaf joints, stems and sometimes roots — worst on potted plants and in sheltered spots.',
+   fix:'Dab them with a cotton bud dipped in methylated spirits, or spray eco-oil or soap spray. Repeat weekly — eggs hide in the fluff.',
+   prevent:'Check new plants before you bring them home, and keep ants down.'},
+  {id:'leaf-spot',e:'🟠',n:'Rust & leaf spot',disease:true,on:['beans','chard','beetroot','spinach','lettuce','garlic','onions','leek','strawberry'],months:[2,3,4,8,9,10],peak:[3,9],
+   look:'Rusty orange or brown powdery spots under the leaves (rust), or round brown or grey spots with darker rims (leaf spot). The spots join up, and leaves yellow and die.',
+   where:'Older leaves first, in humid or showery weather.',
+   fix:'Pick off spotted leaves and bin them (not the compost). Water the soil, not the leaves, and do it in the morning.',
+   prevent:'Give plants room for air to move, don’t water leaves late in the day, and rotate crops.'},
+  {id:'harlequin',e:'🪲',n:'Harlequin bugs',on:['brassica','tomatoes','fruit','okra','sunflower','amaranth','beans'],months:[10,11,0,1,2],peak:[11,0],
+   look:'Clusters of bright orange-and-black (or red-and-blue) shield-shaped bugs bunched on stems. Shoots wilt and young fruit drops.',
+   where:'Stems and fruit in hot weather, often in big groups.',
+   fix:'Early in the morning, while they’re sluggish, knock them into a bucket of soapy water. Squash egg clusters.',
+   prevent:'Clear weeds around the garden, especially marshmallow weed, where they breed.'},
+  {id:'bronze-bug',e:'🟫',n:'Bronze orange bug',on:['citrus'],months:[7,8,9,10,11],peak:[8,9],
+   look:'Large shield-shaped bugs (about 2.5cm), bronze to black, on citrus shoots. The young are flat and green-pink. They squirt a stinging, smelly liquid, and shoots wilt and fruit drops.',
+   where:'New citrus shoots and stems in late winter, spring and early summer — mostly Queensland and NSW.',
+   fix:'Wear gloves and eye protection — the spray burns. Knock them into a bucket of soapy water or vacuum them off. Eco-oil works on the flat young nymphs in late winter.',
+   prevent:'Check citrus in late winter, when the young are easy to target.'},
   {id:'leaf-curl',e:'🍑',n:'Peach leaf curl',disease:true,on:['peach','nectarine'],months:[7,8,9],peak:[8],
    look:'New spring leaves thicken, pucker and blister, turning red or purple, then drop. Badly hit trees fruit poorly.',
    where:'New leaves as they open in spring.',
@@ -153,6 +194,14 @@ const REMEDIES={
   'leafminer':{nat:['Leave it on established trees — it\'s mostly cosmetic','Pick off badly curled new shoots on young trees'],org:['Eco-oil on soft new growth, weekly, on young trees']},
   'lbam':{nat:['Squash caterpillars in rolled leaves','Keep weeds down under the tree'],org:['Bt while caterpillars are small'],native:'Native daisies feed the tiny wasps that attack caterpillars.'},
   'leaf-curl':{nat:['Pick off and bin curled leaves','Feed and water well so the tree regrows'],org:['Copper or lime sulphur at bud swell in late winter (prevention only)']},
+  'possums':{nat:['Net fruit trees completely and gather the net at the trunk','Cover beds with a netting or wire cage at night','Trim branches that give them a bridge from trees or roofs','Motion-activated lights or sprinklers help for a while'],native:'Possums are protected native animals. A possum nest box high in a tree away from the veg can give them somewhere else to be.'},
+  'rats':{nat:['Pick fruit as it ripens and clear fallen fruit','Wire mesh under the compost bin','Snap traps inside a covered box, away from pets and wildlife'],native:'Rat poisons also kill owls, kookaburras and pets that eat poisoned rats — traps are safer.'},
+  'roos':{nat:['A 1.8m fence for kangaroos and wallabies','Wire mesh buried 30cm deep for rabbits','Net or cage beds while seedlings are young'],native:'Kangaroos and wallabies are protected — fence them out rather than harming them.'},
+  'curl-grubs':{nat:['Dig through the soil and remove the grubs','Let chooks scratch over the bed before planting'],org:['Beneficial nematodes watered into moist soil']},
+  'mealybugs':{nat:['Dab with methylated spirits on a cotton bud','Hose them off','Soap spray: 1 tablespoon of pure soap per litre of water'],org:['Eco-oil, weekly until gone'],native:'Ladybirds (including the mealybug ladybird) eat them — avoid broad sprays.'},
+  'leaf-spot':{nat:['Pick off spotted leaves and bin them','Water the soil in the morning, not the leaves','Thin crowded plants'],org:['Copper-based fungicide for leaf spot','Wettable sulphur for rust (not above about 30°C)']},
+  'harlequin':{nat:['Knock them into soapy water early in the morning','Squash the egg clusters','Clear marshmallow weed nearby']},
+  'bronze-bug':{nat:['Gloves and eye protection on — then knock them into soapy water','Vacuum them off with a hand-held vacuum'],org:['Eco-oil on the young nymphs in late winter']},
 };
 PESTS.forEach(p=>Object.assign(p,{kind:'pest',rem:REMEDIES[p.id]||{nat:[p.fix]}}));
 
@@ -188,6 +237,11 @@ const DISORDERS=[
    look:'A tall flower stalk shooting up from the middle; leaves turning small, tough and bitter.',
    rem:{nat:['Harvest everything worth eating now','Pull it out and plant a warm-season crop in its place','Let one plant flower for the bees, or to save seed']},
    prevent:'Sow cool-season leafy crops early so they finish before the heat, and pick often.'},
+  {id:'frost',e:'❄️',n:'Frost damage',on:['*'],
+   what:'On clear, still winter nights the air at ground level can drop below 0°C. Water inside tender leaves freezes, the cells burst, and the leaves collapse.',
+   look:'Leaves go dark, limp and watery the morning after a cold night, then turn black or brown and crisp. Worst on the tops of plants and in low spots.',
+   rem:{nat:['Leave frost-damaged leaves on until spring — they protect the growth underneath','Cover tender plants on frosty nights with frost cloth or an old sheet (not plastic)','Water the soil the day before a frost — damp soil holds more warmth']},
+   prevent:'Plant tender crops after the last frost, and watch for the frost alert in Jobs.'},
   {id:'collar-rot',e:'🪵',n:'Collar rot',on:['citrus','avocado'],
    what:'A fungus that rots the bark at the base of the trunk when soil or mulch stays wet against it.',
    look:'Gum oozing from cracked, darkened bark at the base of the trunk; yellowing leaves; a tree that slowly goes downhill.',
@@ -258,7 +312,8 @@ function pestPeak(pest,m=curMonth()){return!!pest.peak&&pestMonthIn(pest.peak,m)
 function pestCells(pest){return plantedCells().filter(x=>pestHitsCell(pest,x.cell));}
 // Pests active this month that could be on something you're growing now, peak first
 function pestsToWatch(m=curMonth()){
-  return PESTS.filter(p=>pestActive(p,m)&&pestCells(p).length).sort((a,b)=>pestPeak(b,m)-pestPeak(a,m));
+  // animals (noWatch) are obvious once they arrive: they stay in Identify and the Guide, not the weekly walk
+  return PESTS.filter(p=>!p.noWatch&&pestActive(p,m)&&pestCells(p).length).sort((a,b)=>pestPeak(b,m)-pestPeak(a,m));
 }
 function monthsText(ms){
   const has=m=>ms.includes((m+12)%12);
@@ -358,7 +413,7 @@ function reportPest(id,p,bi){
 }
 
 // ── Finder: "What are you seeing?" ── 1 where → 2 what (any number of signs) → 3 which plant (optional)
-const AREAS=[['bugs','🐛','Bugs I can see'],['leaves','🍃','Leaves'],['fruit','🍅','Fruit or pods'],['seedlings','🌱','Seedlings'],['whole','🥀','The whole plant'],['late','🧺','Not producing / slow']];
+const AREAS=[['bugs','🐛','Bugs I can see'],['animals','🦘','Animals or big bites'],['leaves','🍃','Leaves'],['fruit','🍅','Fruit or pods'],['seedlings','🌱','Seedlings'],['whole','🥀','The whole plant'],['late','🧺','Not producing / slow']];
 const SYMPTOMS=[
   {id:'green-cat',a:['bugs','leaves'],e:'🐛',t:'Small green caterpillars'},
   {id:'white-fly-about',a:['bugs'],e:'🦋',t:'White butterflies or small moths'},
@@ -370,7 +425,7 @@ const SYMPTOMS=[
   {id:'earwig',a:['bugs'],e:'🪳',t:'Brown bugs with tail pincers'},
   {id:'shield-bug',a:['bugs'],e:'🪲',t:'Green shield-shaped bugs'},
   {id:'gnats',a:['bugs','whole'],e:'🦟',t:'Tiny black flies around the soil'},
-  {id:'birds',a:['bugs','fruit','seedlings'],e:'🐦',t:'Birds hanging around'},
+  {id:'birds',a:['bugs','fruit','seedlings','animals'],e:'🐦',t:'Birds hanging around'},
   {id:'holes',a:['leaves'],e:'🍃',t:'Holes chewed in leaves'},
   {id:'window',a:['leaves'],e:'🪟',t:'See-through patches'},
   {id:'droppings',a:['leaves'],e:'⚫',t:'Little green or dark droppings'},
@@ -388,7 +443,7 @@ const SYMPTOMS=[
   {id:'maggots',a:['fruit'],e:'🪰',t:'Maggots inside'},
   {id:'black-bottom',a:['fruit'],e:'⚫',t:'Black sunken patch on the bottom'},
   {id:'split',a:['fruit'],e:'💔',t:'Split or cracked fruit'},
-  {id:'pecked',a:['fruit','seedlings'],e:'🍓',t:'Pecked fruit or pulled-up seedlings'},
+  {id:'pecked',a:['fruit','seedlings','animals'],e:'🍓',t:'Pecked fruit or pulled-up seedlings'},
   {id:'seedling-cut',a:['seedlings'],e:'✂️',t:'Cut off at the base, or vanished'},
   {id:'overnight',a:['seedlings','leaves'],e:'🌙',t:'Damage appears overnight'},
   {id:'wilt-wet',a:['whole','seedlings'],e:'💧',t:'Droopy even though the soil is wet'},
@@ -413,6 +468,18 @@ const SYMPTOMS=[
   {id:'bark-gum',a:['whole'],e:'🟫',t:'Gum or rotten bark at the base of the trunk'},
   {id:'fruit-falling',a:['fruit','late'],e:'🍂',t:'Fruit falling before it\'s ripe'},
   {id:'tree-barren',a:['late'],e:'🌳',t:'Tree grows but doesn\'t fruit'},
+  {id:'eaten-high',a:['animals','fruit'],e:'🌳',t:'Fruit or plant tops eaten overnight'},
+  {id:'broken-branches',a:['animals'],e:'🪵',t:'Snapped branches or stripped shoots'},
+  {id:'droppings-big',a:['animals'],e:'⚫',t:'Droppings left in the garden'},
+  {id:'gnawed',a:['animals','fruit'],e:'🦷',t:'Gnawed fruit with small teeth marks'},
+  {id:'grazed',a:['animals','seedlings'],e:'✂️',t:'Plants grazed to the ground'},
+  {id:'burrows',a:['animals'],e:'🕳️',t:'Burrows or holes near the garden'},
+  {id:'cotton',a:['bugs','leaves'],e:'☁️',t:'White cottony fluff on stems'},
+  {id:'c-grub',a:['bugs','whole','seedlings'],e:'🪱',t:'Fat white C-shaped grubs in the soil'},
+  {id:'rust-spots',a:['leaves'],e:'🟠',t:'Orange or brown spots on leaves'},
+  {id:'orange-black',a:['bugs'],e:'🪲',t:'Orange-and-black bugs in clusters'},
+  {id:'stink-bug',a:['bugs'],e:'🟫',t:'Big brown stink bugs on citrus'},
+  {id:'frost-black',a:['leaves','whole'],e:'❄️',t:'Leaves blackened after a cold night'},
 ];
 const SYM_BY_ID=Object.fromEntries(SYMPTOMS.map(s=>[s.id,s]));
 // signs: which symptoms point to each problem; what: plain-language "what am I looking at?"
@@ -439,8 +506,17 @@ const PEST_ID={
   'collar-rot':{signs:['bark-gum','yellow-lower']},
   'fruit-drop':{signs:['fruit-falling']},
   'tree-no-fruit':{signs:['tree-barren','flowers-no-fruit']},
+  'possums':{signs:['eaten-high','broken-branches','droppings-big','pecked'],what:'Brushtail and ringtail possums feed at night, eating fruit, buds and soft leaves — often from the top of the plant down. They’re protected native animals.'},
+  'rats':{signs:['gnawed','burrows','droppings-big','fruit-holes'],what:'Rats and mice raid gardens for fruit, corn and seed, especially in autumn. They nest in compost, woodpiles and under decks.'},
+  'roos':{signs:['grazed','droppings-big','seedling-cut'],what:'Kangaroos, wallabies and rabbits graze gardens near bush and paddocks, mostly at night and in dry spells.'},
+  'curl-grubs':{signs:['c-grub','wilt-midday','slow'],what:'The larvae of beetles (including Christmas beetles). They live in the soil and eat roots, so plants wilt with no obvious damage above ground.'},
+  'mealybugs':{signs:['cotton','sticky','ants'],what:'Small sap-sucking insects covered in white wax, so they look like tiny bits of cotton wool. Ants farm them for their honeydew.'},
+  'leaf-spot':{signs:['rust-spots','yellow-lower','crispy']},
+  'harlequin':{signs:['orange-black','wilting'],what:'Brightly coloured sap-sucking bugs related to stink bugs. They gather in clusters in hot weather.'},
+  'bronze-bug':{signs:['stink-bug','wilting'],what:'A large native stink bug that feeds on citrus shoots. Its defensive spray can burn skin and eyes.'},
+  'frost':{signs:['frost-black','scorched']},
   'overwater':{signs:['yellow-lower','wilt-wet','stem-rot','gnats']},
-  'underwater':{signs:['wilt-midday','crispy','bolting','yellow-lower']},
+  'underwater':{signs:['wilt-midday','crispy','yellow-lower']},
   'uneven-water':{signs:['black-bottom','split']},
   'hungry':{signs:['pale-all','yellow-lower','slow']},
   'heat':{signs:['scorched','wilt-midday','crispy']},
@@ -474,7 +550,7 @@ function idMatches(){
   const m=curMonth();
   return PROBLEMS.map(p=>{
     const hit=p.signs.filter(s=>_idSel.has(s)).length;if(!hit)return null;
-    let score=hit*3+weatherBoost(p);
+    let score=hit*3+2*hit/p.signs.length+weatherBoost(p);
     if(_idPlant)score+=pestOnPlant(p,_idPlant)?3:-2;
     if(p.months&&pestActive(p,m))score+=1;if(pestPeak(p,m))score+=1;
     return{p,score};
