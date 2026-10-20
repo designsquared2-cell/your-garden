@@ -34,7 +34,7 @@ const PESTS=[
    where:'Hiding in mulch, under pots and in tight leaf joints.',
    fix:'Trap them in rolled-up damp newspaper or a small tin of oil sunk to soil level; empty each morning.',
    prevent:'Pull mulch back from new seedlings until they\'re established.'},
-  {id:'medfly',e:'🪰',n:'Fruit fly',on:['tomatoes','capsicum','chilli','eggplant','strawberry','citrus','stone','pome','fig','mango','grape'],months:[9,10,11,0,1,2,3,4],peak:[0,1,2,3],
+  {id:'medfly',e:'🪰',n:'Fruit fly',on:['tomatoes','capsicum','chilli','eggplant','strawberry','citrus','stone','pome','fig','mango','grape','guava','persimmon','loquat','feijoa','pawpaw'],months:[9,10,11,0,1,2,3,4],peak:[0,1,2,3],
    look:'Tiny sting marks on ripening fruit, soft sunken patches, then maggots inside. Mostly a fruit-tree pest — stone fruit, figs, apples and citrus — but fruiting veg can be stung too.',
    where:'Ripening fruit, and fruit that\'s fallen to the ground.',
    fix:'Pick fruit as it ripens. Bag or bin stung and fallen fruit sealed — never compost it.',

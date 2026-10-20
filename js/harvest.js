@@ -81,8 +81,9 @@ const RECIPES={
 };
 function priceOf(k){return ST.prices[k]??PRICE[k]??(P[k]?.custom?2:0);}
 // Fruit is priced per kg: count × typical weight
-function logValue(l){return priceOf(l.p)*(l.n||1)*(isTree(l.p)?FRUIT[l.p].g/1000:1);}
-function fruitKg(ls){return ls.reduce((s,l)=>s+(isTree(l.p)?(l.n||1)*FRUIT[l.p].g/1000:0),0);}
+function logValue(l){return priceOf(l.p)*(isTree(l.p)?(l.kg??(l.n||1)*FRUIT[l.p].g/1000):(l.n||1));}
+function logKg(l){return l.kg??(isTree(l.p)?(l.n||1)*FRUIT[l.p].g/1000:0);}
+function fruitKg(ls){return ls.reduce((s,l)=>s+logKg(l),0);}
 function money(v){return'$'+(v>=100?Math.round(v):v.toFixed(v%1?2:0));}
 
 // ── Value ──
@@ -98,13 +99,14 @@ function harvestTotals(){
 function valueLineHtml(){
   if(!ST.log.length)return'';
   const t=harvestTotals();
-  return `<div class="hv-value"><button class="hv-value-go" onclick="openHarvestReport()">🧺 About <b>${money(t.year)}</b> of food grown this year${t.month&&t.month!==t.year?` · ${money(t.month)} this month`:''}${t.kg>=0.1?` · ${t.kg<10?t.kg.toFixed(1):Math.round(t.kg)}kg of fruit`:''} <span class="hv-more">See it bed by bed ›</span></button>
+  return `<div class="hv-value"><button class="hv-value-go" onclick="openHarvestReport()">🧺 About <b>${money(t.year)}</b> of food grown this year${t.month&&t.month!==t.year?` · ${money(t.month)} this month`:''}${t.kg>=0.1?` · ${t.kg<10?t.kg.toFixed(1):Math.round(t.kg)}kg weighed or counted`:''} <span class="hv-more">See it bed by bed ›</span></button>
     <button class="link-btn" onclick="openPrices()">Based on typical shop prices — adjust</button></div>`;
 }
 // ── Harvest report ── what each bed and tree grew, and what it was worth
-function amountText(k,n){
-  if(isTree(k)){const kg=n*FRUIT[k].g/1000;return`${fruitUnits(k,n)} · ${kg<1?Math.round(kg*1000)+'g':(kg<10?kg.toFixed(1):Math.round(kg))+'kg'}`;}
-  return plural(n,'picking');
+const kgText=kg=>kg<1?Math.round(kg*1000)+'g':(kg<10?kg.toFixed(1):Math.round(kg))+'kg';
+function amountText(k,n,kg){
+  if(isTree(k))return`${fruitUnits(k,n)} · ${kgText(kg)}`;
+  return plural(n,'picking')+(kg>0?` · ${kgText(kg)}`:'');
 }
 function openHarvestReport(all){
   const yk=localDate().slice(0,4),older=ST.log.some(l=>!l.d.startsWith(yk));
@@ -114,21 +116,33 @@ function openHarvestReport(all){
   logs.filter(l=>P[l.p]).forEach(l=>{
     const bed=bedById(l.bid),key=bed?bed.id:'gone';
     if(!g.has(key))g.set(key,{bed,crops:new Map(),total:0});
-    const x=g.get(key),c=x.crops.get(l.p)||{n:0,v:0};
-    c.n+=l.n||1;c.v+=logValue(l);x.crops.set(l.p,c);x.total+=logValue(l);
+    const x=g.get(key),c=x.crops.get(l.p)||{n:0,v:0,kg:0};
+    c.n+=l.n||1;c.v+=logValue(l);c.kg+=logKg(l);x.crops.set(l.p,c);x.total+=logValue(l);
   });
   const groups=[...g.values()].sort((a,b)=>(!a.bed)-(!b.bed)||b.total-a.total),max=Math.max(...groups.map(x=>x.total),1);
   const total=groups.reduce((s,x)=>s+x.total,0),kg=fruitKg(logs),picks=logs.reduce((s,l)=>s+(isTree(l.p)?0:l.n||1),0);
   const icon=bed=>!bed?'🗂️':isTreeBed(bed)?cellEmoji(treeCell(bed)):'🥕';
   showSheet(`<div class="sh-body"><div class="sh-sticky"><div class="sh-toprow"><div><div class="sh-heading">🧺 ${all?'Everything you’ve grown':'Grown this year'}</div><div class="sh-sub">By bed and tree, at typical shop prices</div></div><button class="sh-cancel" onclick="closeSheet()">✕ Close</button></div>
     ${older?`<div class="seg">${[[0,'This year'],[1,'All time']].map(([a,l])=>`<button class="seg-b${!!a===!!all?' on':''}" onclick="openHarvestReport(${a})">${l}</button>`).join('')}</div>`:''}</div>
-    <div class="pi-facts"><div><div class="sh-cl">Worth</div><div class="pi-v">${money(total)}</div></div><div><div class="sh-cl">Veg pickings</div><div class="pi-v">${picks||'—'}</div></div><div><div class="sh-cl">Fruit</div><div class="pi-v">${kg>=0.1?(kg<10?kg.toFixed(1):Math.round(kg))+'kg':'—'}</div></div></div>
+    <div class="pi-facts"><div><div class="sh-cl">Worth</div><div class="pi-v">${money(total)}</div></div><div><div class="sh-cl">Veg pickings</div><div class="pi-v">${picks||'—'}</div></div><div><div class="sh-cl">Kilos</div><div class="pi-v">${kg>=0.1?(kg<10?kg.toFixed(1):Math.round(kg))+'kg':'—'}</div></div></div>
     ${groups.length?groups.map(x=>`<div class="hr-card"><div class="hr-top"><span class="hr-name">${icon(x.bed)} ${x.bed?esc(x.bed.name):'Beds you’ve removed'}${x.bed&&isTreeBed(x.bed)&&x.bed.n>1?` <span class="hlog-d">×${x.bed.n}</span>`:''}</span><span class="hr-val">${money(x.total)}</span></div>
       <div class="hr-bar"><span style="width:${Math.max(3,Math.round(x.total/max*100))}%"></span></div>
-      ${[...x.crops].sort((a,b)=>b[1].v-a[1].v).map(([k,c])=>`<div class="hr-row"><span>${x.bed&&isTreeBed(x.bed)?'🧺 Picked':`${P[k].e} ${P[k].n}`}</span><span class="hlog-d">${amountText(k,c.n)}</span><span class="hr-v">${money(c.v)}</span></div>`).join('')}</div>`).join('')
+      ${[...x.crops].sort((a,b)=>b[1].v-a[1].v).map(([k,c])=>`<div class="hr-row"><span>${x.bed&&isTreeBed(x.bed)?'🧺 Picked':`${P[k].e} ${P[k].n}`}</span><span class="hlog-d">${amountText(k,c.n,c.kg)}</span><span class="hr-v">${money(c.v)}</span></div>`).join('')}</div>`).join('')
       :`<div class="set-txt">Nothing harvested ${all?'yet':'this year yet'}. Use “Harvest some” on a plant, or log fruit on a tree's card, and it shows up here.</div>`}
+    ${groups.length?'<button class="btn btn-cancel btn-full" style="margin-top:10px" onclick="exportHarvestCSV()">⬇️ Download as a spreadsheet (CSV)</button>':''}
     <button class="link-btn" style="margin-top:10px" onclick="openPrices()">Prices are typical shop prices — adjust them</button>
   </div>`);
+}
+// Every harvest as a spreadsheet: date, plant, bed or tree, how many, kilos, value
+function exportHarvestCSV(){
+  const q=s=>`"${String(s??'').replace(/"/g,'""')}"`;
+  const rows=[['Date','Plant','Bed or tree','Count','Unit','Weight (kg)','Weight measured?','Estimated value ($)','Final harvest']]
+    .concat(ST.log.filter(l=>P[l.p]).map(l=>[l.d,plantName(l.p),bedById(l.bid)?.name||'(removed bed)',l.n||1,isTree(l.p)?FRUIT[l.p].us:'pickings',
+      logKg(l)?Math.round(logKg(l)*1000)/1000:'',l.kg!=null?'yes':isTree(l.p)?'estimated':'',Math.round(logValue(l)*100)/100,l.f?'yes':'']));
+  const blob=new Blob(['\ufeff'+rows.map(r=>r.map(q).join(',')).join('\r\n')],{type:'text/csv'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=`harvests-${localDate()}.csv`;
+  document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(a.href),1000);
+  toast(`⬇️ ${plural(ST.log.length,'harvest')} saved as a spreadsheet`);
 }
 function openPrices(){
   const ks=[...new Set([...ST.log.map(l=>l.p),...plantedCells().map(x=>x.cell.p)])].filter(k=>P[k]);
@@ -191,7 +205,8 @@ function doHarvest(xs,all){
     beds.set(x.bi,(beds.get(x.bi)||0)+1);
     if(lifted)clearCell(x.bi,x.ri,x.ci);else{x.cell.picks++;if(all)x.cell.s='done';}
   });
-  beds.forEach((n,bi)=>logHarvest(k,bi,done,n));
+  // optional weight from the sheet (kg or g), shared across the beds it came from
+  const kg=readWeight(),total=xs.length;beds.forEach((n,bi)=>logHarvest(k,bi,done,n,kg?kg*n/total:null));
   ST.alertDone[`${k}:ready`]=ST.alertDone[`${k}:bolting`]=localDate();
   saveState();
   const n=xs.length,v=priceOf(k)*n,val=v?` (+${money(v)})`:'';
@@ -201,6 +216,9 @@ function doHarvest(xs,all){
 }
 function harvestSome(bi,ri,ci){snapshot();const x=plantedCells().find(y=>y.bi===bi&&y.ri===ri&&y.ci===ci);const msg=doHarvest([x],false);confettiAt(innerWidth/2,innerHeight*.6);closeSheet();refreshAll();toast(msg,{undo:true});}
 function harvestAll(k){const xs=harvestable(k);if(!xs.length)return;snapshot();const msg=doHarvest(xs,true);celebrate();closeSheet();refreshAll();toast(msg,{undo:true});}
+// "Weight (optional)" next to the harvest buttons
+function weighHtml(){return`<div class="hv-weigh"><input class="fm-in" id="hv-w" type="number" inputmode="decimal" min="0" step="0.1" placeholder="Weight, if you weighed it" aria-label="Weight"><select class="fm-in" id="hv-u" aria-label="Unit"><option value="kg">kg</option><option value="g">g</option></select></div>`;}
+function readWeight(){if(!sheetOpen())return null;const w=parseFloat($('hv-w')?.value);if(!(w>0))return null;return $('hv-u')?.value==='g'?w/1000:w;}
 function harvestHint(k){
   return isLifted(k)?'Harvest some pulls one plant; Harvest all pulls the lot. Either way the spots are free to replant.'
     :'Harvest some: pick a few outer leaves or fruit — it keeps growing. Harvest all: the final harvest — the plant is completed.';
@@ -260,7 +278,7 @@ function openGrowing(k,focusTrouble){
     ${lookOutHtml(k,xs)}
     ${recipesHtml(k)}
     ${troubleHtml(k)}
-    ${pickable?`<div class="btn-row"><button class="btn btn-harvest" onclick="harvestSome(${pickable.bi},${pickable.ri},${pickable.ci})">🧺 Harvest some</button><button class="btn btn-seed" onclick="harvestAll('${k}')">✅ Harvest all${harvestable(k).length>1?` (${harvestable(k).length})`:''}</button></div>
+    ${pickable?`${weighHtml()}<div class="btn-row"><button class="btn btn-harvest" onclick="harvestSome(${pickable.bi},${pickable.ri},${pickable.ci})">🧺 Harvest some</button><button class="btn btn-seed" onclick="harvestAll('${k}')">✅ Harvest all${harvestable(k).length>1?` (${harvestable(k).length})`:''}</button></div>
     <div class="sh-hint">${harvestHint(k)}</div>`:''}
     <button class="btn btn-cancel btn-full" onclick="openPlantInfo('${k}')">📚 How it grows & neighbours</button>
   </div>`);

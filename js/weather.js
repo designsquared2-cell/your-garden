@@ -36,7 +36,8 @@ function wxVerdict(){
   const d=WX.daily,td=localDate(),ti=wxToday(d);
   const rain=i=>d.precipitation_sum[i]||0,et=i=>d.et0_fao_evapotranspiration[i]||0;
   const tmax=d.temperature_2m_max[ti];
-  const shallow=plantedCells().some(x=>x.cell.s==='seed'||x.cell.s==='seedling');
+  // pots and young plants dry out first, so they get the tighter thresholds (beds on drip don't count)
+  const shallow=plantedCells().some(x=>!x.bed.auto&&(x.cell.s==='seed'||x.cell.s==='seedling'||x.bed.pots));
   const lw=ST.lastWatered;
   if(lw===td)return{lv:'g',msg:'Watered today ✓ — nothing more to do.'};
   // Start counting from the last watering, or the last soaking rain (≥10mm), whichever is later

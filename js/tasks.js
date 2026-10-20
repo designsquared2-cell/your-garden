@@ -31,7 +31,14 @@ function frostItem(){
 function urgentItems(){
   const out=[...plantAlertItems(),...treatItems()],v=wxVerdict(),fr=frostItem();
   if(fr)out.push(fr);
-  if(v?.lv==='r'&&(maint()!=='none'||v.urgent))out.push({kind:'water',id:'water',type:'urgent',cb:true,title:'💧 Water the beds today',detail:v.msg.replace(/^💧 Water today — /,'')+' Tick when done.'});
+  if(v?.lv==='r'&&(maint()!=='none'||v.urgent)){
+    // beds on drip or a timer don't need hand watering; in a heatwave, just check the system is running
+    const veg=ST.beds.filter(b=>!isTreeBed(b)),hand=veg.filter(b=>!b.auto),auto=veg.filter(b=>b.auto),pots=hand.some(b=>b.pots);
+    const why=v.msg.replace(/^💧 Water today — /,'');
+    if(hand.length||!veg.length)out.push({kind:'water',id:'water',type:'urgent',cb:true,title:auto.length?`💧 Water ${hand.map(b=>esc(b.name)).join(', ')} today`:'💧 Water the beds today',
+      detail:`${why}${pots?' Pots dry out fastest — soak them until water runs out the bottom.':''}${auto.length?` ${auto.map(b=>esc(b.name)).join(', ')} ${auto.length>1?'are':'is'} on drip — just check it’s running.`:''} Tick when done.`});
+    else if(v.urgent)out.push({kind:'water',id:'water',type:'urgent',cb:true,title:'🕒 Hot and dry — check your watering timer',detail:`${why} Your beds water themselves; make sure the timer is on and the drippers aren’t blocked, and consider an extra run today. Tick once checked.`});
+  }
   return out;
 }
 
@@ -105,7 +112,7 @@ function tickItem(kind,id,btn){
     if(kind==='water'){snapshot();logWatered(true);toast('💧 Watering logged',{undo:true});return;}
     snapshot();
     if(kind==='frost'){ST.alertDone[id]=localDate();saveState();refreshAll();toast('❄️ Covered — fingers crossed for a mild night',{undo:true});return;}
-    const msg=kind==='plant'?harvestFromAlert(id):kind==='pest'?tickPest(id):kind==='treat'?tickTreat(id):kind==='guard'?tickGuard(id):kind==='tree'?tickTree(id):kind==='feed'?tickFeed(id):kind==='project'?tickProject(id):runAuto(id);
+    const msg=kind==='plant'?harvestFromAlert(id):kind==='pest'?tickPest(id):kind==='treat'?tickTreat(id):kind==='guard'?tickGuard(id):kind==='tree'?tickTree(id):kind==='feed'?tickFeed(id):kind==='project'?tickProject(id):kind==='fold'?tickFold(id):runAuto(id);
     saveState();refreshAll();toast(msg,{undo:true});
   });
 }
@@ -149,19 +156,39 @@ function cardHtml(it){
 //   none: only what's ready to pick, and watering in a heatwave
 //   low:  harvesting, clearing, planting, watering, a spring & autumn feed and the yearly prune — no pest jobs
 //   std:  everything
+// Three or more "ready to pick" reminders become one card
+function foldHarvest(items){
+  const r=items.filter(t=>(t.kind==='plant'&&t.id.endsWith(':ready'))||(t.kind==='tree'&&t.id.startsWith('tree:')));
+  if(r.length<3)return items;
+  const names=r.map(t=>t.kind==='plant'?P[t.id.split(':')[0]]?.n:ST.beds.find(b=>'tree:'+b.id===t.id)?.name).filter(Boolean);
+  return[{kind:'fold',id:r.map(t=>t.kind+'|'+t.id).join(','),type:'urgent',cb:true,icon:'🧺',title:`🧺 ${r.length} things ready to pick`,
+    detail:`${names.map(esc).join(', ')}. Tick once you’ve picked them all, or open Harvest to log each one.`,btn:{label:'Open Harvest ›',js:"setView('harvest')"}},...items.filter(t=>!r.includes(t))];
+}
+function tickFold(id){
+  let n=0;id.split(',').forEach(part=>{const[k,i]=part.split('|');if(k==='plant'){harvestFromAlert(i);n++;}else if(k==='tree'){tickTree(i);n++;}});
+  return`🧺 Picked — ${plural(n,'harvest')} logged`;
+}
 function jobSections(){
   const m=curMonth(),mode=maint();
-  if(mode==='none')return[['🧺 Ready to pick',[...urgentItems(),...treeReadyItems()]]];
+  if(mode==='none')return[['🧺 Ready to pick',foldHarvest([...urgentItems(),...treeReadyItems()])]];
   const auto=autoItems(m),soon=auto.filter(t=>t.type==='soon'),coming=['🟢 Coming up',auto.filter(t=>t.type==='coming')];
-  if(mode==='low')return[['🔴 Do this week',urgentItems()],['🟡 This month',[...treeReadyItems(),...soon.filter(t=>!t.id.startsWith('late:')),...treeJobItems(m),...lowFeedItems(m)]],['🗓️ Seasonal projects',projectItems(m)],coming];
+  if(mode==='low')return[['🔴 Do this week',foldHarvest([...urgentItems(),...treeReadyItems()])],['🟡 This month',[...soon.filter(t=>!t.id.startsWith('late:')),...treeJobItems(m),...lowFeedItems(m)]],['🗓️ Seasonal projects',projectItems(m)],coming];
   const g=guardItems(m),now=g.filter(x=>x.id==='snails-rain');
-  return[['🔴 Do this week',[...urgentItems(),...now]],['🐛 Pest checks',pestCheckItems(m)],['🟡 This month',[...treeReadyItems(),...g.filter(x=>!now.includes(x)),...soon,...treeJobItems(m),...feedItems(m)]],['🗓️ Seasonal projects',projectItems(m)],coming];
+  return[['🔴 Do this week',foldHarvest([...urgentItems(),...treeReadyItems(),...now])],['🐛 Pest checks',pestCheckItems(m)],['🟡 This month',[...g.filter(x=>!now.includes(x)),...soon,...treeJobItems(m),...feedItems(m)]],['🗓️ Seasonal projects',projectItems(m)],coming];
 }
 // Everything you can tick, apart from the optional ones: "coming up", seasonal projects and "fill empty spots"
 function jobCount(){return jobSections().filter(([l])=>!/Coming up|Seasonal projects/.test(l)).reduce((n,[,ts])=>n+ts.filter(t=>t.cb&&!String(t.id).startsWith('fill:')).length,0);}
+// Show "Do this week" in full, then the next few jobs; the rest wait behind "show more" so busy weeks don't overwhelm
+const JOBS_SHOWN=6;let _allJobs=false;
+function visibleJobCount(){let left=JOBS_SHOWN;return jobSections().reduce((n,[l,ts])=>{if(/Do this week|Ready to pick/.test(l))return n+ts.length;const k=Math.min(left,ts.length);left-=k;return n+k;},0);}
 function renderJobs(){
-  const m=curMonth(),secs=jobSections();
-  const body=secs.map(([lbl,ts])=>ts.length?`<div class="task-section"><div class="task-sec-title">${lbl}</div>${ts.map(cardHtml).join('')}</div>`:'').join('')
+  const m=curMonth(),secs=jobSections();let left=_allJobs?1e9:JOBS_SHOWN,hidden=0;
+  const body=secs.map(([lbl,ts])=>{
+    if(!ts.length)return'';
+    const full=/Do this week|Ready to pick/.test(lbl),show=full?ts:ts.slice(0,Math.max(0,left));
+    if(!full){left-=show.length;hidden+=ts.length-show.length;}
+    return show.length?`<div class="task-section"><div class="task-sec-title">${lbl}</div>${show.map(cardHtml).join('')}</div>`:'';
+  }).join('')+(hidden?`<button class="btn btn-cancel btn-full" onclick="_allJobs=true;renderJobs()">Show ${plural(hidden,'more job')}</button>`:'')
     ||(ST.beds.length?`<div class="all-done">All done for now 🐝<br><span>The garden is doing its thing.</span></div>`
       :cardHtml({type:'soon',icon:'🌱',title:'Add your first bed',detail:'Jobs, harvest dates, pest checks and watering advice appear here once you start planting.',btn:{label:'＋ Add a bed',js:"setView('beds');openAddChoice()"}}));
   const n=jobCount();

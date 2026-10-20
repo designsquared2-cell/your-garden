@@ -143,9 +143,84 @@ const FRUIT={
     idea:'Freeze grapes for a summer snack, or roast them with sausages and rosemary.',
     ready:'Taste them — grapes don\'t ripen after picking. Seeds turn brown when they\'re ready.',recipe:'Roast grapes with sausages, rosemary and a splash of balsamic.'},
 };
+// The trees testers asked for most (round-2/3 panels)
+Object.assign(FRUIT,{
+  macadamia:{e:'🌰',n:'Macadamia',grp:'sub',sow:[2,3,8,9,10],pick:[2,3,4,5,6],flower:[7,8,9],yrs:5,unit:'bowl',us:'bowls',g:500,kg:15,
+    prune:[7,8],pruneHow:'Very lightly in late winter — just shape it and remove low or crossing branches. Macadamias don’t need regular pruning.',
+    feed:[7,1],frost:true,bad:['cool','arid'],badWhy:'Macadamias need frost-free warmth and steady moisture.',size:'8–12m, or 3–5m for dwarf types',
+    tip:'Nuts fall when ripe — collect them every week or two. Dry them in their shells for a few weeks, then crack with a proper nutcracker.',
+    idea:'Roast with a little salt and honey, or crush over salads and desserts.',
+    ready:'Nuts drop to the ground when ripe, and the green husks split open. Collect weekly.',recipe:'Macadamia and white chocolate cookies.'},
+  persimmon:{e:'🟧',n:'Persimmon',grp:'other',dec:true,sow:[5,6,7],pick:[3,4,5],flower:[9,10],yrs:3,unit:'persimmon',us:'persimmons',g:200,kg:8,
+    prune:[6,7],pruneHow:'In winter: thin crowded branches and keep the tree low enough to pick and net.',
+    net:true,feed:[8],bad:['tropical'],badWhy:'Persimmons need some winter cold to fruit well.',size:'4–6m (keeps smaller with pruning)',
+    tip:'Non-astringent types (Fuyu) are eaten crisp like an apple. Astringent types (Hachiya) must be soft as jelly before you eat them.',
+    idea:'Slice crisp Fuyu into salads with rocket and prosciutto, or eat jelly-soft Hachiya with a spoon.',
+    ready:'Fuyu: full orange and still firm. Astringent types: pick when coloured, then wait until very soft.',recipe:'Persimmon, rocket and prosciutto salad.'},
+  quince:{e:'🍐',n:'Quince',grp:'pome',dec:true,sow:[5,6,7],pick:[2,3,4],flower:[8,9],yrs:4,unit:'quince',us:'quinces',g:300,kg:7,
+    prune:[5,6],pruneHow:'In winter: remove dead and crossing branches and keep the centre open. Quinces need little pruning.',
+    feed:[7,2],bad:['tropical','subtropical'],badWhy:'Quinces need winter cold to fruit.',size:'3–5m',
+    tip:'Tough, long-lived and self-fertile — one tree is enough. Always cooked, never eaten raw.',
+    idea:'Slow-poach with sugar and a vanilla pod until ruby red.',
+    ready:'The skin turns from green to golden yellow, the fuzz rubs off easily, and they smell wonderful.',recipe:'Quince paste (membrillo) for the cheese board.'},
+  kiwifruit:{e:'🥝',n:'Kiwifruit',grp:'vine',dec:true,sow:[5,6,7],pick:[3,4,5],flower:[9,10],yrs:4,unit:'kiwifruit',us:'kiwifruit',g:90,kg:7,
+    prune:[6,7],pruneHow:'In winter: cut back the canes that fruited and tie in strong new ones along the wires.',
+    feed:[8,11],bad:['tropical','subtropical','arid'],badWhy:'Kiwifruit need winter cold and mild summers.',size:'Vine — needs a strong pergola or T-trellis',
+    tip:'You need a male and a female vine (one male pollinates up to 8 females), unless you buy a self-fertile variety.',
+    idea:'Scoop with a spoon, or slice over pavlova and yoghurt.',
+    ready:'Seeds are black and a test fruit tastes sweet. Pick them firm; they soften on the bench over 1–2 weeks.',recipe:'Kiwifruit on pavlova.'},
+  feijoa:{e:'🟩',n:'Feijoa',grp:'other',sow:[2,3,8,9,10],pick:[2,3,4],flower:[9,10],yrs:3,unit:'feijoa',us:'feijoas',g:50,kg:10,
+    prune:[5,6],pruneHow:'Lightly after harvest — keep it bushy, or clip it as a hedge.',
+    feed:[8],bad:['tropical'],badWhy:'Feijoas fruit best with cool winters.',size:'3–4m, and makes a good hedge',
+    tip:'Very tough and drought-hardy. Most varieties crop far better with a second variety nearby.',
+    idea:'Halve and scoop, or stew into a crumble.',
+    ready:'Feijoas fall when ripe — collect them from the ground every day or two.',recipe:'Feijoa and apple crumble.'},
+  loquat:{e:'🟡',n:'Loquat',grp:'other',sow:[2,3,8,9],pick:[8,9,10],flower:[4,5,6],yrs:3,unit:'loquat',us:'loquats',g:40,kg:10,
+    prune:[11,0],pruneHow:'After harvest: shorten long branches so the fruit stays within reach.',
+    net:true,feed:[8],bad:['cool'],badWhy:'Loquats flower in winter, so hard frosts take the crop.',size:'4–6m',
+    tip:'One of the first fruits of the year. Thin the bunches when small for bigger fruit.',
+    idea:'Eat fresh off the tree, or poach in syrup.',
+    ready:'Fully yellow-orange and slightly soft.',recipe:'Loquat jam.'},
+  coconut:{e:'🥥',n:'Coconut',grp:'sub',sow:[8,9,10,11],pick:[0,1,2,3,4,5,6,7,8,9,10,11],flower:[0,1,2,3,4,5,6,7,8,9,10,11],yrs:6,unit:'coconut',us:'coconuts',g:1200,kg:3,
+    prune:[0],pruneHow:'Cut off dead fronds and old flower stalks once a year.',
+    feed:[8,1],frost:true,bad:['cool','temperate','arid','subtropical'],badWhy:'Coconuts need true tropical warmth all year — they won’t fruit outside the tropics.',size:'15–25m, or 8–10m for dwarf types',
+    tip:'Plant a dwarf type in a home garden — tall palms drop heavy nuts.',
+    idea:'Drink the water from green nuts; grate the flesh of mature ones for sambal or curry.',
+    ready:'Drinking nuts: green and sloshing when shaken. Mature nuts: brown husks, heavy.',recipe:'Fresh coconut sambal.'},
+  'dragon-fruit':{e:'🌵',n:'Dragon fruit',grp:'vine',sow:[8,9,10,11],pick:[0,1,2,3,4],flower:[10,11,0,1],yrs:2,unit:'dragon fruit',us:'dragon fruit',g:400,kg:12,
+    prune:[4,5],pruneHow:'After harvest: cut out old, tangled or damaged stems so light reaches the centre.',
+    feed:[8,11],frost:true,bad:['cool'],badWhy:'A climbing cactus that frost kills — it needs warmth.',size:'Climbing cactus — needs a sturdy post',
+    tip:'Flowers open at night. Brushing pollen between flowers with a soft paintbrush gives a much better crop.',
+    idea:'Cube into fruit salads or blend into a bright pink smoothie.',
+    ready:'Skin turns fully pink-red and the “wings” start to dry, about 30–50 days after flowering.',recipe:'Dragon fruit smoothie bowl.'},
+  lychee:{e:'🟥',n:'Lychee',grp:'sub',sow:[8,9,10],pick:[11,0,1],trop:[10,11,0],flower:[7,8],yrs:5,unit:'bowl',us:'bowls',g:500,kg:20,
+    prune:[1,2],pruneHow:'After harvest — picking whole bunches with a short piece of branch is the main pruning.',
+    net:true,feed:[7,1],frost:true,bad:['cool','temperate','arid'],badWhy:'Lychees need a warm, humid summer and a cool, dry winter — they rarely fruit in temperate areas.',size:'5–10m',
+    tip:'Net the tree as fruit colours — birds and bats love them.',
+    idea:'Peel and eat chilled, or add to a fruit salad with lime.',
+    ready:'Skin turns fully red and the bumps flatten a little. Taste one — they don’t ripen after picking.',recipe:'Lychee and lime sorbet.'},
+  banana:{e:'🍌',n:'Banana',grp:'sub',sow:[8,9,10,11,0],pick:[1,2,3,4],trop:[0,1,2,3,4,5,6,7,8,9,10,11],flower:[10,11,0],yrs:2,unit:'banana',us:'bananas',g:150,kg:4,
+    prune:[9],pruneHow:'Each stem fruits once: cut it down after harvest, and keep one or two suckers to follow.',
+    feed:[8,11,2],frost:true,bad:['cool'],badWhy:'Frost kills bananas — they need warmth and shelter from wind.',size:'2–5m (dwarf types about 2m)',
+    tip:'Hungry and thirsty. Check your state’s rules before planting — Queensland and NSW restrict where banana plants can come from, to stop disease spreading.',
+    idea:'Banana bread, smoothies, or fried bananas with honey.',
+    ready:'Cut the whole bunch when the first fingers start to yellow and the ridges round out; hang it somewhere shady to ripen.',recipe:'Banana bread.'},
+  pawpaw:{e:'🍈',n:'Pawpaw (papaya)',grp:'sub',sow:[8,9,10,11],pick:[2,3,4,5,6],trop:[0,1,2,3,4,5,6,7,8,9,10,11],flower:[9,10,11,0],yrs:1,unit:'pawpaw',us:'pawpaws',g:800,kg:5,
+    prune:[8],pruneHow:'No real pruning — just remove dead leaves. Replace plants after 4–5 years.',
+    feed:[8,11,2],frost:true,bad:['cool','arid'],badWhy:'Pawpaws need warmth and perfect drainage — cold, wet soil kills them.',size:'2–4m',
+    tip:'Plant a few: you need a female plant, or a bisexual “papaya” type, to get fruit.',
+    idea:'With lime juice for breakfast, or shredded green into som tam.',
+    ready:'Pick when the skin shows a yellow blush, then ripen on the bench.',recipe:'Green papaya salad (som tam).'},
+  guava:{e:'🍏',n:'Guava',grp:'sub',sow:[8,9,10],pick:[1,2,3,4],flower:[9,10,11],yrs:2,unit:'guava',us:'guavas',g:100,kg:10,
+    prune:[5,6],pruneHow:'Lightly after harvest to keep it compact.',
+    feed:[8,2],frost:true,bad:['cool'],badWhy:'Guavas are frost-tender — they need a warm, sheltered spot.',size:'3–5m',
+    tip:'Fruit fly love guavas — bag the fruit or hang traps from flowering.',
+    idea:'Eat fresh, or cook into a paste or juice.',
+    ready:'Skin turns from green to yellow (or red for strawberry guava) and the fruit smells sweet.',recipe:'Guava paste.'},
+});
 const FRUIT_KEYS=Object.keys(FRUIT);
 // Used in pest "on" lists alongside the veg families
-const FRUIT_GROUPS={citrus:['lemon','lime','orange','mandarin'],stone:['peach','nectarine','plum','apricot','cherry'],pome:['apple','pear'],berries:['mulberry','blueberry','raspberry','gooseberry'],fruit:FRUIT_KEYS};
+const FRUIT_GROUPS={citrus:['lemon','lime','orange','mandarin'],stone:['peach','nectarine','plum','apricot','cherry'],pome:['apple','pear','quince'],berries:['mulberry','blueberry','raspberry','gooseberry'],fruit:FRUIT_KEYS};
 const FRUIT_GRP=[['citrus','🍋 Citrus'],['pome','🍎 Apples & pears'],['stone','🍑 Stone fruit'],['sub','🥭 Subtropical'],['other','🌳 Other trees'],['vine','🍇 Berries & vines']];
 const FRUIT_VARIETIES={
   lemon:[{id:'eureka',n:'Eureka',s:'Eureka',tags:['b'],note:'Fruits on and off all year — the classic backyard lemon.'},{id:'lisbon',n:'Lisbon',s:'Lisbon',tags:['h'],note:'Vigorous and thorny; handles heat and wind well.'},{id:'meyer',n:'Meyer',s:'Meyer',tags:['c'],note:'Sweeter, less acidic, smaller tree — great in a pot.'}],
@@ -172,6 +247,16 @@ const FRUIT_VARIETIES={
 };
 
 VAR_TAGS.w=['❄️','Low chill — fruits after mild winters'];
+Object.assign(FRUIT_VARIETIES,{
+  macadamia:[{id:'beaumont',n:'Beaumont',s:'Beaumont',tags:['b'],note:'Productive, and sheds its nuts easily.'},{id:'dwarf-mac',n:'Dwarf (e.g. Pinkie)',s:'Dwarf',tags:['c'],note:'Grows 3–5m — the backyard macadamia.'}],
+  persimmon:[{id:'fuyu',n:'Fuyu (non-astringent)',s:'Fuyu',tags:['b'],note:'Eat crisp, like an apple.'},{id:'hachiya',n:'Hachiya (astringent)',s:'Hachiya',note:'Eat only when soft as jelly.'}],
+  kiwifruit:[{id:'hayward',n:'Hayward (female)',s:'Hayward',note:'The classic kiwifruit. Needs a male vine nearby.'},{id:'self-fertile',n:'Self-fertile (e.g. Jenny)',s:'Self-fertile',tags:['b'],note:'Fruits on its own — good if you have room for one vine.'}],
+  feijoa:[{id:'unique',n:'Unique',s:'Unique',tags:['b'],note:'Self-fertile and fruits young.'},{id:'mammoth',n:'Mammoth',s:'Mammoth',note:'Big fruit; best with a second variety.'}],
+  'dragon-fruit':[{id:'red',n:'Red-fleshed',s:'Red',note:'Vivid magenta flesh.'},{id:'white',n:'White-fleshed',s:'White',tags:['b'],note:'Often self-fertile and reliable.'}],
+  banana:[{id:'dwarf-cav',n:'Dwarf Cavendish',s:'Dwarf Cav.',tags:['b','c'],note:'About 2m — the backyard banana.'},{id:'ladyfinger',n:'Lady Finger',s:'Lady Finger',note:'Tall, tough and sweet.'}],
+  pawpaw:[{id:'red-papaya',n:'Red papaya (bisexual)',s:'Red papaya',tags:['b'],note:'One plant fruits on its own.'},{id:'yellow',n:'Yellow pawpaw',s:'Yellow',note:'Plant several to get a female.'}],
+  guava:[{id:'strawberry-guava',n:'Strawberry (cherry) guava',s:'Strawberry',tags:['b'],note:'Small red fruit; the hardiest guava.'},{id:'thai',n:'Thai white guava',s:'Thai',note:'Large, crunchy fruit.'}],
+});
 // ── Plug fruit into the shared plant data ──
 FRUIT_KEYS.forEach(k=>{
   const f=FRUIT[k];
@@ -313,7 +398,7 @@ function openTreeSheet(bi){
     ${st==='young'?`<div class="sh-tip">🌱 Most ${f.n.toLowerCase()} trees fruit about ${plural(f.yrs,'year')} after planting — expect the first real crop around ${firstFruitYear(c)}. Until then it's building roots and branches.</div>`:''}
     ${treeBadHere(k)?`<div class="hu-row bad" style="margin-bottom:10px">⚠️ ${f.badWhy}</div>`:''}
     ${st!=='young'?`<div class="stat-lbl">🧺 Log a harvest${bowl?' (bowls)':''}</div>
-      <div class="tree-quick">${TREE_QUICK[bowl?'bowl':'fruit'].map(n=>`<button class="btn btn-harvest" onclick="logTreePick(${bi},${n})">+${n}</button>`).join('')}</div>
+      ${weighHtml()}<div class="tree-quick">${TREE_QUICK[bowl?'bowl':'fruit'].map(n=>`<button class="btn btn-harvest" onclick="logTreePick(${bi},${n})">+${n}</button>`).join('')}</div>
       <div class="tree-quick"><input class="fm-in" id="tp-n" type="number" inputmode="numeric" min="1" max="999" placeholder="Or type how many"><button class="btn btn-seed" onclick="logTreePick(${bi},+$('tp-n').value)">Add</button></div>
       <div class="sh-hint">${bowl?'A bowl is about '+(f.g>=500?'half a kilo':f.g+'g')+'.':'Count the '+f.us+' you picked.'} Totals go into your harvest value.</div>
       ${st==='ready'?`<button class="btn btn-cancel btn-full" style="margin-bottom:10px" onclick="restTree(${bi})">✅ Finished picking for this season</button>`:''}`:''}
@@ -328,9 +413,10 @@ function openTreeSheet(bi){
 function logTreePick(bi,n){
   n=Math.round(n);if(!(n>0)){toast('How many did you pick?');return;}
   snapshot();const bed=ST.beds[bi],c=treeCell(bed),f=FRUIT[c.p];
-  c.picks=(c.picks||0)+n;ST.log.push({d:localDate(),p:c.p,bid:bed.id,f:0,n});if(ST.log.length>1000)ST.log=ST.log.slice(-1000);
+  const w=readWeight();
+  c.picks=(c.picks||0)+n;ST.log.push({d:localDate(),p:c.p,bid:bed.id,f:0,n,...(w?{kg:Math.round(w*1000)/1000}:{})});if(ST.log.length>1000)ST.log=ST.log.slice(-1000);
   ST.alertDone['tree:'+bed.id]=localDate();saveState();
-  const kg=n*f.g/1000,val=priceOf(c.p)*kg;
+  const kg=w||n*f.g/1000,val=priceOf(c.p)*kg;
   confettiAt(innerWidth/2,innerHeight*.5);refreshAll();openTreeSheet(bi);
   toast(`🧺 ${fruitUnits(c.p,n)} (~${kg<1?Math.round(kg*1000)+'g':kg.toFixed(1)+'kg'}${val?`, +${money(val)}`:''})`,{undo:true});
 }

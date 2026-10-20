@@ -516,3 +516,7 @@ button.sow-chip:hover{border-color:#5A9A3A}
 .plan-bed{background:#1A2412;border:1px solid rgba(255,255,255,.07);border-radius:10px;padding:10px 12px;margin-top:10px}
 .plan-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:4px}
 .plan-bed .set-txt{margin:4px 0}
+.hv-weigh{display:flex;gap:6px;margin:4px 0 2px}
+.hv-weigh .fm-in{margin:0}
+.hv-weigh input{flex:1;min-width:0}
+.hv-weigh select{flex:0 0 72px}

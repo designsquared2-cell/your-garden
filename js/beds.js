@@ -15,7 +15,7 @@ function renderBeds(){
       <button class="link-btn" onclick="openSettings()">Have a backup? Import it in Settings</button></div>`;
     return;
   }
-  w.innerHTML=ST.beds.map((bed,bi)=>isTreeBed(bed)?'':`<div class="bed-wrap"><div class="bed-card"><div class="bed-top bt${bi%3+1}"><div class="bed-name">${esc(bed.name)}${bed.low?' <span class="bed-tag">low crops</span>':''}</div>${selectMode?'':`<button class="bed-edit" aria-label="Edit ${esc(bed.name)}" onclick="openBedEditor(${bi})">✏️</button>`}</div><div class="grid-bg${(bed.rows[0]?.length||0)>=8?' dense':''}">${bed.rows.map((row,ri)=>`<div class="grid-row">${row.map((cell,ci)=>renderCell(cell,bi,ri,ci)).join('')}</div>`).join('')}</div></div></div>`).join('')
+  w.innerHTML=ST.beds.map((bed,bi)=>isTreeBed(bed)?'':`<div class="bed-wrap"><div class="bed-card"><div class="bed-top bt${bi%3+1}"><div class="bed-name">${esc(bed.name)}${bed.low?' <span class="bed-tag">low crops</span>':''}${bed.pots?' <span class="bed-tag">pots</span>':''}${bed.auto?' <span class="bed-tag">💧 auto</span>':''}</div>${selectMode?'':`<button class="bed-edit" aria-label="Edit ${esc(bed.name)}" onclick="openBedEditor(${bi})">✏️</button>`}</div><div class="grid-bg${(bed.rows[0]?.length||0)>=8?' dense':''}">${bed.rows.map((row,ri)=>`<div class="grid-row">${row.map((cell,ci)=>renderCell(cell,bi,ri,ci)).join('')}</div>`).join('')}</div></div></div>`).join('')
     +treesSectionHtml()+(selectMode?'':'<button class="add-bed" onclick="openAddChoice()">＋ Add a bed or fruit tree</button>');
 }
 
@@ -42,13 +42,15 @@ function vegBedCount(){return ST.beds.filter(b=>!isTreeBed(b)).length;}
 const emptyCell=()=>({p:null,s:'empty',d:null,st:null,picks:0});
 function openBedEditor(bi){
   const bed=bi==null?null:ST.beds[bi];
-  const v=bed?{name:bed.name,r:bed.rows.length,c:bed.rows[0]?.length||1,low:bed.low,spot:bed.spot||30}:{name:`Bed ${vegBedCount()+1}`,r:2,c:6,low:false,spot:30};
+  const v=bed?{name:bed.name,r:bed.rows.length,c:bed.rows[0]?.length||1,low:bed.low,spot:bed.spot||30,pots:bed.pots,auto:bed.auto}:{name:`Bed ${vegBedCount()+1}`,r:2,c:6,low:false,spot:30};
   const stepper=(id,val,max)=>`<div class="stepper"><button onclick="stepNum('${id}',-1,${max})" aria-label="Fewer">−</button><input class="fm-in" id="${id}" type="number" inputmode="numeric" min="1" max="${max}" value="${val}"><button onclick="stepNum('${id}',1,${max})" aria-label="More">+</button></div>`;
   showSheet(`<div class="sh-body"><div class="sh-sticky"><div class="sh-toprow"><div><div class="sh-heading">${bed?'✏️ Edit bed':'＋ New bed'}</div><div class="sh-sub">${bed?'Shrinking a bed removes plants outside the new size':'You can change this any time'}</div></div><button class="sh-cancel" onclick="closeSheet()">✕ Cancel</button></div></div>
     <div class="fm-lbl">Name</div><input class="fm-in" id="bed-n" maxlength="30" placeholder="e.g. Bed 1 — South" value="${esc(v.name)}">
     <div class="fm-2col"><div><div class="fm-lbl">Rows</div>${stepper('bed-r',v.r,BED_MAX_ROWS)}</div><div><div class="fm-lbl">Spots per row</div>${stepper('bed-c',v.c,BED_MAX_COLS)}</div></div>
     <div class="fm-lbl">Each spot is about</div><div class="fm-emoji-row"><input class="fm-in" id="bed-spot" type="number" inputmode="numeric" min="10" max="200" value="${v.spot}" style="max-width:90px"><span class="set-txt" style="margin:0">cm square — used for how many plants fit in a spot</span></div>
     <label class="fm-check"><input type="checkbox" id="bed-low"${v.low?' checked':''}> Low crops only — don't suggest tall or climbing plants</label>
+    <label class="fm-check"><input type="checkbox" id="bed-pots"${v.pots?' checked':''}> Pots or containers — they dry out faster</label>
+    <label class="fm-check"><input type="checkbox" id="bed-auto"${v.auto?' checked':''}> Watered automatically (drip or timer) — skip watering reminders</label>
     ${bed?`<button class="btn btn-cancel btn-full" style="margin-top:12px" onclick="openRotation(${bi})">🔄 Rotation & new season</button>`:''}
     <button class="btn btn-seed btn-full" style="margin-top:16px" onclick="saveBed(${bi??'null'})">${bed?'💾 Save bed':'＋ Add bed'}</button>
     ${bed?`<button class="btn btn-remove btn-full" style="margin-top:8px" onclick="deleteBed(${bi})">🗑️ Delete this bed</button>`:''}
@@ -59,16 +61,16 @@ function stepNum(id,d,max){const el=$(id);el.value=Math.min(max,Math.max(1,(+el.
 function saveBed(bi){
   const name=$('bed-n').value.trim()||(bi==null?`Bed ${vegBedCount()+1}`:ST.beds[bi].name);
   const r=Math.min(BED_MAX_ROWS,Math.max(1,+$('bed-r').value||1)),c=Math.min(BED_MAX_COLS,Math.max(1,+$('bed-c').value||1));
-  const low=$('bed-low').checked,spot=Math.min(200,Math.max(10,parseInt($('bed-spot').value,10)||30));
+  const low=$('bed-low').checked,pots=$('bed-pots').checked,auto=$('bed-auto').checked,spot=Math.min(200,Math.max(10,parseInt($('bed-spot').value,10)||30));
   if(bi==null){
-    ST.beds.push({id:newId(),name,low,spot,rows:Array.from({length:r},()=>Array.from({length:c},emptyCell))});
+    ST.beds.push({id:newId(),name,low,spot,pots,auto,rows:Array.from({length:r},()=>Array.from({length:c},emptyCell))});
     saveState();closeSheet();refreshAll();toast(`＋ Added ${name}`);
     [...document.querySelectorAll('#beds-wrap .bed-wrap')].at(-1)?.scrollIntoView({behavior:'smooth',block:'center'});
     return;
   }
   snapshot();const bed=ST.beds[bi];
   const lost=bed.rows.flatMap((row,ri)=>row.filter((cell,ci)=>(ri>=r||ci>=c)&&!isEmpty(cell))).length;
-  bed.name=name;bed.low=low;bed.spot=spot;
+  bed.name=name;bed.low=low;bed.spot=spot;bed.pots=pots;bed.auto=auto;
   bed.rows=Array.from({length:r},(_,ri)=>Array.from({length:c},(_,ci)=>bed.rows[ri]?.[ci]||emptyCell()));
   saveState();closeSheet();refreshAll();
   toast(lost?`Saved — ${plural(lost,'plant')} removed`:`Saved ${name}`,{undo:!!lost});
@@ -190,8 +192,8 @@ function openCellSheet(bi,ri,ci){
     ${spacingHtml(cell.p,cell.v,bi)}
     ${pl.nx&&P[pl.nx]?`<div class="sh-next"><div class="sh-nl">→ Plant next</div><div class="sh-nv">${P[pl.nx].e} ${P[pl.nx].n} — ${P[pl.nx].h}</div></div>`:''}
     ${cell.s==='done'?`<button class="btn btn-seed btn-full" onclick="clearSpot(${a})">🧹 Pulled it out — clear this spot</button><div class="sh-hint">Completed. Pull out what's left, then clear the spot to replant.</div>`
-      :canPick?(isLifted(cell.p)?`<button class="btn btn-harvest btn-full" onclick="harvestCell(${a},true)">🧺 Harvest — pull it up</button><div class="sh-hint">Pulled whole, so the spot is free to replant straight away.</div>`
-        :`<div class="btn-row"><button class="btn btn-harvest" onclick="harvestSome(${a})">🧺 Harvest some</button><button class="btn btn-seed" onclick="harvestCell(${a},true)">✅ Harvest all</button></div><div class="sh-hint">${harvestHint(cell.p)}</div>`):''}
+      :canPick?(isLifted(cell.p)?`${weighHtml()}<button class="btn btn-harvest btn-full" onclick="harvestCell(${a},true)">🧺 Harvest — pull it up</button><div class="sh-hint">Pulled whole, so the spot is free to replant straight away.</div>`
+        :`${weighHtml()}<div class="btn-row"><button class="btn btn-harvest" onclick="harvestSome(${a})">🧺 Harvest some</button><button class="btn btn-seed" onclick="harvestCell(${a},true)">✅ Harvest all</button></div><div class="sh-hint">${harvestHint(cell.p)}</div>`):''}
     <div class="btn-row" style="margin-bottom:12px"><button class="btn btn-cancel" onclick="openGrowing('${cell.p}')">📖 Tips & recipes</button><button class="btn btn-cancel" onclick="openPestsFor('${cell.p}')">🐛 Something wrong?</button></div>
     <div class="stat-lbl">Status</div>
     <div class="stat-grid">${STATUSES.map(s=>`<button class="stat-opt so-${s}${cell.s===s?' sel':''}" onclick="doUpdateStatus(${a},'${s}')">${STATUS_LBL[s]}</button>`).join('')}</div>

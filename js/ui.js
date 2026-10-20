@@ -53,7 +53,7 @@ function keepOpen(el,render){const open=[...el.querySelectorAll('details[open][i
 
 let curView='beds';
 function setView(name){
-  curView=name;
+  curView=name;if(typeof _allJobs!=='undefined')_allJobs=false;
   document.querySelectorAll('.view').forEach(v=>v.classList.toggle('on',v.id==='view-'+name));
   document.querySelectorAll('.nav-btn').forEach(b=>b.classList.toggle('active',b.dataset.view===name));
   renderView();window.scrollTo(0,0);saveUI();

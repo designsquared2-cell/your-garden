@@ -32,6 +32,7 @@ function openSettings(){
 
     <div class="fm-lbl" style="margin-top:18px">Backup</div>
     <div class="set-txt">Your garden is saved on this device only. Export a backup to keep it safe or move it to another phone.</div>
+    <button class="btn btn-cancel btn-full" style="margin-bottom:7px" onclick="exportHarvestCSV()">⬇️ Harvests as a spreadsheet (CSV)</button>
     <div class="btn-row"><button class="btn btn-cancel" onclick="exportBackup()">⬇️ Export</button><button class="btn btn-cancel" onclick="$('imp-file').click()">⬆️ Import</button></div>
     <input type="file" id="imp-file" accept="application/json,.json" hidden onchange="importBackup(this.files[0])">
 

@@ -156,7 +156,7 @@ function overdueOneOff(cell){
 
 // ── Harvest log ──
 // n = how many plants this harvest came from (for the harvest value)
-function logHarvest(p,bi,final,n=1){
-  ST.log.push({d:localDate(),p,bid:ST.beds[bi].id,f:final?1:0,n});
+function logHarvest(p,bi,final,n=1,kg=null){
+  ST.log.push({d:localDate(),p,bid:ST.beds[bi].id,f:final?1:0,n,...(kg>0?{kg:Math.round(kg*1000)/1000}:{})});
   if(ST.log.length>1000)ST.log=ST.log.slice(-1000);
 }
