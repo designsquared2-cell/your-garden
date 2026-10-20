@@ -153,12 +153,12 @@ function jobSections(){
   const m=curMonth(),mode=maint();
   if(mode==='none')return[['🧺 Ready to pick',[...urgentItems(),...treeReadyItems()]]];
   const auto=autoItems(m),soon=auto.filter(t=>t.type==='soon'),coming=['🟢 Coming up',auto.filter(t=>t.type==='coming')];
-  if(mode==='low')return[['🔴 Do this week',urgentItems()],['🟡 This month',[...treeReadyItems(),...soon.filter(t=>!t.id.startsWith('late:')),...treeJobItems(m),...lowFeedItems(m),...projectItems(m)]],coming];
+  if(mode==='low')return[['🔴 Do this week',urgentItems()],['🟡 This month',[...treeReadyItems(),...soon.filter(t=>!t.id.startsWith('late:')),...treeJobItems(m),...lowFeedItems(m)]],['🗓️ Seasonal projects',projectItems(m)],coming];
   const g=guardItems(m),now=g.filter(x=>x.id==='snails-rain');
-  return[['🔴 Do this week',[...urgentItems(),...now]],['🐛 Pest checks',pestCheckItems(m)],['🟡 This month',[...treeReadyItems(),...g.filter(x=>!now.includes(x)),...soon,...treeJobItems(m),...feedItems(m),...projectItems(m)]],coming];
+  return[['🔴 Do this week',[...urgentItems(),...now]],['🐛 Pest checks',pestCheckItems(m)],['🟡 This month',[...treeReadyItems(),...g.filter(x=>!now.includes(x)),...soon,...treeJobItems(m),...feedItems(m)]],['🗓️ Seasonal projects',projectItems(m)],coming];
 }
-// Everything you can tick, apart from "coming up"
-function jobCount(){return jobSections().filter(([l])=>!l.includes('Coming up')).reduce((n,[,ts])=>n+ts.filter(t=>t.cb).length,0);}
+// Everything you can tick, apart from the optional ones: "coming up", seasonal projects and "fill empty spots"
+function jobCount(){return jobSections().filter(([l])=>!/Coming up|Seasonal projects/.test(l)).reduce((n,[,ts])=>n+ts.filter(t=>t.cb&&!String(t.id).startsWith('fill:')).length,0);}
 function renderJobs(){
   const m=curMonth(),secs=jobSections();
   const body=secs.map(([lbl,ts])=>ts.length?`<div class="task-section"><div class="task-sec-title">${lbl}</div>${ts.map(cardHtml).join('')}</div>`:'').join('')
