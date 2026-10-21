@@ -556,7 +556,7 @@ function idSymptoms(){
 // Drop ticks that no longer fit after changing area or plant
 function idTidy(){if(!_idPlant)return;const ok=new Set(PROBLEMS.filter(p=>idOnPlant(p,_idPlant)).flatMap(p=>p.signs));[..._idSel].forEach(s=>{if(!ok.has(s))_idSel.delete(s);});}
 // Beans and peas have pods, not fruit
-function symText(s){const pods=FAMILY.legume.includes(_idPlant)||_idPlant==='okra';return pods?s.t.replace('Fruit or pods','Pods').replace(/\bfruit\b/g,'pods').replace(/\bFruit\b/g,'Pods'):s.t;}
+function symText(s){const pods=FAMILY.legume.includes(_idPlant)||_idPlant==='okra';return pods?s.t.replace('Fruit or pods','Pods').replace(/\bfruit\b/g,'pods').replace(/\bFruit\b/g,'Pods').replace('pods shrivels and rots','pods shrivel and rot'):s.t;}
 // From a plant sheet: "Something wrong with this plant?"
 function openPestsFor(k){closeSheet();_idSel.clear();_idArea=null;_idPlant=k;_pTab='id';setView('pests');}
 // Recent weather makes some growing problems more likely
