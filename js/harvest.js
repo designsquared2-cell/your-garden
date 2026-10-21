@@ -263,6 +263,8 @@ function troubleHtml(k){
 }
 function readySignHtml(k){return READY_SIGN[k]?`<div class="sh-next"><div class="sh-nl">✅ Ready when</div><div class="sh-nv">${READY_SIGN[k]}</div></div>`:'';}
 // focusTrouble: jump straight to "Not doing what it should?" (from a running-late job)
+// Secondary sections on a plant sheet stay folded until tapped, so the harvest comes first
+function foldHtml(title,html,open,id){return html?`<details class="pg sheet-fold"${id?` id="${id}"`:''}${open?' open':''}><summary><span>${title}</span></summary><div class="pg-body">${html.replace(/<div class="stat-lbl"[^>]*>[^<]*<\/div>/,'')}</div></details>`:'';}
 function openGrowing(k,focusTrouble){
   if(focusTrouble)setTimeout(()=>$('trouble')?.scrollIntoView({behavior:'smooth',block:'start'}),300);
   const xs=plantedCells().filter(x=>x.cell.p===k);if(!xs.length){openPlantInfo(k);return;}
@@ -274,12 +276,12 @@ function openGrowing(k,focusTrouble){
   showSheet(`<div class="sh-body"><div class="sh-sticky"><div class="sh-toprow"><div class="pi-hdr"><span class="sh-pe">${pl.e}</span><div><div class="sh-pn">${pl.n}</div><div class="sh-sub">${[...new Set(xs.map(x=>cellVariety(x.cell)?.n).filter(Boolean))].map(esc).join(', ')||''}${xs.some(x=>cellVariety(x.cell))?' · ':''}${xs.length>1?`${xs.length} plants · `:''}${beds}</div></div></div><button class="sh-cancel" onclick="closeSheet()">✕ Close</button></div></div>
     <div class="pi-facts"><div><div class="sh-cl">Planted</div><div class="pi-v">${planted?fmtDate(planted):'—'}</div></div><div><div class="sh-cl">Ready</div><div class="pi-v">${readyLabel(lead,false)}</div></div>
       <div><div class="sh-cl">Picked</div><div class="pi-v">${picks?plural(picks,'time'):'Not yet'}</div></div></div>
-    ${readySignHtml(k)}
-    ${lookOutHtml(k,xs)}
-    ${recipesHtml(k)}
-    ${troubleHtml(k)}
     ${pickable?`${weighHtml()}<div class="btn-row"><button class="btn btn-harvest" onclick="harvestSome(${pickable.bi},${pickable.ri},${pickable.ci})">🧺 Harvest some</button><button class="btn btn-seed" onclick="harvestAll('${k}')">✅ Harvest all${harvestable(k).length>1?` (${harvestable(k).length})`:''}</button></div>
     <div class="sh-hint">${harvestHint(k)}</div>`:''}
+    ${readySignHtml(k)}
+    ${recipesHtml(k)}
+    ${foldHtml('👀 What to look out for',lookOutHtml(k,xs),false)}
+    ${foldHtml('🤔 Not doing what it should?',troubleHtml(k),!!focusTrouble,'trouble')}
     <button class="btn btn-cancel btn-full" onclick="openPlantInfo('${k}')">📚 How it grows & neighbours</button>
   </div>`);
 }

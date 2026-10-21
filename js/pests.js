@@ -120,8 +120,8 @@ const PESTS=[
    where:'Leaf joints, stems and sometimes roots — worst on potted plants and in sheltered spots.',
    fix:'Dab them with a cotton bud dipped in methylated spirits, or spray eco-oil or soap spray. Repeat weekly — eggs hide in the fluff.',
    prevent:'Check new plants before you bring them home, and keep ants down.'},
-  {id:'leaf-spot',e:'🟠',n:'Rust & leaf spot',disease:true,on:['beans','chard','beetroot','spinach','lettuce','garlic','onions','leek','strawberry'],months:[2,3,4,8,9,10],peak:[3,9],
-   look:'Rusty orange or brown powdery spots under the leaves (rust), or round brown or grey spots with darker rims (leaf spot). The spots join up, and leaves yellow and die.',
+  {id:'leaf-spot',e:'🟠',n:'Rust & leaf spot',disease:true,on:['legume','chard','beetroot','spinach','lettuce','garlic','onions','leek','strawberry'],months:[2,3,4,8,9,10],peak:[3,9],
+   look:'Rusty orange or brown powdery spots under the leaves (rust), or round brown or grey spots with darker rims (leaf spot). On broad beans, chocolate-brown spots on leaves and stems after damp weather (chocolate spot). The spots join up, and leaves yellow and die.',
    where:'Older leaves first, in humid or showery weather.',
    fix:'Pick off spotted leaves and bin them (not the compost). Water the soil, not the leaves, and do it in the morning.',
    prevent:'Give plants room for air to move, don’t water leaves late in the day, and rotate crops.'},
@@ -265,6 +265,11 @@ DISORDERS.push(
    look:'Plenty of flowers that fall off; baby zucchini that shrivel and rot at the tip.',
    rem:{nat:['Zucchini & pumpkin: in the morning, brush pollen from a male flower onto the female flowers (the ones with a tiny fruit behind them)','Tomatoes & capsicum: gently shake the plants while flowering','Plant borage, alyssum or native daisies nearby to bring in bees']},
    prevent:'Grow bee-friendly flowers in every bed, and shade plants in heatwaves.'},
+  {id:'pods-poor',e:'🫘',n:'Beans & peas not podding',late:true,on:['legume'],
+   what:'Broad beans and peas set pods best in cool weather with bees about. Hot spells (over about 25°C for broad beans and peas, 30°C for beans), dry soil at flowering, too much nitrogen, and windy or bee-free weather all stop pods forming or filling.',
+   look:'Plenty of flowers that drop off, or small pods that never fill out.',
+   rem:{nat:['Water deeply while they’re flowering','Broad beans: once the first pods have set, pinch out the top 10cm of each stem — it sends energy to the pods and gets rid of the black aphids that cluster there','Plant bee-friendly flowers nearby (borage, alyssum, native daisies)','Go easy on manure — beans and peas make their own nitrogen','Late-sown broad beans and peas often fail as spring heats up — keep picking what forms, and sow earlier next year']},
+   prevent:'Sow broad beans and peas in autumn (April–May in most of southern Australia) so they flower before the spring heat.'},
   {id:'roots-thin',e:'🥕',n:'Roots not swelling',late:true,on:['beetroot','carrots','turnip','radish','onions','shallots','garlic','potato','sweet-potato','leek'],
    what:'Root crops swell when they have loose soil, room and even watering. Crowding, rich nitrogen feeds and hard soil keep them thin — and stones or fresh manure make carrots fork.',
    look:'Plenty of leaf but thin or small roots; forked, twisted or hairy carrots.',
@@ -460,6 +465,8 @@ const SYMPTOMS=[
   {id:'forked',a:['late'],e:'🍴',t:'Forked or twisted carrots'},
   {id:'green-fruit',a:['late','fruit'],e:'🟢',t:'Fruit staying green'},
   {id:'slow',a:['late','whole'],e:'🐢',t:'Barely grown in weeks'},
+  {id:'flowers-drop',a:['late','fruit','whole'],e:'🥀',t:'Flowers dropping off'},
+  {id:'empty-pods',a:['late','fruit'],e:'🫛',t:'Pods small, empty or not filling'},
   {id:'scale-bumps',a:['bugs','leaves'],e:'🟤',t:'Small bumps stuck to stems or leaves'},
   {id:'rolled',a:['leaves','bugs'],e:'🌯',t:'Leaves rolled or webbed together'},
   {id:'trails',a:['leaves'],e:'〰️',t:'Silvery wiggly trails in new leaves'},
@@ -519,11 +526,12 @@ const PEST_ID={
   'underwater':{signs:['wilt-midday','crispy','yellow-lower']},
   'uneven-water':{signs:['black-bottom','split']},
   'hungry':{signs:['pale-all','yellow-lower','slow']},
-  'heat':{signs:['scorched','wilt-midday','crispy']},
+  'heat':{signs:['scorched','wilt-midday','crispy','flowers-drop']},
   'bolting':{signs:['bolting']},
   'no-heading':{signs:['no-head','button','leafy-only']},
   'all-leaves':{signs:['leafy-only','flowers-no-fruit']},
-  'no-fruit-set':{signs:['flowers-no-fruit','baby-rot']},
+  'no-fruit-set':{signs:['flowers-no-fruit','baby-rot','flowers-drop']},
+  'pods-poor':{signs:['flowers-drop','empty-pods','flowers-no-fruit']},
   'roots-thin':{signs:['thin-roots','forked','leafy-only']},
   'not-ripening':{signs:['green-fruit']},
   'slow':{signs:['slow']},
@@ -532,10 +540,23 @@ PROBLEMS.forEach(p=>Object.assign(p,PEST_ID[p.id]));
 
 let _pTab='id',_idArea=null,_idSel=new Set(),_idPlant=null;
 function pTab(t){_pTab=t;renderPests();window.scrollTo(0,0);}
-function idArea(a){_idArea=a;renderPests();}
+let _idQ='';
+function idArea(a){_idArea=a;idTidy();renderPests();}
 function idToggle(s){_idSel.has(s)?_idSel.delete(s):_idSel.add(s);renderPests();}
-function idPlant(k){_idPlant=_idPlant===k?null:k;renderPests();}
-function idClear(){_idSel.clear();_idPlant=null;_idArea=null;renderPests();}
+function idPlant(k){_idPlant=k;_idQ='';idTidy();renderPests();setTimeout(()=>$('id-step3')?.scrollIntoView({behavior:'smooth',block:'start'}),50);}
+function idClear(){_idSel.clear();_idPlant=null;_idArea=null;_idQ='';renderPests();}
+// Seedling pests (snails, cutworms) can hit any young plant
+function idOnPlant(p,k){return pestOnPlant(p,k)||p.on.includes('*seedlings');}
+// Symptoms worth offering: in this area, and a sign of something this plant can actually get
+function idSymptoms(){
+  if(!_idArea||!_idPlant)return[];
+  const signs=new Set(PROBLEMS.filter(p=>idOnPlant(p,_idPlant)).flatMap(p=>p.signs));
+  return SYMPTOMS.filter(s=>s.a.includes(_idArea)&&signs.has(s.id));
+}
+// Drop ticks that no longer fit after changing area or plant
+function idTidy(){if(!_idPlant)return;const ok=new Set(PROBLEMS.filter(p=>idOnPlant(p,_idPlant)).flatMap(p=>p.signs));[..._idSel].forEach(s=>{if(!ok.has(s))_idSel.delete(s);});}
+// Beans and peas have pods, not fruit
+function symText(s){const pods=FAMILY.legume.includes(_idPlant)||_idPlant==='okra';return pods?s.t.replace('Fruit or pods','Pods').replace(/\bfruit\b/g,'pods').replace(/\bFruit\b/g,'Pods'):s.t;}
 // From a plant sheet: "Something wrong with this plant?"
 function openPestsFor(k){closeSheet();_idSel.clear();_idArea=null;_idPlant=k;_pTab='id';setView('pests');}
 // Recent weather makes some growing problems more likely
@@ -549,16 +570,17 @@ function idMatches(){
   if(!_idSel.size)return[];
   const m=curMonth();
   return PROBLEMS.map(p=>{
+    if(_idPlant&&!idOnPlant(p,_idPlant))return null;
     const hit=p.signs.filter(s=>_idSel.has(s)).length;if(!hit)return null;
     let score=hit*3+2*hit/p.signs.length+weatherBoost(p);
-    if(_idPlant)score+=pestOnPlant(p,_idPlant)?3:-2;
+    if(_idPlant&&pestOnPlant(p,_idPlant))score+=1; // named for this plant, not just any seedling
     if(p.months&&pestActive(p,m))score+=1;if(pestPeak(p,m))score+=1;
     return{p,score};
   }).filter(Boolean).sort((a,b)=>b.score-a.score).slice(0,3);
 }
 function photosUrl(p){return'https://www.google.com/search?tbm=isch&q='+encodeURIComponent(p.n+(p.kind==='growing'?' plant symptoms':' garden pest Australia'));}
 function idResultHtml({p},i){
-  const fits=_idPlant&&!pestOnPlant(p,_idPlant);
+  const fits=false;
   return `<div class="id-res${i===0?' top':''}"><div class="pest-hdr"><span class="pest-e">${p.e}</span><div><div class="id-lead">${i===0?'Most likely':'Could also be'}</div><div class="pest-n">${p.n}</div></div></div>
     <div class="id-what">${p.what}</div>
     ${weatherBoost(p)>=3?'<div class="pest-txt id-wx">🌦️ Your recent weather makes this more likely.</div>':''}
@@ -568,19 +590,24 @@ function idResultHtml({p},i){
     <div class="id-btns"><a class="id-photos" href="${photosUrl(p)}" target="_blank" rel="noopener" onclick="return openLink(event,this)">📷 See photos ↗</a>${plantedCells().length?`<button class="task-btn" onclick="openPestReport('${p.id}',${_idPlant?`'${_idPlant}'`:'null'})">✓ That's it — add a job</button>`:''}</div></div>`;
 }
 function identifyHtml(){
-  const matches=idMatches();
-  const mine=[...new Set(plantedCells().map(x=>x.cell.p))];
-  if(_idPlant&&!mine.includes(_idPlant))mine.unshift(_idPlant);
+  const matches=idMatches(),mine=[...new Set(plantedCells().map(x=>x.cell.p))].filter(k=>P[k]);
+  const q=_idQ.trim().toLowerCase(),found=q?Object.keys(P).filter(k=>plantName(k).toLowerCase().includes(q)&&!mine.includes(k)).slice(0,12):[];
+  const syms=idSymptoms(),areaLbl=(AREAS.find(x=>x[0]===_idArea)||[])[2];
   const others=[..._idSel].map(s=>SYM_BY_ID[s]).filter(s=>!s.a.includes(_idArea));
-  return `<div class="id-step"><span class="id-num">1</span> Where's the problem?</div>
+  const chip=k=>`<button class="sym${_idPlant===k?' on':''}" onclick="idPlant('${k}')">${P[k].e} ${P[k].n}</button>`;
+  return `<div class="id-step"><span class="id-num">1</span> Where’s the problem?</div>
     <div class="area-grid">${AREAS.map(([a,e,l])=>`<button class="area${_idArea===a?' on':''}" onclick="idArea('${a}')"><span>${e}</span>${l}</button>`).join('')}</div>
-    ${_idArea?`<div class="id-step"><span class="id-num">2</span> What can you see? <span class="hlog-d">tap all that fit</span></div>
-      <div class="sym-wrap">${SYMPTOMS.filter(s=>s.a.includes(_idArea)).map(s=>`<button class="sym${_idSel.has(s.id)?' on':''}" onclick="idToggle('${s.id}')">${s.e} ${s.t}</button>`).join('')}</div>`:''}
-    ${others.length?`<div class="id-picked"><span class="hlog-d">Also ticked:</span> ${others.map(s=>`<button class="sym on mini" onclick="idToggle('${s.id}')">${s.e} ${s.t} ✕</button>`).join('')}</div>`:''}
-    ${_idArea&&mine.length?`<details class="id-plant" id="id-plant"${_idPlant?' open':''}><summary><span class="id-num">3</span> Which plant? <span class="hlog-d">${_idPlant?plantName(_idPlant):'optional'}</span></summary><div class="sym-wrap">${mine.map(k=>`<button class="sym${_idPlant===k?' on':''}" onclick="idPlant('${k}')">${P[k].e} ${P[k].n}</button>`).join('')}</div></details>`:''}
+    ${_idArea?`<div class="id-step"><span class="id-num">2</span> Which plant?</div>
+      ${mine.length?`<div class="sym-wrap">${mine.map(chip).join('')}</div>`:''}
+      <input class="pick-search" id="id-q" type="search" placeholder="🔍 ${mine.length?'Another plant…':'Type the plant’s name…'}" autocomplete="off" value="${esc(_idQ)}" oninput="_idQ=this.value;renderPests();setTimeout(()=>{const e=$('id-q');if(e){e.focus();e.setSelectionRange(e.value.length,e.value.length);}},0)">
+      ${found.length?`<div class="sym-wrap">${found.map(chip).join('')}</div>`:q?'<div class="set-txt">No plant by that name — try another spelling.</div>':''}`:''}
+    ${_idArea&&_idPlant?`<div class="id-step" id="id-step3"><span class="id-num">3</span> What can you see on the ${esc(plantName(_idPlant).toLowerCase())}? <span class="hlog-d">tap all that fit</span></div>
+      ${syms.length?`<div class="sym-wrap">${syms.map(s=>`<button class="sym${_idSel.has(s.id)?' on':''}" onclick="idToggle('${s.id}')">${s.e} ${symText(s)}</button>`).join('')}</div>`
+        :`<div class="set-txt">Nothing in our guide for ${esc(plantName(_idPlant).toLowerCase())} under “${areaLbl}”. Try another area above, or <button class="link-btn" onclick="openFeedback()">tell us what you’re seeing</button>.</div>`}`:''}
+    ${others.length?`<div class="id-picked"><span class="hlog-d">Also ticked:</span> ${others.map(s=>`<button class="sym on mini" onclick="idToggle('${s.id}')">${s.e} ${symText(s)} ✕</button>`).join('')}</div>`:''}
     ${_idSel.size||_idPlant||_idArea?'<button class="link-btn" onclick="idClear()">Start again</button>':''}
     ${matches.length?`<button class="id-bar" onclick="$('id-results').scrollIntoView({behavior:'smooth',block:'start'})">See ${matches.length===1?'the likely answer':`${matches.length} likely answers`} ↓</button>`:''}
-    <div id="id-results">${matches.length?matches.map(idResultHtml).join(''):_idSel.size?'<div class="set-txt">Nothing in the guide matches that — try fewer signs, or browse the Guide.</div>':_idPlant&&!_idArea?`<div class="set-txt">Looking at your ${plantName(_idPlant)} — where's the problem?</div>`:''}</div>`;
+    <div id="id-results">${matches.length?matches.map(idResultHtml).join(''):_idSel.size?`<div class="set-txt">Nothing in the guide matches that for ${esc(plantName(_idPlant).toLowerCase())} — try fewer signs, or <button class="link-btn" onclick="openFeedback()">tell us about it</button>.</div>`:_idPlant&&!_idArea?`<div class="set-txt">Looking at your ${esc(plantName(_idPlant).toLowerCase())} — where’s the problem?</div>`:''}</div>`;
 }
 function thisMonthHtml(m){
   const guards=maint()==='std'?guardItems(m):[],watch=pestsToWatch(m);
