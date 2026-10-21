@@ -52,7 +52,7 @@ begin
   if not exists (select 1 from push_config where cron_key = p_key) then raise exception 'not allowed'; end if;
   return query
     with sent as (
-      update push_subs s set last_sent = now()
+      update push_subs s set last_sent = case when p_force then s.last_sent else now() end  -- test sends don't count
       where p_force or (
         extract(dow from now() at time zone s.tz) = s.dow
         and extract(hour from now() at time zone s.tz) = s.hour
