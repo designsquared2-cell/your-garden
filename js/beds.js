@@ -287,6 +287,7 @@ function confirmPlant(st){
   setCell(bi,ri,ci,{p:key,v:vid,s,st,d,picks:0});closeSheet();refreshAll();
   const c=getCell(bi,ri,ci),exp=expectedDate(c);
   toast(`🌱 ${d===localDate()?'Planted':`Added (planted ${fmtDate(d)})`} ${unesc(cellName(c))}${exp?` — ready ${exp<=localDate()?'about now':'~'+fmtDate(exp)}`:''}`);
+  maybeAskNudges(key);
 }
 function setPlanted(bi,ri,ci){
   const c=getCell(bi,ri,ci),d=readDate('cell-d');if(d===c.d)return;

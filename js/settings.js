@@ -17,6 +17,7 @@ function openSettings(){
     <div class="fm-lbl">How hands-on?</div>
     <div class="maint-opts">${Object.entries(MAINT).map(([k,o])=>`<button class="maint-opt${maint()===k?' on':''}" onclick="setMaint('${k}')"><span class="maint-e">${o.e}</span><span><b>${o.n}</b><span>${o.d}</span></span></button>`).join('')}</div>
     <div class="set-txt">Just for this device — everyone sharing your garden can pick their own.</div>
+    ${nudgeSettingsHtml()}
     <div class="fm-lbl" style="margin-top:18px">Weather location</div>
     <div class="set-txt">${wxLoc()?`Currently: <b>${esc(wxLoc().name)}</b>`:'Not set yet — search for your suburb to get watering advice.'}</div>
     <div class="fm-emoji-row"><input class="fm-in" id="loc-q" placeholder="Search a town or suburb" onkeydown="if(event.key==='Enter')searchLoc()"><button class="btn btn-seed btn-inline" onclick="searchLoc()">Search</button></div>

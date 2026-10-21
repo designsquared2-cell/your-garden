@@ -5,7 +5,7 @@ document.addEventListener('keydown',e=>{if(e.key==='Escape'&&sheetOpen())closeSh
 // Coming back: only redraw if the day has changed — redrawing would collapse whatever was open.
 let _shownDay=localDate();
 document.addEventListener('visibilitychange',()=>{
-  if(document.hidden){saveUI();return;}
+  if(document.hidden){saveUI();queueNudges();return;}
   loadWeather();if(typeof pullGarden==='function')pullGarden();
   if(localDate()!==_shownDay){_shownDay=localDate();updateHeader();refreshAll();}
 });
@@ -17,6 +17,9 @@ if(signedIn())pullGarden();
 finishLinkSignIn(); // arrived from the sign-in email's link?
 // First time here with an empty garden: a quick welcome (location → how hands-on → first bed)
 if(!ST.beds.length&&!welcomed()&&!signedIn()&&!/access_token|error_description/.test(location.hash))setTimeout(()=>{if(!sheetOpen()){setView('beds');openWelcome();}},300);
+// Weekly notes: save the next few weeks for the service worker, and follow a tapped note to its screen
+queueNudges();loadNudgeHist();
+{const go=new URLSearchParams(location.search).get('go');if(go){history.replaceState(null,'',location.pathname);setTimeout(()=>{closeSheet();nudgeGo(go);},350);}}
 addEventListener('online',()=>{if(signedIn())pushGarden();});
 
 // Offline support + home-screen install (needs https or localhost)

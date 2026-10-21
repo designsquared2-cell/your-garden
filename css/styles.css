@@ -527,3 +527,9 @@ button.sow-chip:hover{border-color:#5A9A3A}
 .task-more summary::-webkit-details-marker{display:none}
 .task-more[open] summary{color:#C8D8B0}
 .task-more .task-detail{margin-top:2px}
+
+.nudge-card{position:relative;margin:0 0 14px;padding:13px 40px 13px 14px;border-radius:14px;background:linear-gradient(135deg,#2A3A1A,#1E2A14);border:1px solid #4A6A2A}
+.nudge-k{font-size:10px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:#C49010;margin-bottom:3px}
+.nudge-t{font-size:15px;font-weight:800;color:#E8F0D8;margin-bottom:3px}
+.nudge-b{font-size:12.5px;color:#A8C088;line-height:1.45;margin-bottom:8px}
+.nudge-x{position:absolute;top:8px;right:8px;width:28px;height:28px;border:none;border-radius:50%;background:transparent;color:#7A9060;font-size:14px;cursor:pointer}

@@ -68,6 +68,7 @@ const HELP=[
   ['🐝','Jobs & reminders',[
     ['What shows in Jobs','Everything to do, made from what you’re growing, the season and your weather: harvests, watering, feeding, pest checks and seasonal jobs. Tick a job when it’s done.'],
     ['Too many jobs?','Switch to Low or No maintenance in ⚙️ Settings.'],
+    ['Weekly garden note','⚙️ Settings → 🔔 Weekly garden note. One friendly note a week: what’s ready to pick and what’s worth planting. Pick the day you’d like it. On iPhone, add the app to your Home Screen first.'],
     ['Calendar reminders','Jobs → <b>📅 Add reminders to my calendar</b> adds a weekly garden check and upcoming harvests to your phone’s calendar.']]],
   ['🐛','Pests & problems',[
     ['Identify a problem','Pests tab → Identify: say where the problem is, tap what you can see, and it suggests the most likely causes with photos and fixes.'],
