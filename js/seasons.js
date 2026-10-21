@@ -116,13 +116,13 @@ function openSeasonPlan(){
     const seeds=ST.seeds.filter(s=>P[s.p]&&pick.includes(s.p));
     const empty=emptyCells(bi).length;
     return `<div class="plan-bed"><div class="plan-top"><b>${esc(bed.name)}</b><span class="hlog-d">${empty?plural(empty,'empty spot'):'full'}</span></div>
-      <div class="set-txt">${here.length?`Grew lately: ${here.map(f=>FAM_LBL[f]).join(', ')}.`:'Nothing recorded yet.'} ${next.length?`Good next: <b>${next.map(f=>FAM_LBL[f]).join(' or ')}</b>.`:''}</div>
+      <div class="set-txt">${next.length?`Next: <b>${next.map(f=>FAM_LBL[f]).join(', ')}</b>`:''}</div>
       <div class="sow-chips">${pick.map(k=>`<button class="sow-chip" onclick="openPlantInfo('${k}')">${P[k].e} ${P[k].n}</button>`).join('')||'<span class="set-txt">Nothing suits this bed in the next few months — rest it under mulch or a green manure.</span>'}</div>
       ${seeds.length?`<div class="set-txt">🌰 From your seed box: ${seeds.map(s=>esc(seedName(s))).join(', ')}</div>`:''}</div>`;
   }).join('');
-  showSheet(`<div class="sh-body"><div class="sh-sticky"><div class="sh-toprow"><div><div class="sh-heading">🗓️ Plan next season</div><div class="sh-sub">${MONTHS[ms[0]]} to ${MONTHS[ms[2]]} · rotating families keeps pests and diseases down</div></div><button class="sh-cancel" onclick="closeSheet()">✕ Close</button></div></div>
+  showSheet(`<div class="sh-body"><div class="sh-sticky"><div class="sh-toprow"><div><div class="sh-heading">🗓️ Plan next season</div><div class="sh-sub">${MONTHS[ms[0]]} to ${MONTHS[ms[2]]}</div></div><button class="sh-cancel" onclick="closeSheet()">✕ Close</button></div></div>
     ${cards||'<div class="set-txt">Add a veg bed first.</div>'}
-    <div class="set-txt" style="margin-top:8px"><b>The cycle:</b> beans & peas → leafy greens & brassicas → roots & onions → tomatoes, zucchini & friends → back to beans.</div></div>`);
+    ${moreFold('Rotating plant families keeps pests and diseases down. The cycle: beans & peas → leafy greens & brassicas → roots & onions → tomatoes, zucchini & friends → back to beans.','Why rotate? ›')}</div>`);
 }
 
 // ── "This month in your garden" ── shown at the top of Jobs when there's little to do

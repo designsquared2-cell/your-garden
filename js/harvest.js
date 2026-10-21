@@ -220,8 +220,7 @@ function harvestAll(k){const xs=harvestable(k);if(!xs.length)return;snapshot();c
 function weighHtml(){return`<div class="hv-weigh"><input class="fm-in" id="hv-w" type="number" inputmode="decimal" min="0" step="0.1" placeholder="Weight, if you weighed it" aria-label="Weight"><select class="fm-in" id="hv-u" aria-label="Unit"><option value="kg">kg</option><option value="g">g</option></select></div>`;}
 function readWeight(){if(!sheetOpen())return null;const w=parseFloat($('hv-w')?.value);if(!(w>0))return null;return $('hv-u')?.value==='g'?w/1000:w;}
 function harvestHint(k){
-  return isLifted(k)?'Harvest some pulls one plant; Harvest all pulls the lot. Either way the spots are free to replant.'
-    :'Harvest some: pick a few outer leaves or fruit — it keeps growing. Harvest all: the final harvest — the plant is completed.';
+  return isLifted(k)?'Some = one plant. All = the lot.':'Some: it keeps growing. All: last pick, plant comes out.';
 }
 
 // ── Plant-in-your-garden sheet: ready signs, what to look out for now, recipes ──
@@ -248,7 +247,7 @@ function recipesHtml(k){
   const pl=P[k],more=RECIPES[k];
   if(COMPANIONS.includes(k)&&!more)return'';
   return `<div class="stat-lbl">🍳 Recipe ideas</div><div class="bpc-harvest" style="margin-bottom:12px">
-    <div class="bpc-harvest-txt">${pl.idea}</div>${more?`<div class="bpc-harvest-txt" style="margin-top:6px">${more}</div>`:''}
+    <div class="bpc-harvest-txt">${firstSentence(pl.idea)}</div>${more?`<div class="bpc-harvest-txt" style="margin-top:6px">${more}</div>`:''}
     <a class="id-photos" href="https://www.google.com/search?q=${encodeURIComponent(plantName(k)+' recipes')}" target="_blank" rel="noopener" onclick="return openLink(event,this)">More ${pl.n.toLowerCase()} recipes ↗</a></div>`;
 }
 // "Not doing what it should?" — the not-producing problems that apply to this plant, most specific first

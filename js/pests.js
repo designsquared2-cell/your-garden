@@ -352,8 +352,8 @@ function pestCheckItems(m){
   if(!ps.length)return[];
   const show=ps.slice(0,WALK_SHOW),more=ps.length-show.length;
   return[{kind:'pest',id:'walk',type:'pest',cb:true,icon:'🔍',
-    title:`🔍 Weekly pest walk: ${show.map(p=>p.n.toLowerCase()).join(', ')}${more?` +${more} more`:''}`,
-    detail:`${show.map(p=>`<b>${p.e} ${p.n}${pestPeak(p,m)?' <span class="peak-tag">peak</span>':''}</b> — ${p.look.split('. ')[0].replace(/\.$/,'')}. <span class="task-where">${plantList(pestCells(p),2)}</span>`).join('<br>')}<br>Tick once you’ve had a look around.${more?' The rest are on the Pests tab → This month.':''}`,
+    title:'🔍 Pest walk',short:`${show.map(p=>p.n).join(', ')}${more?` +${more} more`:''}`,
+    detail:`${show.map(p=>`<b>${p.e} ${p.n}${pestPeak(p,m)?' <span class="peak-tag">peak</span>':''}</b> — ${p.look.split('. ')[0].replace(/\.$/,'')}. <span class="task-where pw">${plantList(pestCells(p),2)}</span>`).join('<br>')}${more?'<br>The rest are on the Pests tab.':''}`,
     btn:{label:'🐛 Found something',js:"openPestsFor(null)"}}];
 }
 function guardDone(id){const d=ST.guardDone[id];return!!d&&daysBetween(d,localDate())<GUARD_DONE_DAYS;}
@@ -365,20 +365,20 @@ function guardItems(m){
     const cells=guardCells(g);if(!cells.length)return null;
     const p=PEST_BY_ID[g.pests[0]],coming=pestMonthIn(g.before,m)&&!pestActive(p,m);
     return{kind:'guard',id,type:'guard',cb:true,icon:'🛡️',title:`🛡️ ${g.act}`,
-      detail:`${coming?`${p.n}: season starts in ${MONTHS[zoneMonthsOut(p.months)[0]]} — get ahead of it.`:`${p.n}: season has started.`} ${g.how} <span class="task-where">For your ${plantList(cells)} · ${bedList(cells)}</span>`};
+      detail:`${coming?`${p.n} season starts in ${MONTHS[zoneMonthsOut(p.months)[0]]}.`:`${p.n} season has started.`} ${g.how} <span class="task-where">${plantList(cells)} · ${bedList(cells)}</span>`};
   }).filter(Boolean);
   // Weather trigger: after a soaking, snails are out tonight
   const cells=pestCells(PEST_BY_ID.snails),rain=recentRain(3);
   if(cells.length&&rain>=10&&!pestDoneRecently('snails-rain'))
-    out.unshift({kind:'guard',id:'snails-rain',type:'guard',cb:true,icon:'🐌',title:'🐌 Snail patrol tonight',
-      detail:`About ${Math.round(rain)}mm of rain in the last few days — snails and slugs will be out after dark. Check your ${plantList(cells)} with a torch, or set beer traps. <span class="task-where">${bedList(cells)}</span>`});
+    out.unshift({kind:'guard',id:'snails-rain',type:'guard',cb:true,icon:'🐌',title:'🐌 Snail patrol tonight',short:`Check your ${plantList(cells)} after dark.`,
+      detail:`${Math.round(rain)}mm of rain lately brings them out. Use a torch, or set beer traps. <span class="task-where">${bedList(cells)}</span>`});
   return out;
 }
 function treatItems(){
   return ST.pestReports.map((r,i)=>{
     const p=PEST_BY_ID[r.pest],bed=bedById(r.bid);if(!p)return null;
     return{kind:'treat',id:String(i),type:'urgent',cb:true,
-      title:`${p.e} ${p.kind==='growing'?'Fix':'Treat'} ${p.n.toLowerCase()} on ${plantName(r.p)}${bed?` — ${esc(bed.name)}`:''}`,
+      title:`${p.e} ${p.kind==='growing'?'Fix':'Treat'} ${p.n.toLowerCase()} on ${plantName(r.p)}${bed?` · ${esc(bed.name)}`:''}`,
       detail:`${remedyText(p)} Tick once done — we'll remind you to check again in ${PEST_RECHECK_DAYS} days.`};
   }).filter(Boolean);
 }
@@ -572,7 +572,7 @@ function idMatches(){
   return PROBLEMS.map(p=>{
     if(_idPlant&&!idOnPlant(p,_idPlant))return null;
     const hit=p.signs.filter(s=>_idSel.has(s)).length;if(!hit)return null;
-    let score=hit*3+2*hit/p.signs.length+weatherBoost(p);
+    let score=hit*3+2*hit/p.signs.length+weatherBoost(p)+(_idSel.has(p.signs[0])?0.5:0); // its main sign counts a bit more
     if(_idPlant&&pestOnPlant(p,_idPlant))score+=1; // named for this plant, not just any seedling
     if(p.months&&pestActive(p,m))score+=1;if(pestPeak(p,m))score+=1;
     return{p,score};
@@ -582,10 +582,9 @@ function photosUrl(p){return'https://www.google.com/search?tbm=isch&q='+encodeUR
 function idResultHtml({p},i){
   const fits=false;
   return `<div class="id-res${i===0?' top':''}"><div class="pest-hdr"><span class="pest-e">${p.e}</span><div><div class="id-lead">${i===0?'Most likely':'Could also be'}</div><div class="pest-n">${p.n}</div></div></div>
-    <div class="id-what">${p.what}</div>
-    ${weatherBoost(p)>=3?'<div class="pest-txt id-wx">🌦️ Your recent weather makes this more likely.</div>':''}
-    <div class="pest-txt"><b>How to tell:</b> ${p.look}</div>
-    ${remedyHtml(p)}
+    ${weatherBoost(p)>=3?'<div class="pest-txt id-wx">🌦️ Recent weather makes this likely.</div>':''}
+    <div class="pest-txt"><b>Signs:</b> ${p.look}</div>
+    ${i===0?remedyHtml(p)+moreFold(p.what,'Why ›'):moreFold(remedyHtml(p)+`<div class="id-what">${p.what}</div>`,'Fix ›')}
     ${fits?`<div class="pest-txt id-warn">It doesn't usually affect ${plantName(_idPlant)}, so compare the photos.</div>`:''}
     <div class="id-btns"><a class="id-photos" href="${photosUrl(p)}" target="_blank" rel="noopener" onclick="return openLink(event,this)">📷 See photos ↗</a>${plantedCells().length?`<button class="task-btn" onclick="openPestReport('${p.id}',${_idPlant?`'${_idPlant}'`:'null'})">✓ That's it — add a job</button>`:''}</div></div>`;
 }
@@ -611,8 +610,8 @@ function identifyHtml(){
 }
 function thisMonthHtml(m){
   const guards=maint()==='std'?guardItems(m):[],watch=pestsToWatch(m);
-  return `${guards.length?`<div class="mv-st">🛡️ Prevent now</div><div class="pm-list">${guards.map(g=>`<div class="pm-row"><span class="pm-e">${g.icon}</span><div><b>${g.title.replace(/^\S+ /,'')}</b><div class="pm-d">${g.detail}</div></div></div>`).join('')}<button class="link-btn" onclick="setView('jobs')">Tick these off in Jobs ›</button></div>`:''}
-    ${watch.length?`<div class="mv-st"${guards.length?' style="margin-top:14px"':''}>👀 Watch out for in ${MONTHS[m]}</div><div class="pest-guide">${watch.map(p=>`<details class="pg" id="pw-${p.id}"><summary><span>${p.e} ${p.n}${pestPeak(p,m)?' <span class="peak-tag">peak</span>':''}</span><span class="hlog-d">${plantList(pestCells(p),2)}</span></summary><div class="pg-body"><div class="id-what">${p.what}</div><div class="pest-txt"><b>Look for:</b> ${p.look}</div><div class="pest-txt"><b>Prevent:</b> ${p.prevent}</div></div></details>`).join('')}</div>`
+  return `${guards.length?`<div class="mv-st">🛡️ Prevent now</div><div class="pm-list">${guards.map(g=>`<div class="pm-row"><span class="pm-e">${g.icon}</span><div><b>${g.title.replace(/^\S+ /,'')}</b>${(({short,more,where})=>`<div class="pm-d">${short}</div>${where}${moreFold(more,'How ›')}`)(splitDetail(g))}</div></div>`).join('')}<button class="link-btn" onclick="setView('jobs')">Tick these off in Jobs ›</button></div>`:''}
+    ${watch.length?`<div class="mv-st"${guards.length?' style="margin-top:14px"':''}>👀 Watch out for in ${MONTHS[m]}</div><div class="pest-guide">${watch.map(p=>`<details class="pg" id="pw-${p.id}"><summary><span>${p.e} ${p.n}${pestPeak(p,m)?' <span class="peak-tag">peak</span>':''}</span><span class="hlog-d">${plantList(pestCells(p),2)}</span></summary><div class="pg-body"><div class="id-what">${p.what}</div><div class="pest-txt"><b>Look for:</b> ${p.look}</div><div class="pest-txt"><b>Prevent:</b> ${p.prevent}</div>${moreFold(p.what,'Why ›')}</div></details>`).join('')}</div>`
       :'<div class="set-txt">Nothing to watch for on your current plants this month. 🎉</div>'}`;
 }
 function guideHtml(m){
@@ -625,7 +624,7 @@ function guideHtml(m){
       <div><b>Native daisies (Brachyscome), paper daisies, native bluebells</b> — small flowers that feed hoverflies, ladybirds and tiny wasps, which eat aphids and caterpillars.</div>
       <div><b>Lomandra, logs and rock piles</b> — shelter for blue-tongue lizards and frogs, which eat snails and slugs.</div>
       <div><b>Grevilleas and kangaroo paws</b> — planted away from the veg, they give honeyeaters a better option than your strawberries.</div></div>
-    <div class="pg-note">Pest timing is typical for Perth and shifts with each season's weather. For declared pests like Medfly, check DPIRD for current advice.</div>`;
+    <div class="pg-note">Timing shifts with each season’s weather. For declared pests like fruit fly, check your state agriculture department.</div>`;
 }
 function renderPests(){
   const m=curMonth(),g=maint()==='std'?guardItems(m).length:0;

@@ -12,9 +12,9 @@ function openWelcome(step=1){
   if(step===1){
     _onLoc=()=>openWelcome(2);
     showSheet(`<div class="sh-body wl">${welcomeDots(1)}<div class="wl-e">🌱</div><div class="wl-h">Welcome to Your Garden</div>
-      <div class="wl-s">A planting guide for your own patch — what to plant, when it’s ready, and what needs doing. Three quick steps.</div>
+      <div class="wl-s">What to plant, when it’s ready, what to do. Three quick steps.</div>
       <div class="fm-lbl">📍 Where’s your garden?</div>
-      <div class="set-txt">Sets your watering advice and climate, which decide all the planting times.</div>
+      <div class="set-txt">Sets your climate and planting times.</div>
       <div class="fm-emoji-row"><input class="fm-in" id="loc-q" placeholder="Your suburb or town" onkeydown="if(event.key==='Enter')searchLoc()"><button class="btn btn-seed btn-inline" onclick="searchLoc()">Search</button></div>
       <div id="loc-res"></div>
       <button class="btn btn-cancel btn-full" style="margin-top:7px" onclick="useMyLoc()">📍 Use my current location</button>
@@ -25,9 +25,9 @@ function openWelcome(step=1){
   if(step===2){
     const loc=wxLoc();
     showSheet(`<div class="sh-body wl">${welcomeDots(2)}
-      ${loc?`<div class="wl-ok">📍 ${esc(loc.name)}</div><div class="fm-lbl">Your climate — change it if this doesn’t sound right</div><select class="fm-in" id="wl-zone" onchange="ST.zone=this.value;saveState();refreshAll()">${Object.entries(ZONES).map(([k,z])=>`<option value="${k}"${zone()===k?' selected':''}>${z.n} — ${z.ex}</option>`).join('')}</select>`:''}
+      ${loc?`<div class="wl-ok">📍 ${esc(loc.name)}</div><div class="fm-lbl">Your climate</div><select class="fm-in" id="wl-zone" onchange="ST.zone=this.value;saveState();refreshAll()">${Object.entries(ZONES).map(([k,z])=>`<option value="${k}"${zone()===k?' selected':''}>${z.n} — ${z.ex}</option>`).join('')}</select>`:''}
       <div class="wl-h">How hands-on do you want to be?</div>
-      <div class="wl-s">You can change this any time in ⚙️ Settings.</div>
+      <div class="wl-s">Change it any time in ⚙️ Settings.</div>
       <div class="maint-opts">${Object.entries(MAINT).map(([k,o])=>`<button class="maint-opt${maint()===k?' on':''}" onclick="welcomeMaint('${k}')"><span class="maint-e">${o.e}</span><span><b>${o.n}</b><span>${o.d}</span></span></button>`).join('')}</div>
       <button class="link-btn" onclick="openWelcome(1)">← Back</button></div>`);
     return;
@@ -35,9 +35,9 @@ function openWelcome(step=1){
   markWelcomed();
   showSheet(`<div class="sh-body wl">${welcomeDots(3)}<div class="wl-e">🧺</div><div class="wl-h">You’re ready to grow</div>
     <div class="wl-tips">
-      ${isInstalled()?'':`<div class="trait"><span class="trait-e">📲</span><div><b>Add it to your home screen</b><div>${isIOS()?'In Safari, tap the Share button, then <b>Add to Home Screen</b>. On iPhone this also stops your garden being cleared if you don’t open it for a week.':'In Chrome, tap ⋮ then <b>Install app</b> or <b>Add to Home screen</b>.'}</div></div></div>`}
-      <div class="trait"><span class="trait-e">☁️</span><div><b>Back it up</b><div>Your garden saves on this device. Sign in (⚙️ → Sign in) to keep it safe and see it on other devices.</div></div></div>
-      <div class="trait"><span class="trait-e">💡</span><div><b>Stuck?</b><div>⚙️ → Help & tips explains everything, and ⚙️ → Send feedback goes straight to us.</div></div></div>
+      ${isInstalled()?'':`<div class="trait"><span class="trait-e">📲</span><div><b>Add it to your home screen</b><div>${isIOS()?'Safari → Share → <b>Add to Home Screen</b>. This also stops iPhone clearing your garden.':'Chrome → ⋮ → <b>Install app</b>.'}</div></div></div>`}
+      <div class="trait"><span class="trait-e">☁️</span><div><b>Back it up</b><div>⚙️ → Sign in keeps it safe and on all your devices.</div></div></div>
+      <div class="trait"><span class="trait-e">💡</span><div><b>Stuck?</b><div>⚙️ → Help, or ⚙️ → Send feedback.</div></div></div>
     </div>
     <button class="btn btn-seed btn-full" style="margin-top:14px" onclick="openAddChoice()">＋ Add your first bed or tree</button>
     <button class="link-btn" onclick="closeSheet()">I’ll look around first</button></div>`);

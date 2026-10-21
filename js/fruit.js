@@ -395,17 +395,17 @@ function openTreeSheet(bi){
   showSheet(`<div class="sh-plant-hdr"><div class="sh-pe">${cellEmoji(c)}</div><div><div class="sh-pn">${esc(bed.name)}${bed.n>1?` <span class="hlog-d">×${bed.n}</span>`:''}</div><span class="sh-stag tg-${st==='ready'?'ready':'growing'}">${se} ${sl}</span>${v?`<span class="sh-picks">${esc(v.n)}</span>`:''}</div></div>
   <div class="sh-body">
     <div class="sh-chips"><div class="sh-chip"><div class="sh-cl">Fruit</div><div class="sh-cv" style="color:#C49010">${treeSeason(c)}</div></div><div class="sh-chip"><div class="sh-cl">In ground</div><div class="sh-cv">${treeAgeText(c)}</div></div><div class="sh-chip"><div class="sh-cl">This year</div><div class="sh-cv">${got?fruitUnits(k,got):'—'}</div></div></div>
-    ${st==='young'?`<div class="sh-tip">🌱 Most ${f.n.toLowerCase()} trees fruit about ${plural(f.yrs,'year')} after planting — expect the first real crop around ${firstFruitYear(c)}. Until then it's building roots and branches.</div>`:''}
+    ${st==='young'?`<div class="sh-tip">🌱 First fruit around ${firstFruitYear(c)}.</div>`:''}
     ${treeBadHere(k)?`<div class="hu-row bad" style="margin-bottom:10px">⚠️ ${f.badWhy}</div>`:''}
     ${st!=='young'?`<div class="stat-lbl">🧺 Log a harvest${bowl?' (bowls)':''}</div>
       ${weighHtml()}<div class="tree-quick">${TREE_QUICK[bowl?'bowl':'fruit'].map(n=>`<button class="btn btn-harvest" onclick="logTreePick(${bi},${n})">+${n}</button>`).join('')}</div>
       <div class="tree-quick"><input class="fm-in" id="tp-n" type="number" inputmode="numeric" min="1" max="999" placeholder="Or type how many"><button class="btn btn-seed" onclick="logTreePick(${bi},+$('tp-n').value)">Add</button></div>
-      <div class="sh-hint">${bowl?'A bowl is about '+(f.g>=500?'half a kilo':f.g+'g')+'.':'Count the '+f.us+' you picked.'} Totals go into your harvest value.</div>
+      ${bowl?`<div class="sh-hint">1 bowl ≈ ${f.g>=500?'half a kilo':f.g+'g'}</div>`:''}
       ${st==='ready'?`<button class="btn btn-cancel btn-full" style="margin-bottom:10px" onclick="restTree(${bi})">✅ Finished picking for this season</button>`:''}`:''}
     ${readySignHtml(k)}
-    ${jobs.length?`<div class="stat-lbl">📅 This month</div><div class="trait-list">${jobs.map(j=>`<div class="trait"><span class="trait-e">${j.icon}</span><div><b>${j.title.replace(/^\S+ /,'')}</b><div>${j.how}</div></div></div>`).join('')}</div><button class="link-btn" style="margin:-4px 0 10px" onclick="closeSheet();setView('jobs')">Tick these off in Jobs ›</button>`:''}
-    ${lookOutHtml(k,[x])}
+    ${jobs.length?`<div class="stat-lbl">📅 This month</div><div class="trait-list">${jobs.map(j=>`<div class="trait"><span class="trait-e">${j.icon}</span><div><b>${j.title.replace(/^\S+ /,'')}</b>${moreFold(j.how,'How ›')}</div></div>`).join('')}</div><button class="link-btn" style="margin:-4px 0 10px" onclick="closeSheet();setView('jobs')">Tick these off in Jobs ›</button>`:''}
     ${recipesHtml(k)}
+    ${foldHtml('👀 What to look out for',lookOutHtml(k,[x]),false)}
     <div class="btn-row" style="margin-bottom:12px"><button class="btn btn-cancel" onclick="openPlantInfo('${k}')">📖 About ${f.n.toLowerCase()}</button><button class="btn btn-cancel" onclick="openPestsFor('${k}')">🐛 Something wrong?</button></div>
     <div class="btn-row"><button class="btn btn-cancel" onclick="openTreeForm('${k}',${bi})">✏️ Edit</button><button class="btn btn-cancel" onclick="closeSheet()">Close</button></div>
   </div>`);
@@ -431,20 +431,20 @@ function treeJobItems(m,mode=maint()){
     out.push({kind:'tree',id,type:'soon',cb:true,icon,bis,how,title:`${icon} ${title}`,detail:`${how} <span class="task-where">${bis.map(bi=>esc(ST.beds[bi].name)).join(', ')}</span>`});};
   ts.forEach(({bed,bi})=>{
     const c=treeCell(bed),f=FRUIT[c.p],y=treeYears(c),st=treeStage(c,m),nm=bed.name;
-    if(fruitMonthIn(f.prune,m)&&y>=0.5)job(`prune:${bed.id}`,'prune',[bi],'✂️',`Prune your ${esc(nm)}`,f.pruneHow);
+    if(fruitMonthIn(f.prune,m)&&y>=0.5)job(`prune:${bed.id}`,'prune',[bi],'✂️',`Prune ${esc(nm)}`,f.pruneHow);
     if(mode!=='std')return;
     const pk=treePick(c),start=pk.find(x=>!pk.includes((x+11)%12))??pk[0];
     if(f.net&&treeBearing(c)&&!treeRested(c)&&(fruitMonthIn([(start+11)%12],m)||fruitMonthIn([start],m)))
-      job(`net:${bed.id}`,'net',[bi],'🕸️',`Net your ${esc(nm)} before the fruit colours`,'Birds go for fruit as it colours. Throw netting over the tree and gather it at the trunk so they can\'t get underneath. Use wildlife-safe netting — you shouldn\'t be able to poke a finger through it.');
-    if(f.thin&&treeBearing(c)&&fruitMonthIn(f.thin,m))job(`thin:${bed.id}`,'thin',[bi],'👐',`Thin the fruit on your ${esc(nm)}`,f.thinHow);
-    if(f.yrs>=2&&y<1&&fruitMonthIn(f.flower||[],m))job(`flowers:${bed.id}`,'flowers',[bi],'🌸',`Pick the flowers off your young ${esc(nm)}`,'In its first year, let it put its energy into roots and branches. Pick off flowers and tiny fruit — you\'ll get far more fruit later.');
+      job(`net:${bed.id}`,'net',[bi],'🕸️',`Net ${esc(nm)}`,'Birds go for fruit as it colours. Throw netting over the tree and gather it at the trunk so they can\'t get underneath. Use wildlife-safe netting — you shouldn\'t be able to poke a finger through it.');
+    if(f.thin&&treeBearing(c)&&fruitMonthIn(f.thin,m))job(`thin:${bed.id}`,'thin',[bi],'👐',`Thin ${esc(nm)} fruit`,f.thinHow);
+    if(f.yrs>=2&&y<1&&fruitMonthIn(f.flower||[],m))job(`flowers:${bed.id}`,'flowers',[bi],'🌸',`Pick flowers off young ${esc(nm)}`,'In its first year, let it put its energy into roots and branches. Pick off flowers and tiny fruit — you\'ll get far more fruit later.');
     if(f.frost&&y<3&&fruitMonthIn([5,6,7],m)&&!['tropical','subtropical'].includes(zone()))
-      job(`frost:${bed.id}`,'frost',[bi],'❄️',`Protect your young ${esc(nm)} from frost`,'On clear, still nights, cover it with frost cloth or an old sheet over stakes (not touching the leaves). Water the soil the day before — damp soil holds more warmth.');
+      job(`frost:${bed.id}`,'frost',[bi],'❄️',`Frost-protect young ${esc(nm)}`,'On clear, still nights, cover it with frost cloth or an old sheet over stakes (not touching the leaves). Water the soil the day before — damp soil holds more warmth.');
   });
   if(mode!=='std')return out;
   const all=ts.map(x=>x.bi);
-  if(fruitMonthIn([11,0,1,2],m))job('water:trees','water',all,'💧','Deep-soak your fruit trees this week','A long, slow soak once a week beats a daily sprinkle — about 20–40 litres for a young tree, more for big ones. Fruit swells with water, so dry spells mean small or split fruit.');
-  if(fruitMonthIn([8,9],m))job('mulch:trees','mulch',all,'🍂','Mulch under your fruit trees','Spread 5–7cm of mulch out to the edge of the branches, keeping it a hand-width from the trunk — mulch against the trunk causes collar rot.');
+  if(fruitMonthIn([11,0,1,2],m))job('water:trees','water',all,'💧','Deep-soak fruit trees','A long, slow soak once a week beats a daily sprinkle — about 20–40 litres for a young tree, more for big ones. Fruit swells with water, so dry spells mean small or split fruit.');
+  if(fruitMonthIn([8,9],m))job('mulch:trees','mulch',all,'🍂','Mulch fruit trees','Spread 5–7cm of mulch out to the edge of the branches, keeping it a hand-width from the trunk — mulch against the trunk causes collar rot.');
   return out;
 }
 // Fruit in season: one gentle reminder per tree, snoozed for 2 weeks once you've picked or ticked it
@@ -452,7 +452,7 @@ function treeReadyItems(){
   return treeBeds().filter(({bed})=>treeStage(treeCell(bed))==='ready'&&!(ST.alertDone['tree:'+bed.id]&&daysBetween(ST.alertDone['tree:'+bed.id],localDate())<14)).map(({bed,bi})=>{
     const c=treeCell(bed),f=FRUIT[c.p];
     return{kind:'tree',id:'tree:'+bed.id,type:'soon',cb:true,icon:'🧺',
-      title:`🧺 ${esc(bed.name)} — ${f.unit==='bowl'?'ready to pick':`${f.us} are ripening`}`,
+      title:`🧺 ${esc(bed.name)}: ${f.unit==='bowl'?'ready':'ripening'}`,
       detail:`${f.ready} Tick if you've checked it — we'll remind you again in 2 weeks.`,btn:{label:'🧺 Log a harvest ›',js:`openTreeSheet(${bi})`}};
   });
 }

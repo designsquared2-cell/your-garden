@@ -18,7 +18,7 @@ function seedRowHtml(s){
 function seedBoxHtml(){
   const list=[...ST.seeds].filter(s=>P[s.p]).sort((a,b)=>seedInSeason(b)-seedInSeason(a)||seedName(a).localeCompare(seedName(b)));
   return`<div class="mv-section" id="seed-box"><div class="mv-st">🌰 My seed box</div>
-    ${list.length?`<div class="hv-list">${list.map(seedRowHtml).join('')}</div>`:'<div class="set-txt">Keep track of the seed packets you own — we\'ll tell you when to sow them and warn you before they expire.</div>'}
+    ${list.length?`<div class="hv-list">${list.map(seedRowHtml).join('')}</div>`:'<div class="set-txt">Track your seed packets and sow-by dates.</div>'}
     <button class="add-bed" style="margin-top:8px" onclick="openSeedForm()">＋ Add a seed packet</button></div>`;
 }
 function openSeedBox(){setView('plants');setTimeout(()=>$('seed-box')?.scrollIntoView({behavior:'smooth',block:'start'}),60);}

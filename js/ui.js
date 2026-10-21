@@ -3,6 +3,9 @@
 const $=id=>document.getElementById(id);
 
 function showSheet(html){if(html!=null)$('sh-content').innerHTML=html;$('overlay').classList.add('on');$('sheet').classList.add('on');$('sheet').scrollTop=0;}
+// First sentence of a longer text, for short summaries
+function firstSentence(s){s=s||'';const i=s.search(/[.!?](\s|$)/);return i<0?s:s.slice(0,i+1);}
+function moreFold(html,label='More ›'){return html?`<details class="task-more"><summary>${label}</summary><div class="task-detail">${html}</div></details>`:'';}
 function closeSheet(){$('overlay').classList.remove('on');$('sheet').classList.remove('on');}
 function sheetOpen(){return $('sheet').classList.contains('on');}
 

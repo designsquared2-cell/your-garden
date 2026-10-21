@@ -3,9 +3,9 @@
 // How hands-on the app asks you to be. Saved on this device only, so each person sharing a garden can choose.
 const MAINT_K='gdn_mode';
 const MAINT={
-  none:{e:'😌',n:'No maintenance',d:'Set and forget. Plan your beds and see when things are ready to pick — no jobs, just a watering alert in a heatwave.'},
-  low:{e:'🙂',n:'Low maintenance',d:'The essentials: harvesting, clearing, planting, watering, a spring and autumn feed and the yearly prune. No pest protection.'},
-  std:{e:'🌿',n:'Standard',d:'The full guide: pest checks and prevention, feeding, netting and seasonal jobs.'},
+  none:{e:'😌',n:'No maintenance',d:'Just what’s ready to pick, plus heatwave alerts.'},
+  low:{e:'🙂',n:'Low maintenance',d:'The essentials: pick, plant, water, feed, prune. No pest jobs.'},
+  std:{e:'🌿',n:'Standard',d:'Everything, including pest checks and netting.'},
 };
 function maint(){try{const v=localStorage.getItem(MAINT_K);return MAINT[v]?v:'std';}catch(e){return'std';}}
 function setMaint(k){try{localStorage.setItem(MAINT_K,k);}catch(e){}refreshAll();openSettings();toast(`${MAINT[k].e} ${MAINT[k].n}`);}

@@ -5,13 +5,13 @@
 // Products are named generically, with natural options first; the shop option is hidden with "natural remedies only".
 'use strict';
 const FEEDS={
-  leafy:{act:'Liquid-feed the leafy greens',why:'Leafy crops grow on nitrogen — a liquid feed every 2 weeks keeps fresh leaves coming.',
+  leafy:{act:'Liquid-feed leafy greens',why:'Leafy crops grow on nitrogen — a liquid feed every 2 weeks keeps fresh leaves coming.',
     nat:'worm tea, fish emulsion, or liquid seaweed mixed with fish',org:'a soluble all-purpose plant food',every:14,start:21},
-  fruiting:{act:'Feed the fruiting crops for flowers & fruit',why:'Once they\'re flowering, a potash-rich feed means more fruit and less leaf.',
+  fruiting:{act:'Feed fruiting crops',why:'Once they\'re flowering, a potash-rich feed means more fruit and less leaf.',
     nat:'liquid seaweed with a teaspoon of sulphate of potash per watering can, or comfrey tea',org:'a liquid tomato & vegetable food',every:14,start:35},
-  root:{act:'Give the root crops a light feed',why:'Roots swell on potash, not nitrogen — one light feed is plenty. Too much nitrogen makes leaves instead of roots.',
+  root:{act:'Light feed for root crops',why:'Roots swell on potash, not nitrogen — one light feed is plenty. Too much nitrogen makes leaves instead of roots.',
     nat:'liquid seaweed',org:'a light sprinkle of sulphate of potash, watered in',once:true,start:35,end:100},
-  herb:{act:'Give the perennial herbs a light feed',why:'Woody herbs need very little — one feed in spring keeps them leafy.',
+  herb:{act:'Light feed for herbs',why:'Woody herbs need very little — one feed in spring keeps them leafy.',
     nat:'a handful of compost or worm castings around each plant',org:'a sprinkle of pelletised chicken manure',months:[8]},
 };
 // Trees: citrus and blueberries have their own foods; the rest share a general fruit-tree feed
@@ -50,9 +50,9 @@ function feedItems(m){
     g.forEach((xs,type)=>{
       const key=`${bed.id}:${type}`;if(!feedDue(type,xs,key,m))return;
       if(type==='tree'){const tf=treeFeed(xs[0].cell.p);
-        out.push({kind:'feed',id:key,type:'soon',cb:true,icon:'🍽️',title:`🍽️ Feed your ${esc(bed.name)}`,detail:`${tf.why} ${feedProducts(tf.nat,tf.org)}`});return;}
+        out.push({kind:'feed',id:key,type:'soon',cb:true,icon:'🍽️',title:`🍽️ Feed ${esc(bed.name)}`,detail:`${tf.why} ${feedProducts(tf.nat,tf.org)}`});return;}
       const F=FEEDS[type];
-      out.push({kind:'feed',id:key,type:'soon',cb:true,icon:'🍽️',title:`🍽️ ${F.act} in ${esc(bed.name)}`,detail:`Your ${plantList(xs)}. ${F.why} ${feedProducts(F.nat,F.org)}`});
+      out.push({kind:'feed',id:key,type:'soon',cb:true,icon:'🍽️',title:`🍽️ ${F.act} · ${esc(bed.name)}`,detail:`Your ${plantList(xs)}. ${F.why} ${feedProducts(F.nat,F.org)}`});
     });
   });
   return out;
