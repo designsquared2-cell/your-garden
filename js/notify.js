@@ -145,21 +145,30 @@ async function pushSubscription(create){
   if(!sub&&create&&VAPID_PUB)sub=await reg.pushManager.subscribe({userVisibleOnly:true,applicationServerKey:b64uBytes(VAPID_PUB)});
   return sub;
 }
+// Safari used to take a callback instead of returning a promise
+function askPermission(){return new Promise(res=>{try{const r=Notification.requestPermission(res);if(r&&r.then)r.then(res);}catch(e){res(Notification.permission);}});}
+let _nudgeErr='';
 async function enableNudges(){
+  _nudgeErr='';
   if(needsInstallForPush()){openNudgeInstall();return;}
-  if(!pushSupported()){toast('This browser can’t show notifications — you’ll still see your weekly note in Jobs');setNudgePref({on:true});renderView();return;}
-  const perm=await Notification.requestPermission();
-  if(perm!=='granted'){toast('No worries — turn it on any time in ⚙️ Settings');return;}
+  if(!pushSupported()){_nudgeErr='This browser can’t show notifications. You’ll still see your weekly idea at the top of Jobs.';setNudgePref({on:true});refreshNudgeSettings();return;}
+  const perm=await askPermission();
+  if(perm!=='granted'){_nudgeErr=perm==='denied'?'Notifications are blocked for this app. Allow them in your phone’s settings (Notifications → Your Garden), then tap Turn on again.':'You didn’t allow notifications — tap Turn on to try again.';refreshNudgeSettings();return;}
   setNudgePref({on:true});queueNudges();
-  try{const sub=await pushSubscription(true),p=nudgePref();if(sub)await nudgeRpc('push_subscribe',{p_endpoint:sub.endpoint,p_tz:nudgeTz(),p_dow:p.dow,p_hour:p.hour});}
-  catch(e){console.warn('push subscribe',e);}
-  toast(`🔔 Lovely — your garden note comes ${NUDGE_DAYS[nudgePref().dow]} mornings`);
-  if(sheetOpen()&&$('nudge-set'))openSettings();
+  try{
+    const sub=await pushSubscription(true),p=nudgePref();
+    if(!sub)throw new Error('no subscription');
+    const ok=await nudgeRpc('push_subscribe',{p_endpoint:sub.endpoint,p_tz:nudgeTz(),p_dow:p.dow,p_hour:p.hour});
+    if(!ok)throw new Error('server said no');
+    setNudgePref({linked:true});toast(`🔔 Lovely — your garden note comes ${NUDGE_DAYS[p.dow]} mornings`);
+  }catch(e){setNudgePref({linked:false});_nudgeErr=`Couldn’t connect to the notification service (${esc(e.message||String(e))}). Check you’re online and tap Try again.`;}
+  refreshNudgeSettings();
 }
+function refreshNudgeSettings(){if(sheetOpen()&&$('nudge-set'))openSettings();else if(_nudgeErr)toast(_nudgeErr);}
 async function disableNudges(){
   setNudgePref({on:false});
   try{const sub=await pushSubscription(false);if(sub){await nudgeRpc('push_unsubscribe',{p_endpoint:sub.endpoint});await sub.unsubscribe();}}catch(e){}
-  toast('🔕 Weekly notes off');if(sheetOpen()&&$('nudge-set'))openSettings();
+  setNudgePref({linked:false});_nudgeErr='';toast('🔕 Weekly notes off');refreshNudgeSettings();
 }
 async function setNudgeDay(dow){
   setNudgePref({dow:+dow});const p=nudgePref();
@@ -174,11 +183,15 @@ async function sampleNudge(){
 }
 const NUDGE_DAYS=['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
 function nudgeSettingsHtml(){
-  const p=nudgePref(),on=p.on&&(!pushSupported()||Notification.permission==='granted');
+  const p=nudgePref(),perm=pushSupported()?Notification.permission:'n/a',on=p.on&&(perm==='granted'||perm==='n/a');
+  const status=!on?'':!pushSupported()?'⚪ In-app only on this browser':p.linked?'🟢 On — connected':'🟠 On here, but not connected yet';
   return `<div class="fm-lbl" style="margin-top:18px">🔔 Weekly garden note</div><div id="nudge-set">
+    ${on?`<div class="nudge-status">${status}</div>`:''}
     <div class="set-txt">${on?`One friendly note each <b>${NUDGE_DAYS[p.dow]}</b> morning: what’s ready, what’s worth planting.`:'One friendly note a week: what’s ready and what’s worth planting. No nagging.'}</div>
+    ${_nudgeErr?`<div class="hu-row bad" style="margin-bottom:8px">${_nudgeErr}</div>`:''}
     ${on?`<select class="fm-in" style="margin-bottom:7px" onchange="setNudgeDay(this.value)">${NUDGE_DAYS.map((d,i)=>`<option value="${i}"${p.dow===i?' selected':''}>${d} morning</option>`).join('')}</select>
-      <div class="btn-row"><button class="btn btn-cancel" onclick="sampleNudge()">👀 Show me one now</button><button class="btn btn-cancel" onclick="disableNudges()">Turn off</button></div>`
+      ${pushSupported()&&!p.linked?`<button class="btn btn-seed btn-full" style="margin-bottom:7px" onclick="enableNudges()">🔄 Try again</button>`:''}
+      <div class="btn-row"><button class="btn btn-cancel" onclick="sampleNudge()">👀 Show me one now</button><button class="btn btn-cancel" onclick="disableNudges()">🔕 Turn off</button></div>`
     :`<button class="btn btn-seed btn-full" onclick="enableNudges()">🔔 Turn on</button>`}</div>`;
 }
 

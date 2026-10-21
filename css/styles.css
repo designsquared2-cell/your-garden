@@ -533,3 +533,4 @@ button.sow-chip:hover{border-color:#5A9A3A}
 .nudge-t{font-size:15px;font-weight:800;color:#E8F0D8;margin-bottom:3px}
 .nudge-b{font-size:12.5px;color:#A8C088;line-height:1.45;margin-bottom:8px}
 .nudge-x{position:absolute;top:8px;right:8px;width:28px;height:28px;border:none;border-radius:50%;background:transparent;color:#7A9060;font-size:14px;cursor:pointer}
+.nudge-status{font-size:13px;font-weight:800;color:#C8D8B0;margin:2px 0 4px}
