@@ -116,7 +116,7 @@ function varietyOf(k,vid){return vid?varietiesOf(k).find(v=>v.id===vid)||null:nu
 function cellVariety(cell){return varietyOf(cell.p,cell.v);}
 // Full display name: "Tomato · Cherry — Tommy Toe"; tile label: "Cherry" (or the crop name if no variety)
 function cellName(cell){const v=cellVariety(cell);return v?`${P[cell.p].n} · ${esc(v.n)}`:P[cell.p].n;}
-function cellShort(cell){const v=cellVariety(cell);return v?esc(v.s||v.n):P[cell.p].n;}
+function cellShort(cell){return P[cell.p].n;}
 function cellEmoji(cell){return cellVariety(cell)?.e||P[cell.p].e;}
 // Variety overrides on top of the crop's timing and traits
 function cellTiming(cell){const t=timing(cell.p),v=cellVariety(cell);if(!v)return t;return{...t,...(v.days?{days:v.days}:{}),...(v.sow?{sow:varietySow(cell.p,v)}:{}),...('pick' in v?{pick:v.pick}:{})};}

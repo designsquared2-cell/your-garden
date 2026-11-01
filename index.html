@@ -3,8 +3,9 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="theme-color" content="#1A2D10">
-<meta name="description" content="Bed planner, tasks and watering for a Perth Hills garden">
+<meta name="theme-color" content="#FFFFFF">
+<script>try{document.documentElement.dataset.theme=localStorage.getItem('gdn_theme')||'light';}catch(e){document.documentElement.dataset.theme='light';}</script>
+<meta name="description" content="Plan your garden beds and learn what to do each week">
 <title>🌱 Your Garden</title>
 <meta name="apple-mobile-web-app-title" content="Your Garden">
 <link rel="manifest" href="manifest.webmanifest">
@@ -13,9 +14,24 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="css/styles.css?v=60">
+<link rel="stylesheet" href="css/styles.css?v=61">
 </head>
 <body>
+<div id="splash" class="splash" onclick="endSplash()" aria-hidden="true">
+  <svg class="sp-svg" viewBox="0 0 200 200" width="170" height="170">
+    <defs><clipPath id="sp-above"><rect x="0" y="0" width="200" height="150"/></clipPath></defs>
+    <ellipse class="sp-soil" cx="100" cy="150" rx="62" ry="20"/>
+    <g clip-path="url(#sp-above)"><g class="sp-sprout">
+      <path class="sp-stem" d="M100 152 C100 132 99 118 101 96" pathLength="1"/>
+      <g class="sp-leaf sp-leaf-l"><ellipse cx="78" cy="92" rx="25" ry="15" transform="rotate(-28 78 92)"/></g>
+      <g class="sp-leaf sp-leaf-r"><ellipse cx="124" cy="86" rx="28" ry="17" transform="rotate(24 124 86)"/></g>
+    </g></g>
+    <path class="sp-soil" d="M38 150 A62 20 0 0 0 162 150 Z"/>
+  </svg>
+  <div class="sp-title">Your Garden</div>
+  <div class="sp-sub">your secret garden helper</div>
+</div>
+
 <header class="hdr">
   <div><div class="hdr-title">🌱 Your Garden</div><div class="hdr-sub" id="hdr-sub">Loading…</div></div>
   <div class="hdr-right">
@@ -29,14 +45,14 @@
     <div class="bed-controls"><button class="sel-fab" id="sel-fab" onclick="toggleSelectMode()">✓ Select</button></div>
     <div id="beds-wrap"></div>
     <div class="legend">
-      <div class="leg"><div class="leg-sq" style="background:#102A0C"></div>Seed</div>
-      <div class="leg"><div class="leg-sq" style="background:#163A10"></div>Seedling</div>
-      <div class="leg"><div class="leg-sq" style="background:#1A4A0E"></div>Growing</div>
-      <div class="leg"><div class="leg-sq" style="background:#402800"></div>Ready ✨</div>
-      <div class="leg"><div class="leg-sq" style="background:#3A1200"></div>Bolting ⚠️</div>
-      <div class="leg"><div class="leg-sq" style="background:#1A1A18"></div>Finished</div>
+      <div class="leg"><div class="leg-sq s-seed"></div>Seed</div>
+      <div class="leg"><div class="leg-sq s-seedling"></div>Seedling</div>
+      <div class="leg"><div class="leg-sq s-growing"></div>Growing</div>
+      <div class="leg"><div class="leg-sq s-ready"></div>Ready ✨</div>
+      <div class="leg"><div class="leg-sq s-bolting"></div>Bolting ⚠️</div>
+      <div class="leg"><div class="leg-sq s-done"></div>Finished</div>
     </div>
-    <div class="beds-hint">Drag a plant to move it (on phones, press and hold first) · Tap Select to edit several at once</div>
+    <div class="beds-hint" id="beds-hint">Drag a plant to move it (on phones, press and hold first) · Tap Select to edit several at once</div>
   </section>
   <section class="view" id="view-jobs"><div id="jobs-content"></div></section>
   <section class="view" id="view-harvest"><div id="harvest-content"></div></section>
@@ -63,31 +79,31 @@
 <div id="confetti"></div>
 
 <!-- Plain scripts (no build step); order matters: data → state → UI → features → startup -->
-<script src="js/data.js?v=60"></script>
-<script src="js/state.js?v=60"></script>
-<script src="js/varieties.js?v=60"></script>
-<script src="js/zones.js?v=60"></script>
-<script src="js/ui.js?v=60"></script>
-<script src="js/weather.js?v=60"></script>
-<script src="js/pests.js?v=60"></script>
-<script src="js/tasks.js?v=60"></script>
-<script src="js/harvest.js?v=60"></script>
-<script src="js/plants-view.js?v=60"></script>
-<script src="js/behaviour.js?v=60"></script>
-<script src="js/rotation.js?v=60"></script>
-<script src="js/fruit.js?v=60"></script>
-<script src="js/feeding.js?v=60"></script>
-<script src="js/crops2.js?v=60"></script>
-<script src="js/seasons.js?v=60"></script>
-<script src="js/seeds.js?v=60"></script>
-<script src="js/reminders.js?v=60"></script>
-<script src="js/beds.js?v=60"></script>
-<script src="js/settings.js?v=60"></script>
-<script src="js/help.js?v=60"></script>
-<script src="js/nudge-pick.js?v=60"></script>
-<script src="js/notify.js?v=60"></script>
-<script src="js/config.js?v=60"></script>
-<script src="js/sync.js?v=60"></script>
-<script src="js/main.js?v=60"></script>
+<script src="js/data.js?v=61"></script>
+<script src="js/state.js?v=61"></script>
+<script src="js/varieties.js?v=61"></script>
+<script src="js/zones.js?v=61"></script>
+<script src="js/ui.js?v=61"></script>
+<script src="js/weather.js?v=61"></script>
+<script src="js/pests.js?v=61"></script>
+<script src="js/tasks.js?v=61"></script>
+<script src="js/harvest.js?v=61"></script>
+<script src="js/plants-view.js?v=61"></script>
+<script src="js/behaviour.js?v=61"></script>
+<script src="js/rotation.js?v=61"></script>
+<script src="js/fruit.js?v=61"></script>
+<script src="js/feeding.js?v=61"></script>
+<script src="js/crops2.js?v=61"></script>
+<script src="js/seasons.js?v=61"></script>
+<script src="js/seeds.js?v=61"></script>
+<script src="js/reminders.js?v=61"></script>
+<script src="js/beds.js?v=61"></script>
+<script src="js/settings.js?v=61"></script>
+<script src="js/help.js?v=61"></script>
+<script src="js/nudge-pick.js?v=61"></script>
+<script src="js/notify.js?v=61"></script>
+<script src="js/config.js?v=61"></script>
+<script src="js/sync.js?v=61"></script>
+<script src="js/main.js?v=61"></script>
 </body>
 </html>

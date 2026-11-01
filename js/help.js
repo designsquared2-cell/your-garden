@@ -25,7 +25,7 @@ function openWelcome(step=1){
   if(step===2){
     const loc=wxLoc();
     showSheet(`<div class="sh-body wl">${welcomeDots(2)}
-      ${loc?`<div class="wl-ok">📍 ${esc(loc.name)}</div><div class="fm-lbl">Your climate</div><select class="fm-in" id="wl-zone" onchange="ST.zone=this.value;saveState();refreshAll()">${Object.entries(ZONES).map(([k,z])=>`<option value="${k}"${zone()===k?' selected':''}>${z.n} — ${z.ex}</option>`).join('')}</select>`:''}
+      ${loc?`<div class="wl-ok">📍 ${esc(loc.name)}</div><div class="fm-lbl">Your climate</div><select class="fm-in" id="wl-zone" onchange="ST.zone=this.value;saveState();refreshAll()">${Object.entries(ZONES).map(([k,z])=>`<option value="${k}"${zone()===k?' selected':''}>${z.n}</option>`).join('')}</select>`:''}
       <div class="wl-h">How hands-on do you want to be?</div>
       <div class="wl-s">Change it any time in ⚙️ Settings.</div>
       <div class="maint-opts">${Object.entries(MAINT).map(([k,o])=>`<button class="maint-opt${maint()===k?' on':''}" onclick="welcomeMaint('${k}')"><span class="maint-e">${o.e}</span><span><b>${o.n}</b><span>${o.d}</span></span></button>`).join('')}</div>

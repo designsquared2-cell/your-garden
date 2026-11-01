@@ -6,10 +6,12 @@ const cellData=c=>Object.fromEntries(CELL_KEYS.map(k=>[k,c[k]??null]));
 // ── Grid ──
 function renderBeds(){
   const w=$('beds-wrap');w.classList.toggle('sel-mode',selectMode);
+  const any=plantedCells().length;$('view-beds').classList.toggle('no-plants',!any);
+  if($('beds-hint'))$('beds-hint').textContent=any?'Press and hold a plant to move it · Tap Select to change several':'👆 Tap a square to plant something';
   $('view-beds').classList.toggle('no-beds',!ST.beds.length);
   if(!ST.beds.length){
-    w.innerHTML=`<div class="setup"><div class="setup-e">🌱</div><div class="setup-t">Start your garden plan</div>
-      <div class="setup-s">Add each bed, patch or pot group, then tap a spot to plant it.</div>
+    w.innerHTML=`<div class="setup"><div class="setup-e">🌱</div><div class="setup-t">Let’s start your garden</div>
+      <div class="setup-s">Add a bed or some pots, then tap a square to plant.</div>
       <button class="btn btn-seed" onclick="openAddChoice()">＋ Add your first bed or tree</button>
       ${ST.wx?'':'<button class="btn btn-cancel" onclick="openSettings()">📍 Set your location for watering advice</button>'}
       <button class="link-btn" onclick="openSettings()">Have a backup? Import it in Settings</button></div>`;
@@ -26,14 +28,36 @@ function renderSummary(){
   if(!ST.beds.length){el.innerHTML='';return;}
   const cells=plantedCells().filter(x=>!isTreeBed(x.bed)),empty=allCells().length-plantedCells().length,trees=treeBeds().reduce((n,x)=>n+(x.bed.n||1),0);
   const counts=SUM_ST.map(([s,e,l])=>[s,e,l,cells.filter(x=>x.cell.s===s).length]).filter(x=>x[3]);
-  const urgent=urgentItems().length,jobs=jobCount(),pests=pestsToWatch().length,mode=maint();
+  const urgent=alertItems().length,jobs=jobCount(),pests=pestsToWatch().length,mode=maint(),growing=plantedCells().some(x=>['growing','ready','bolting'].includes(x.cell.s)||isTreeBed(x.bed));
   el.innerHTML=`<div class="sum">
     ${wxLoc()?weatherLineHtml():`<button class="sum-wx sum-link" onclick="openSettings()">📍 Set your location for watering advice ›</button>`}
-    <div class="sum-counts">${counts.map(([s,e,l,n])=>`<span class="sum-c sc-${s}"><b>${n}</b> ${e} ${l}</span>`).join('')}${empty?`<span class="sum-c sc-empty"><b>${empty}</b> ▫️ Empty</span>`:''}${trees?`<span class="sum-c sc-tree"><b>${trees}</b> 🌳 ${trees===1?'Tree':'Trees'}</span>`:''}</div>
+    <div class="sum-counts">${counts.map(([s,e,l,n])=>`<span class="sum-c sc-${s}"><b>${n}</b> ${e} ${l}</span>`).join('')}${empty?`<span class="sum-c sc-empty"><b>${empty}</b> ${empty===1?'spot':'spots'} free 🌱</span>`:''}${trees?`<span class="sum-c sc-tree"><b>${trees}</b> 🌳 ${trees===1?'Tree':'Trees'}</span>`:''}</div>
     <div class="sum-links">
-      <button class="sum-go${urgent?' hot':''}" onclick="setView('jobs')">🐝 ${mode==='none'?(jobs?`${jobs} to pick or water`:'Nothing to pick yet'):jobs?`${plural(jobs,'job')}${urgent?` · ${urgent} urgent`:''}`:'No jobs'} ›</button>
-      <button class="sum-go" onclick="setView('pests')">🐛 ${pests&&mode==='std'?`${plural(pests,'pest')} to watch`:'Pest guide'} ›</button>
+      <button class="sum-go${urgent?' hot':''}" onclick="setView('jobs')">🐝 ${mode==='none'?(jobs?`${jobs} to pick or water`:'Nothing to pick yet'):jobs?`${plural(jobs,'job')}${urgent?` · ⚠️ ${urgent}`:''}`:'No jobs yet'} ›</button>
+      ${growing?`<button class="sum-go" onclick="setView('pests')">🐛 ${pests&&mode==='std'?`${plural(pests,'pest')} to watch`:'Pest guide'} ›</button>`:`<button class="sum-go" onclick="setView('plants')">🌱 What to plant ›</button>`}
     </div></div>`;
+}
+
+// ── Add a bed: pick a picture; the exact size is optional ──
+const BED_QUICK=[
+  {k:'pots',e:'🪴',n:'Pots on a balcony',d:'4 pots',r:1,c:4,pots:true},
+  {k:'small',e:'📦',n:'Small raised bed',d:'About 1.2m × 60cm',r:2,c:4},
+  {k:'big',e:'🪵',n:'Big raised bed',d:'About 1.8m × 90cm',r:3,c:6},
+  {k:'patch',e:'🌾',n:'Patch in the ground',d:'About 2m × 1.2m',r:4,c:6},
+];
+function bedPicHtml(o){return`<span class="bq-pic" style="grid-template-columns:repeat(${o.c},1fr)">${'<i></i>'.repeat(o.r*o.c)}</span>`;}
+function openBedQuick(){
+  showSheet(`<div class="sh-body"><div class="sh-sticky"><div class="sh-toprow"><div><div class="sh-heading">🥕 What are you growing in?</div><div class="sh-sub">Pick the closest — you can change it later</div></div><button class="sh-cancel" onclick="openAddChoice()">← Back</button></div></div>
+    <div class="bq-grid">${BED_QUICK.map(o=>`<button class="bq-opt" onclick="quickBed('${o.k}')"><span class="bq-e">${o.e}</span>${bedPicHtml(o)}<b>${o.n}</b><span>${o.d}</span></button>`).join('')}</div>
+    <label class="bq-drip"><input type="checkbox" id="bq-auto"> 💧 It’s on drip or a watering timer</label>
+    <button class="link-btn" style="display:block;margin:10px auto 0" onclick="openBedEditor()">Set my own size ›</button></div>`);
+}
+function quickBed(k){
+  const o=BED_QUICK.find(x=>x.k===k),auto=!!$('bq-auto')?.checked;
+  const taken=new Set(ST.beds.map(b=>b.name));let name=o.pots?'Pots':`Bed ${vegBedCount()+1}`;for(let i=2;taken.has(name);i++)name=o.pots?`Pots ${i}`:`Bed ${vegBedCount()+i}`;
+  ST.beds.push({id:newId(),name,low:false,spot:30,pots:!!o.pots,auto,rows:Array.from({length:o.r},()=>Array.from({length:o.c},emptyCell))});
+  saveState();closeSheet();refreshAll();toast(`＋ ${name} added — tap a square to plant 🌱`);
+  [...document.querySelectorAll('#beds-wrap .bed-wrap')].at(-1)?.scrollIntoView({behavior:'smooth',block:'center'});
 }
 
 // ── Add / edit beds ──
@@ -185,7 +209,7 @@ function openCellSheet(bi,ri,ci){
   const a=`${bi},${ri},${ci}`;
   showSheet(`<div class="sh-plant-hdr"><div class="sh-pe">${cellEmoji(cell)}</div><div><div class="sh-pn">${cellName(cell)}</div><span class="sh-stag tg-${cell.s}">${STATUS_LBL[cell.s]}</span>${cell.picks?`<span class="sh-picks">🧺 ${plural(cell.picks,'pick')}</span>`:''}</div></div>
   <div class="sh-body">
-    <div class="sh-chips"><div class="sh-chip"><div class="sh-cl">Season</div><div class="sh-cv" style="color:#C49010">${pl.h}</div></div><div class="sh-chip"><div class="sh-cl">In ground</div><div class="sh-cv">${days!==null?days+'d':'—'}</div></div><div class="sh-chip"><div class="sh-cl">Ready</div><div class="sh-cv">${readyTxt}</div></div></div>
+    <div class="sh-chips"><div class="sh-chip"><div class="sh-cl">Season</div><div class="sh-cv" style="color:var(--fg-C49010)">${pl.h}</div></div><div class="sh-chip"><div class="sh-cl">In ground</div><div class="sh-cv">${days!==null?days+'d':'—'}</div></div><div class="sh-chip"><div class="sh-cl">Ready</div><div class="sh-cv">${readyTxt}</div></div></div>
     ${varietiesOf(cell.p).length?`<div class="planted-row"><span class="sh-cl">🏷️ Variety</span><button class="var-btn" onclick="openVarietyStep(${a},'${cell.p}',true)">${cellVariety(cell)?esc(cellVariety(cell).n):'Not set — choose'} ›</button></div>`:''}
     <div class="planted-row"><span class="sh-cl">📅 Planted</span><input class="fm-in date-in" type="date" id="cell-d" max="${td}" value="${cell.d||td}" onchange="setPlanted(${a})"></div>
     <div class="sh-tip">💡 ${pl.tip}</div>
@@ -271,7 +295,7 @@ function choosePlant(bi,ri,ci,key,vid){
   vid=vid||null;_pend={bi,ri,ci,key,vid};const pl=P[key],v=varietyOf(key,vid);
   showSheet(`<div class="sh-body"><div class="ptc-emoji">${v?.e||pl.e}</div><div class="ptc-name">${pl.n}</div>
     ${varietiesOf(key).length?`<div class="ptc-var">${v?esc(v.n):'Any variety'} · <button class="link-btn" onclick="openVarietyStep(${bi},${ri},${ci},'${key}')">change</button></div>`:''}
-    <div class="ptc-hw">Harvest: ${pl.h}${(v?varietyInSeason(key,v):inSeason(key))?'':' · <span style="color:#FF9060">out of season now</span>'}</div>
+    <div class="ptc-hw">Harvest: ${pl.h}${(v?varietyInSeason(key,v):inSeason(key))?'':' · <span style="color:var(--fg-FF9060)">out of season now</span>'}</div>
     ${plantingHeadsUpHtml(key,bi,vid,ri,ci)}
     ${spacingHtml(key,vid,bi)}
     <div class="ptc-q">When was it planted?</div>
@@ -282,12 +306,20 @@ function choosePlant(bi,ri,ci,key,vid){
     <button class="btn btn-cancel btn-full" style="margin-top:8px" onclick="openPicker(${bi},${ri},${ci})">← Back</button></div>`);
 }
 function confirmPlant(st){
-  if(!_pend)return;const{bi,ri,ci,key,vid}=_pend;_pend=null;
+  if(!_pend)return;const{bi,ri,ci,key,vid}=_pend;_pend=null;const first=!plantedCells().length&&!ST.log.length;
   const d=readDate('plant-d'),s=statusForAge(st,d);
   setCell(bi,ri,ci,{p:key,v:vid,s,st,d,picks:0});closeSheet();refreshAll();
   const c=getCell(bi,ri,ci),exp=expectedDate(c);
-  toast(`🌱 ${d===localDate()?'Planted':`Added (planted ${fmtDate(d)})`} ${unesc(cellName(c))}${exp?` — ready ${exp<=localDate()?'about now':'~'+fmtDate(exp)}`:''}`);
+  if(first){openFirstPlant(c,exp);return;}
+  toast(`🌱 ${d===localDate()?'Planted':`Added (planted ${fmtDate(d)})`} ${unesc(P[c.p].n)}${exp?` — ready ${exp<=localDate()?'about now':'~'+fmtDate(exp)}`:''}`);
   maybeAskNudges(key);
+}
+function openFirstPlant(c,exp){
+  const pl=P[c.p],wk=exp?Math.max(1,Math.round(daysBetween(localDate(),exp)/7)):0;
+  showSheet(`<div class="sh-body wl"><div class="fp-e">${cellEmoji(c)}</div><div class="wl-h">Your first plant! 🎉</div>
+    <div class="wl-s">${exp?(exp<=localDate()?`${esc(pl.n)} — ready to enjoy about now.`:`${esc(pl.n)} in about ${plural(wk,'week')} — around ${fmtDate(exp)}.`):`${esc(pl.n)} is in. Here we grow!`}</div>
+    <button class="btn btn-seed btn-full" style="margin-top:12px" onclick="closeSheet();maybeAskNudges('${c.p}')">Yay! 🌱</button></div>`);
+  setTimeout(()=>{confettiAt(innerWidth/2,innerHeight*.55,40,220);},250);
 }
 function setPlanted(bi,ri,ci){
   const c=getCell(bi,ri,ci),d=readDate('cell-d');if(d===c.d)return;

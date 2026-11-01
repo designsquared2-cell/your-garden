@@ -39,7 +39,7 @@ function wxVerdict(){
   // pots and young plants dry out first, so they get the tighter thresholds (beds on drip don't count)
   const shallow=plantedCells().some(x=>!x.bed.auto&&(x.cell.s==='seed'||x.cell.s==='seedling'||x.bed.pots));
   const lw=ST.lastWatered;
-  if(lw===td)return{lv:'g',msg:'Watered today ✓ — nothing more to do.'};
+  if(lw===td)return{lv:'g',short:'Watered today ✓',msg:'Watered today ✓ — nothing more to do.'};
   // Start counting from the last watering, or the last soaking rain (≥10mm), whichever is later
   let si=lw?d.time.indexOf(lw):-1;
   if(si<0)si=lw&&lw>d.time[0]?ti-1:Math.max(0,ti-3);
@@ -50,14 +50,15 @@ function wxVerdict(){
   const hi=shallow?8:15,mid=shallow?4:8;
   const tmrRain=rain(ti+1),tmrProb=d.precipitation_probability_max[ti+1]||0;
   const sd=shallow?' Seeds and seedlings have shallow roots — they dry out first.':'';
-  if(def>=mid&&tmrRain>=6&&tmrProb>=70)return{lv:'y',msg:`Beds are drying (${def}mm short ${since}), but ${Math.round(tmrRain)}mm of rain is likely tomorrow — hold off.`};
-  if(def>=hi||(tmax>=35&&def>=mid))return{lv:'r',urgent:def>=hi*1.5||tmax>=35,msg:`💧 Water today — about ${def}mm lost to evaporation ${since}${tmax>=35?`, and it's ${Math.round(tmax)}° today`:''}.${sd}`};
-  if(def>=mid)return{lv:'y',msg:`💧 Water tomorrow morning — beds are ${def}mm short ${since}.${sd}`};
-  return{lv:'g',msg:`Soil moisture looks fine ${since} (${Math.max(0,def)}mm short).`};
+  if(def>=mid&&tmrRain>=6&&tmrProb>=70)return{lv:'y',short:'Rain’s on the way — hold off watering.',msg:`Beds are drying (${def}mm short ${since}), but ${Math.round(tmrRain)}mm of rain is likely tomorrow — hold off.`};
+  if(def>=hi||(tmax>=35&&def>=mid))return{lv:'r',urgent:def>=hi*1.5||tmax>=35,short:tmax>=35?'A hot one — give everything a deep drink this morning.':'Give the garden a drink today.',msg:`💧 Water today — about ${def}mm lost to evaporation ${since}${tmax>=35?`, and it's ${Math.round(tmax)}° today`:''}.${sd}`};
+  if(def>=mid)return{lv:'y',short:'A drink tomorrow morning would be lovely.',msg:`💧 Water tomorrow morning — beds are ${def}mm short ${since}.${sd}`};
+  return{lv:'g',short:'The soil’s nicely moist. 👍',msg:`Soil moisture looks fine ${since} (${Math.max(0,def)}mm short).`};
 }
 
 // Jobs tab: the full watering card, with the "Watered" button
-function weatherCardHtml(){
+// compact (Jobs): the watering job already says "water today", so don't repeat it
+function weatherCardHtml(compact){
   const loc=wxLoc();
   if(!loc)return ST.beds.length?`<button class="wx wx-setup" onclick="openSettings()"><span class="wx-ico">📍</span><span><span class="wx-loc">Set your location</span><span class="wx-sum">Get watering advice from your local weather</span></span><span class="nudge-cnt">›</span></button>`:'';
   if(!WX?.daily)return `<div class="wx"><div class="wx-top"><div class="wx-ico">🌡️</div><div><div class="wx-loc">${esc(loc.name)}</div><div class="wx-sum">${WX_ERR?'Couldn\'t reach the weather service — check your connection.':'Loading weather…'}</div></div></div></div>`;
@@ -66,9 +67,9 @@ function weatherCardHtml(){
   const v=wxVerdict();const watered=ST.lastWatered===localDate();
   const heat=[ti+1,ti+2,ti+3].filter(i=>d.temperature_2m_max[i]>=35).map(i=>`${dayName(d.time[i])} ${Math.round(d.temperature_2m_max[i])}°`);
   const tmr=d.precipitation_sum[ti+1]||0;
-  const rows=[`<div class="wx-row"><div class="adot a${v.lv}"></div><div>${v.msg}</div></div>`];
-  if(heat.length)rows.push(`<div class="wx-row"><div class="adot ay"></div><div>🔥 Hot days ahead: ${heat.join(', ')}. Water deeply the morning before and mulch well.</div></div>`);
-  return `<div class="wx"><div class="wx-top"><div class="wx-ico">${wxIcon(d.weather_code[ti])}</div><div><div class="wx-loc">💧 Watering · ${Math.round(d.temperature_2m_max[ti])}° today</div><div class="wx-sum">${r3.toFixed(1)}mm rain last 3 days · ${tmr>=1?`${Math.round(tmr)}mm`:'dry'} tomorrow</div></div><button class="wx-btn${watered?' done':''}" onclick="logWatered()">${watered?'✓ Watered':'💧 I watered'}</button></div>${rows.join('')}<div class="wx-foot">${esc(loc.name)} · updated ${new Date(WX.t).toLocaleTimeString('en-AU',{hour:'numeric',minute:'2-digit'})} · Open-Meteo</div></div>`;
+  const rows=compact&&v.lv==='r'?[]:[`<div class="wx-row"><div class="adot a${v.lv}"></div><div>${v.short||v.msg}</div></div>`];
+  if(heat.length)rows.push(`<div class="wx-row"><div class="adot ay"></div><div>🔥 Hot days ahead: ${heat.join(', ')}. A deep drink the morning before helps.</div></div>`);
+  return `<div class="wx"><div class="wx-top"><div class="wx-ico">${wxIcon(d.weather_code[ti])}</div><div><div class="wx-loc">💧 Watering · ${Math.round(d.temperature_2m_max[ti])}° today</div><div class="wx-sum">${r3>=2?'Some rain lately':'Dry lately'} · ${tmr>=1?'rain tomorrow':'dry tomorrow'}</div></div><button class="wx-btn${watered?' done':''}" onclick="logWatered()">${watered?'✓ Watered':'💧 I watered'}</button></div>${rows.join('')}<div class="wx-foot">${esc(loc.name)} · updated ${new Date(WX.t).toLocaleTimeString('en-AU',{hour:'numeric',minute:'2-digit'})} · Open-Meteo</div></div>`;
 }
 // Beds summary: one line of weather
 function weatherLineHtml(){
@@ -95,8 +96,9 @@ async function searchLoc(){
   const q=$('loc-q').value.trim();const out=$('loc-res');if(!q)return;
   out.innerHTML='<div class="sh-sub" style="margin-top:6px">Searching…</div>';
   try{
-    const r=await fetch(`https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(q)}&count=5&language=en&format=json`);
-    _locRes=(await r.json()).results||[];
+    const r=await fetch(`https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(q)}&count=10&language=en&format=json`);
+    // Australian places first, and only those when there are any (no "Fremantle Peak, Heard Island")
+    const all=(await r.json()).results||[],au=all.filter(p=>p.country_code==='AU');_locRes=(au.length?au:all).slice(0,5);
     out.innerHTML=_locRes.length?_locRes.map((p,i)=>`<button class="loc-res" onclick="setLoc(${i})">📍 ${esc(p.name)}${p.admin1?', '+esc(p.admin1):''}${p.country_code?' · '+esc(p.country_code):''}</button>`).join(''):'<div class="sh-sub" style="margin-top:6px">No places found.</div>';
   }catch(e){out.innerHTML='<div class="sh-sub" style="margin-top:6px">Couldn\'t search — check your connection.</div>';}
 }

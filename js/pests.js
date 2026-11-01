@@ -364,7 +364,7 @@ function guardItems(m){
   const out=Object.entries(GUARDS).filter(([id,g])=>pestMonthIn(g.months,m)&&!guardDone(id)).map(([id,g])=>{
     const cells=guardCells(g);if(!cells.length)return null;
     const p=PEST_BY_ID[g.pests[0]],coming=pestMonthIn(g.before,m)&&!pestActive(p,m);
-    return{kind:'guard',id,type:'guard',cb:true,icon:'🛡️',title:`🛡️ ${g.act}`,
+    return{kind:'guard',id,type:'guard',cb:true,coming,icon:'🛡️',title:`🛡️ ${g.act}`,
       detail:`${coming?`${p.n} season starts in ${MONTHS[zoneMonthsOut(p.months)[0]]}.`:`${p.n} season has started.`} ${g.how} <span class="task-where">${plantList(cells)} · ${bedList(cells)}</span>`};
   }).filter(Boolean);
   // Weather trigger: after a soaking, snails are out tonight
@@ -377,7 +377,7 @@ function guardItems(m){
 function treatItems(){
   return ST.pestReports.map((r,i)=>{
     const p=PEST_BY_ID[r.pest],bed=bedById(r.bid);if(!p)return null;
-    return{kind:'treat',id:String(i),type:'urgent',cb:true,
+    return{kind:'treat',id:String(i),type:'pest',cb:true,
       title:`${p.e} ${p.kind==='growing'?'Fix':'Treat'} ${p.n.toLowerCase()} on ${plantName(r.p)}${bed?` · ${esc(bed.name)}`:''}`,
       detail:`${remedyText(p)} Tick once done — we'll remind you to check again in ${PEST_RECHECK_DAYS} days.`};
   }).filter(Boolean);

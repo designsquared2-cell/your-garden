@@ -116,11 +116,11 @@ async function loadNudgeHist(){_nudgeHist=(await nudgeGet('hist'))||[];if(curVie
 function noteNudge(n,opened){_nudgeHist.push({id:n.id,topic:n.topic,at:localDate(),opened});_nudgeHist=_nudgeHist.slice(-80);nudgeSet('hist',_nudgeHist);}
 
 // ── In the app: this week's note at the top of Jobs ──
-// In the app, harvests are already in Jobs — so the card offers ideas instead
-function weekNudge(push){try{return pickNudge(buildNudges().filter(n=>push||!/^(ready|tree):/.test(n.topic)),_nudgeHist,localDate());}catch(e){return null;}}
+// In the app, Jobs and the month card already cover harvests, planting and the season — the card is for milestones
+function weekNudge(push){try{return pickNudge(buildNudges().filter(n=>push||n.topic==='milestone'),_nudgeHist,localDate());}catch(e){return null;}}
 function nudgeCardHtml(){
   const n=weekNudge();if(!n)return'';
-  return `<div class="nudge-card"><button class="nudge-x" aria-label="Hide" onclick="nudgeHide('${n.id}')">✕</button><div class="nudge-k">This week</div><div class="nudge-t">${esc(n.title)}</div><div class="nudge-b">${esc(n.body)}</div><button class="task-btn" onclick="nudgeOpen('${n.id}')">Show me ›</button></div>`;
+  return `<div class="nudge-card"><button class="nudge-x" aria-label="Hide" onclick="nudgeHide('${n.id}')">✕</button><div class="nudge-k">💡 Garden idea</div><div class="nudge-t">${esc(n.title)}</div><div class="nudge-b">${esc(n.body)}</div><button class="task-btn" onclick="nudgeOpen('${n.id}')">Show me ›</button></div>`;
 }
 function nudgeById(id){return buildNudges().find(n=>n.id===id);}
 function nudgeHide(id){const n=nudgeById(id);if(n)noteNudge(n,false);renderJobs();}
@@ -199,7 +199,7 @@ function nudgeSettingsHtml(){
 const NUDGE_ASKED='gdn_nudge_asked';
 function maybeAskNudges(k){
   try{if(localStorage.getItem(NUDGE_ASKED)||nudgePref().on)return;localStorage.setItem(NUDGE_ASKED,localDate());}catch(e){return;}
-  setTimeout(()=>{if(sheetOpen())return;openNudgeAsk(k);},1400);
+  setTimeout(()=>{if(sheetOpen())return;openNudgeAsk(k);},900);
 }
 function openNudgeAsk(k){
   const name=k&&P[k]?plantName(k).toLowerCase():'your plants';

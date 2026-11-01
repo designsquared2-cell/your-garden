@@ -11,7 +11,7 @@ function suggestForBed(bi,n=3){
   here.forEach(k=>{if(P[k].nx)add(P[k].nx,3,`follows ${plantName(k)}`);});
   Object.keys(P).forEach(k=>{const f=familyOf(k);if(f&&fams.has(f)&&!here.includes(k))add(k,2,`fits with the ${FAM_LBL[f]}`);});
   here.forEach(k=>add(k,1,`matches the ${plantName(k)} already here`));
-  if(!here.some(k=>COMPANIONS.includes(k)))add('marigold',1,'companion to keep pests down');
+  if(here.length>=2&&!here.some(k=>COMPANIONS.includes(k)))add('marigold',.5,'companion to keep pests down');
   const past=new Set(bedHistory(bi,365).map(h=>familyOf(h.p)).filter(Boolean));
   Object.values(sc).forEach(x=>{if(past.has(familyOf(x.k)))x.s-=3;});
   const ok=Object.values(sc).filter(x=>x.s>0);
@@ -56,7 +56,7 @@ function plantGuideHtml(k,td){
   // Most advanced cell wins: ready beats picking season beats a future date
   const rank=c=>['ready','bolting'].includes(c.s)?0:c.s==='done'?3:expectedDate(c)&&expectedDate(c)<=td?1:2;
   const lead=cells.map(x=>x.cell).sort((a,b)=>rank(a)-rank(b)||(expectedDate(a)||'z').localeCompare(expectedDate(b)||'z'))[0];
-  return `<div class="bpc" onclick="openGrowing('${k}')"><div class="bpc-top"><div class="bpc-emoji">${pl.e}</div><div><div class="bpc-name">${pl.n}</div><div class="bpc-hw">${readyLabel(lead)}${picks.length?` · 🧺 ${plural(picks.length,'pick')}, last ${fmtDate(last.d)}`:''}</div></div></div><div class="bpc-body"><div class="bpc-tip">${firstSentence(pl.tip)}</div></div></div>`;
+  return `<div class="bpc" onclick="openGrowing('${k}')"><div class="bpc-top"><div class="bpc-emoji">${pl.e}</div><div><div class="bpc-name">${pl.n}</div><div class="bpc-hw">${readyLabel(lead)}${picks.length?` · 🧺 ${plural(picks.length,'pick')}, last ${fmtDate(last.d)}`:''}</div></div></div></div>`;
 }
 function renderLibrary(){
   const t=_libQ.trim().toLowerCase(),m=curMonth();

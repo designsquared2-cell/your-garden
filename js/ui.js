@@ -13,7 +13,7 @@ let _tt;
 function toast(msg,opts={}){
   const el=$('toast');el.textContent=msg;
   if(opts.undo){const b=document.createElement('button');b.className='toast-undo';b.textContent='Undo';b.onclick=undo;el.appendChild(b);}
-  el.classList.toggle('act',!!opts.undo);el.classList.add('on');
+  el.classList.toggle('act',!!opts.undo);el.classList.toggle('top',sheetOpen());el.classList.add('on');
   clearTimeout(_tt);_tt=setTimeout(()=>el.classList.remove('on','act'),opts.undo?5000:2600);
 }
 

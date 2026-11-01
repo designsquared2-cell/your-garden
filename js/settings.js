@@ -9,6 +9,15 @@ const MAINT={
 };
 function maint(){try{const v=localStorage.getItem(MAINT_K);return MAINT[v]?v:'std';}catch(e){return'std';}}
 function setMaint(k){try{localStorage.setItem(MAINT_K,k);}catch(e){}refreshAll();openSettings();toast(`${MAINT[k].e} ${MAINT[k].n}`);}
+// Colours: light (default), dark, or follow the phone. Per device.
+function theme(){try{return localStorage.getItem('gdn_theme')||'light';}catch(e){return'light';}}
+function setTheme(t){try{localStorage.setItem('gdn_theme',t);}catch(e){}applyTheme();openSettings();}
+function applyTheme(){
+  const t=theme(),dark=t==='dark'||(t==='auto'&&matchMedia('(prefers-color-scheme: dark)').matches);
+  document.documentElement.dataset.theme=t;
+  document.querySelector('meta[name="theme-color"]')?.setAttribute('content',dark?'#1A2D10':'#FFFFFF');
+}
+try{matchMedia('(prefers-color-scheme: dark)').addEventListener('change',applyTheme);}catch(e){}
 function openSettings(){
   _onLoc=null;
   showSheet(`<div class="sh-body"><div class="sh-heading">⚙️ Settings</div>
@@ -18,6 +27,8 @@ function openSettings(){
     <div class="maint-opts">${Object.entries(MAINT).map(([k,o])=>`<button class="maint-opt${maint()===k?' on':''}" onclick="setMaint('${k}')"><span class="maint-e">${o.e}</span><span><b>${o.n}</b><span>${o.d}</span></span></button>`).join('')}</div>
     <div class="set-txt">Just for this device — everyone sharing your garden can pick their own.</div>
     ${nudgeSettingsHtml()}
+    <div class="fm-lbl" style="margin-top:18px">🎨 Colours</div>
+    <div class="seg">${[['light','🌞 Light'],['dark','🌙 Dark'],['auto','📱 Match phone']].map(([k,l])=>`<button class="seg-b${theme()===k?' on':''}" onclick="setTheme('${k}')">${l}</button>`).join('')}</div>
     <div class="fm-lbl" style="margin-top:18px">Weather location</div>
     <div class="set-txt">${wxLoc()?`Currently: <b>${esc(wxLoc().name)}</b>`:'Not set yet — search for your suburb to get watering advice.'}</div>
     <div class="fm-emoji-row"><input class="fm-in" id="loc-q" placeholder="Search a town or suburb" onkeydown="if(event.key==='Enter')searchLoc()"><button class="btn btn-seed btn-inline" onclick="searchLoc()">Search</button></div>
@@ -26,7 +37,7 @@ function openSettings(){
 
     <div class="fm-lbl" style="margin-top:18px">Climate zone</div>
     <div class="set-txt">Adjusts planting times and pest seasons.${wxLoc()?` Suggested for ${esc(wxLoc().name)}: <b>${ZONES[zoneFromLatLon(wxLoc().lat,wxLoc().lon,wxLoc().elev)].n}</b>.`:''}</div>
-    <select class="fm-in" onchange="ST.zone=this.value;saveState();refreshAll();toast('🌏 Climate zone: '+ZONES[this.value].n)">${Object.entries(ZONES).map(([k,z])=>`<option value="${k}"${zone()===k?' selected':''}>${z.n} — ${z.ex}</option>`).join('')}</select>
+    <select class="fm-in" onchange="ST.zone=this.value;saveState();refreshAll();toast('🌏 Climate zone: '+ZONES[this.value].n)">${Object.entries(ZONES).map(([k,z])=>`<option value="${k}"${zone()===k?' selected':''}>${z.n}</option>`).join('')}</select>
 
     <div class="fm-lbl" style="margin-top:18px">Remedies</div>
     <label class="fm-check"><input type="checkbox" id="pref-nat"${ST.prefs.naturalOnly?' checked':''} onchange="ST.prefs.naturalOnly=this.checked;saveState();renderView();toast(this.checked?'🌿 Showing natural remedies only':'Showing all remedies')"> Show natural & home-made remedies only</label>
@@ -53,7 +64,7 @@ function confirmStartFresh(){
       <li>Your seed box (${plural(ST.seeds.length,'packet')}) and the planting history used for rotation</li>
       <li>Your harvest log (${ST.log.length} ${ST.log.length===1?'entry':'entries'}), watering log and weather location</li>
     </ul>
-    ${signedIn()?'<div class="set-txt" style="color:#FFB48A"><b>You\'re signed in:</b> this also clears the garden for everyone you share it with.</div>':''}
+    ${signedIn()?'<div class="set-txt" style="color:var(--fg-FFB48A)"><b>You\'re signed in:</b> this also clears the garden for everyone you share it with.</div>':''}
     <div class="set-txt">Want a copy first? Export a backup — you can import it again later.</div>
     <button class="btn btn-cancel btn-full" onclick="exportBackup()">⬇️ Export a backup first</button>
     <button class="btn btn-reset btn-full" style="margin-top:8px" onclick="startFresh()">Delete everything & start fresh</button>

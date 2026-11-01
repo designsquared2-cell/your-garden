@@ -1,5 +1,9 @@
 // Startup.
 'use strict';
+function endSplash(){const s=$('splash');if(!s||s.classList.contains('out'))return;s.classList.add('out');setTimeout(()=>s.remove(),450);}
+// About 4 seconds: ends 0.7s after the tagline has appeared; never longer than 6s
+if(matchMedia('(prefers-reduced-motion: reduce)').matches)setTimeout(endSplash,1200);
+else{document.querySelector('.sp-sub')?.addEventListener('animationend',()=>setTimeout(endSplash,700));setTimeout(endSplash,6000);}
 document.addEventListener('keydown',e=>{if(e.key==='Escape'&&sheetOpen())closeSheet();});
 // Leaving the app (switching tabs, locking the phone): remember where we were.
 // Coming back: only redraw if the day has changed — redrawing would collapse whatever was open.
@@ -11,7 +15,7 @@ document.addEventListener('visibilitychange',()=>{
 });
 addEventListener('pagehide',saveUI);
 
-loadState();applyCustomPlants();updateHeader();refreshAll();restoreUI();loadWeather();
+applyTheme();loadState();applyCustomPlants();updateHeader();refreshAll();restoreUI();loadWeather();
 // Signed in on this device? Catch up with other devices, and retry pending changes when back online
 if(signedIn())pullGarden();
 finishLinkSignIn(); // arrived from the sign-in email's link?

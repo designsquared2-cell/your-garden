@@ -14,7 +14,7 @@ function plantAlertItems(){
     if(isTree(cell.p)||pickingOver(cell))return; // trees have their own reminder; spent plants get "probably finished"
     if(!ALERT_ST.includes(cell.s)||COMPANIONS.includes(cell.p))return;const k=cell.p+':'+cell.s;if(seen.has(k)||alertDone(k))return;seen.add(k);
     const pl=P[cell.p],ready=cell.s==='ready';
-    out.push({kind:'plant',id:k,type:'urgent',cb:true,
+    out.push({kind:'plant',id:k,type:'ready',cb:true,
       title:ready?`🌾 Pick ${pl.n.toLowerCase()} · ${esc(bed.name)}`:`⚠️ ${pl.n} bolting · ${esc(bed.name)}`,
       detail:ready?(isLifted(cell.p)?'Tick once you\'ve pulled them — the spots are freed up to replant.':cellKeepsProducing(cell)?'Tick when you\'ve picked some — it keeps producing.':'Tick once harvested — it\'s completed, ready to pull out.'):isLifted(cell.p)?'Pull them all now. Tick and the spots are freed up to replant.':'Harvest everything now. Tick and it\'s completed, ready to pull out.'});
   });
@@ -25,19 +25,33 @@ function frostTender(){return plantedCells().filter(x=>x.cell.s!=='done'&&(isTre
 function frostItem(){
   const f=frostRisk();if(!f)return null;const id='frost:'+f.date;if(ST.alertDone[id])return null;
   const xs=frostTender();if(!xs.length)return null;
-  return{kind:'frost',id,type:'urgent',cb:true,title:`❄️ Frost ${f.when} (${f.min}°)`,short:`Cover your ${plantList(xs,4)} this afternoon.`,
+  return{kind:'frost',id,type:'alert',cb:true,title:`❄️ Frost ${f.when} (${f.min}°)`,short:`Cover your ${plantList(xs,4)} this afternoon.`,
     detail:`Cover them with frost cloth or an old sheet over stakes (not plastic, and not touching the leaves), and water the soil — damp soil holds more warmth. Tick once they’re covered. <span class="task-where">${bedList(xs)}</span>`};
 }
+// Hail or snow in today's or tomorrow's forecast
+const WX_HAIL=[96,99],WX_SNOW=[71,73,75,77,85,86];
+function weatherAlertItems(){
+  const d=WX?.daily;if(!d?.weather_code||!plantedCells().length)return[];const ti=wxToday(d),out=[];
+  for(const i of [ti,ti+1]){const c=d.weather_code[i],when=i===ti?'today':'tomorrow',id=`wx:${d.time[i]}`;
+    if(c==null||ST.alertDone[id])continue;
+    if(WX_HAIL.includes(c)){out.push({kind:'wxalert',id,type:'alert',cb:true,title:`🧊 Hail possible ${when}`,short:'Throw a sheet or shade cloth over tender plants, and move pots under cover.',detail:''});break;}
+    if(WX_SNOW.includes(c)){out.push({kind:'wxalert',id,type:'alert',cb:true,title:`❄️ Snow on the way ${when}`,short:'Cover seedlings and tender plants overnight.',detail:''});break;}}
+  return out;
+}
+// The only things that count as urgent: frost, hail, snow, netting fruit, and pests about to arrive
+function isAlert(t){return t.kind==='frost'||t.kind==='wxalert'||(t.kind==='tree'&&String(t.id).startsWith('net:'))||(t.kind==='guard'&&!!t.coming);}
+function alertItems(){try{return jobSections().flatMap(s=>s[1]).filter(isAlert);}catch(e){return[];}}
 function urgentItems(){
-  const out=[...plantAlertItems(),...treatItems()],v=wxVerdict(),fr=frostItem();
-  if(fr)out.push(fr);
+  const out=[...weatherAlertItems(),...plantAlertItems(),...treatItems()],v=wxVerdict(),fr=frostItem();
+  if(fr)out.unshift(fr);
   if(v?.lv==='r'&&(maint()!=='none'||v.urgent)){
     // beds on drip or a timer don't need hand watering; in a heatwave, just check the system is running
     const veg=ST.beds.filter(b=>!isTreeBed(b)),hand=veg.filter(b=>!b.auto),auto=veg.filter(b=>b.auto),pots=hand.some(b=>b.pots);
     const why=v.msg.replace(/^💧 Water today — /,'');
-    if(hand.length||!veg.length)out.push({kind:'water',id:'water',type:'urgent',cb:true,title:auto.length?`💧 Water ${hand.map(b=>esc(b.name)).join(', ')} today`:'💧 Water the beds today',
+    if(hand.length||!veg.length)out.push({kind:'water',id:'water',type:'water',cb:true,title:auto.length?`💧 Give ${hand.map(b=>esc(b.name)).join(', ')} a drink today`:'💧 Give the garden a drink today',
+      short:/\d+° today/.test(why)?'A hot one — a deep soak this morning.':/shallow roots/.test(why)?'Warm and dry lately — young roots dry out first.':'Warm and dry lately.',
       detail:`${why}${pots?' Pots dry out fastest — soak them until water runs out the bottom.':''}${auto.length?` ${auto.map(b=>esc(b.name)).join(', ')} ${auto.length>1?'are':'is'} on drip — just check it’s running.`:''} Tick when done.`});
-    else if(v.urgent)out.push({kind:'water',id:'water',type:'urgent',cb:true,title:'🕒 Hot and dry — check your watering timer',detail:`${why} Your beds water themselves; make sure the timer is on and the drippers aren’t blocked, and consider an extra run today. Tick once checked.`});
+    else if(v.urgent)out.push({kind:'water',id:'water',type:'water',cb:true,title:'🕒 Hot and dry — check your watering timer',detail:`${why} Your beds water themselves; make sure the timer is on and the drippers aren’t blocked, and consider an extra run today. Tick once checked.`});
   }
   return out;
 }
@@ -82,7 +96,7 @@ function autoItems(m){
     const rest=ST.alertDone['rest:'+bed.id];if(rest&&daysBetween(rest,td)<REST_DAYS)return;
     const sug=suggestForBed(bi).map(s=>P[s.k].n);
     out.push({kind:'auto',id:`fill:${bi}`,type:'soon',cb:true,icon:'🌱',
-      title:`Fill ${plural(n,'empty spot')} · ${esc(bed.name)}`,short:sug.length?`Try ${sug.join(', ')}.`:'Nothing in season suits it now.',
+      title:`🌱 Room for ${n===1?'one more':n+' more'} · ${esc(bed.name)}`,short:sug.length?`Try ${sug.join(', ')}.`:'Nothing in season suits it now.',
       detail:`Not planting? Tick to rest it for ${REST_DAYS/7} weeks — mulch it, or sow a green manure like broad beans or mustard.`,
       btn:{label:'Plant ›',js:`goToEmpty(${bi})`}});
   });
@@ -111,7 +125,7 @@ function tickItem(kind,id,btn){
   tickAway(btn,()=>{
     if(kind==='water'){snapshot();logWatered(true);toast('💧 Watering logged',{undo:true});return;}
     snapshot();
-    if(kind==='frost'){ST.alertDone[id]=localDate();saveState();refreshAll();toast('❄️ Covered — fingers crossed for a mild night',{undo:true});return;}
+    if(kind==='frost'||kind==='wxalert'){ST.alertDone[id]=localDate();saveState();refreshAll();toast('❄️ Covered — fingers crossed for a mild night',{undo:true});return;}
     const msg=kind==='plant'?harvestFromAlert(id):kind==='pest'?tickPest(id):kind==='treat'?tickTreat(id):kind==='guard'?tickGuard(id):kind==='tree'?tickTree(id):kind==='feed'?tickFeed(id):kind==='project'?tickProject(id):kind==='fold'?tickFold(id):runAuto(id);
     saveState();refreshAll();toast(msg,{undo:true});
   });
@@ -141,8 +155,8 @@ function runAuto(id){
 // ── Rendering ──
 // Urgent count on the header pill and the Jobs tab badge (the jobs themselves live only in Jobs)
 function renderAlerts(){
-  const n=urgentItems().length;
-  const pill=$('alert-pill');pill.textContent=n+' urgent';pill.style.display=n?'inline-block':'none';
+  const n=alertItems().length;
+  const pill=$('alert-pill');pill.textContent=`⚠️ ${n} alert${n>1?'s':''}`;pill.style.display=n?'inline-block':'none';
   const badge=$('jobs-badge');badge.textContent=n;badge.hidden=!n;
 }
 function goToAlerts(){setView('jobs');}
@@ -158,7 +172,7 @@ function splitDetail(it){
   return{short:d.slice(0,i+1),more:d.slice(i+1).trim(),where};
 }
 function cardHtml(it){
-  const cls=['task-card',{urgent:'tc-urgent',soon:'tc-soon',pest:'tc-pest',guard:'tc-guard'}[it.type]||''].join(' ');
+  const cls=['task-card',isAlert(it)?'tc-alert':{alert:'tc-alert',ready:'tc-ready',water:'tc-water',soon:'tc-soon',pest:'tc-pest',guard:'tc-guard'}[it.type]||''].join(' ');
   const lead=it.cb?`<button class="task-cb-area" aria-label="Mark done" onclick="tickItem('${it.kind}','${it.id}',this)"><div class="task-cb">○</div></button>`:`<div class="task-cb-area"><div class="task-ico">${it.icon||'•'}</div></div>`;
   const{short,more,where}=splitDetail(it);
   return `<div class="${cls}">${lead}<div class="task-content"><div class="task-title">${it.title}</div>${short?`<div class="task-detail">${short}</div>`:''}${where}${more?`<details class="task-more"><summary>How ›</summary><div class="task-detail">${more}</div></details>`:''}${it.btn?`<button class="task-btn" onclick="${it.btn.js}">${it.btn.label}</button>`:''}</div></div>`;
@@ -182,21 +196,21 @@ function tickFold(id){
 function jobSections(){
   const m=curMonth(),mode=maint();
   if(mode==='none')return[['🧺 Ready to pick',foldHarvest([...urgentItems(),...treeReadyItems()])]];
-  const auto=autoItems(m),soon=auto.filter(t=>t.type==='soon'),coming=['🟢 Coming up',auto.filter(t=>t.type==='coming')];
-  if(mode==='low')return[['🔴 Do this week',foldHarvest([...urgentItems(),...treeReadyItems()])],['🟡 This month',[...soon.filter(t=>!t.id.startsWith('late:')),...treeJobItems(m),...lowFeedItems(m)]],['🗓️ Seasonal projects',projectItems(m)],coming];
+  const auto=autoItems(m),soon=auto.filter(t=>t.type==='soon'),coming=['🌱 Coming up',auto.filter(t=>t.type==='coming')];
+  if(mode==='low')return[['🌿 This week',foldHarvest([...urgentItems(),...treeReadyItems()])],['🌼 This month',[...soon.filter(t=>!t.id.startsWith('late:')),...treeJobItems(m),...lowFeedItems(m)]],['🗓️ Seasonal projects',projectItems(m)],coming];
   const g=guardItems(m),now=g.filter(x=>x.id==='snails-rain');
-  return[['🔴 Do this week',foldHarvest([...urgentItems(),...treeReadyItems(),...now])],['🐛 Pest checks',pestCheckItems(m)],['🟡 This month',[...g.filter(x=>!now.includes(x)),...soon,...treeJobItems(m),...feedItems(m)]],['🗓️ Seasonal projects',projectItems(m)],coming];
+  return[['🌿 This week',foldHarvest([...urgentItems(),...treeReadyItems(),...now])],['🐛 Pest checks',pestCheckItems(m)],['🌼 This month',[...g.filter(x=>!now.includes(x)),...soon,...treeJobItems(m),...feedItems(m)]],['🗓️ Seasonal projects',projectItems(m)],coming];
 }
 // Everything you can tick, apart from the optional ones: "coming up", seasonal projects and "fill empty spots"
 function jobCount(){return jobSections().filter(([l])=>!/Coming up|Seasonal projects/.test(l)).reduce((n,[,ts])=>n+ts.filter(t=>t.cb&&!String(t.id).startsWith('fill:')).length,0);}
 // Show "Do this week" in full, then the next few jobs; the rest wait behind "show more" so busy weeks don't overwhelm
 const JOBS_SHOWN=6;let _allJobs=false;
-function visibleJobCount(){let left=JOBS_SHOWN;return jobSections().reduce((n,[l,ts])=>{if(/Do this week|Ready to pick/.test(l))return n+ts.length;const k=Math.min(left,ts.length);left-=k;return n+k;},0);}
+function visibleJobCount(){let left=JOBS_SHOWN;return jobSections().reduce((n,[l,ts])=>{if(/This week|Ready to pick/.test(l))return n+ts.length;const k=Math.min(left,ts.length);left-=k;return n+k;},0);}
 function renderJobs(){
   const m=curMonth(),secs=jobSections();let left=_allJobs?1e9:JOBS_SHOWN,hidden=0;
   const body=secs.map(([lbl,ts])=>{
     if(!ts.length)return'';
-    const full=/Do this week|Ready to pick/.test(lbl),show=full?ts:ts.slice(0,Math.max(0,left));
+    const full=/This week|Ready to pick/.test(lbl),show=full?ts:ts.slice(0,Math.max(0,left));
     if(!full){left-=show.length;hidden+=ts.length-show.length;}
     return show.length?`<div class="task-section"><div class="task-sec-title">${lbl}</div>${show.map(cardHtml).join('')}</div>`:'';
   }).join('')+(hidden?`<button class="btn btn-cancel btn-full" onclick="_allJobs=true;renderJobs()">Show ${plural(hidden,'more job')}</button>`:'')
@@ -204,5 +218,5 @@ function renderJobs(){
       :cardHtml({type:'soon',icon:'🌱',title:'Add your first bed',detail:'Jobs, harvest dates, pest checks and watering advice appear here once you start planting.',btn:{label:'＋ Add a bed',js:"setView('beds');openAddChoice()"}}));
   const n=jobCount();
   const none=maint()==='none';
-  $('jobs-content').innerHTML=`<div class="mv-heading">${none?'Ready to pick':'Jobs to do'}</div><div class="mv-intro">${none?`<b>No maintenance</b>: harvests and heatwave watering only. <button class="link-btn" onclick="openSettings()">Change</button>`:n?`${plural(n,'job')} this month.`:'Nothing needs doing right now.'}</div>${ST.beds.length?nudgeCardHtml():''}${!none||wxVerdict()?.urgent?weatherCardHtml():''}${monthCardHtml(n)}${ST.beds.length?'<button class="jobs-link" onclick="openReminders()"><span>📅 Add reminders to my calendar</span><span>›</span></button>':''}${body}`;
+  $('jobs-content').innerHTML=`<div class="mv-heading">${none?'Ready to pick':'Jobs to do'}</div><div class="mv-intro">${none?`<b>No maintenance</b>: harvests and heatwave watering only. <button class="link-btn" onclick="openSettings()">Change</button>`:n?`${plural(n,'job')} this month.`:'Nothing needs doing right now.'}</div>${body}${ST.beds.length?nudgeCardHtml():''}${monthCardHtml(n)}${!none||wxVerdict()?.urgent?weatherCardHtml(true):''}${ST.beds.length?'<button class="jobs-link" onclick="openReminders()"><span>📅 Add reminders to my calendar</span><span>›</span></button>':''}`;
 }

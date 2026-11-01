@@ -333,7 +333,7 @@ function treesSectionHtml(){
 // ── Adding ── "Add to your garden" → veg bed, or fruit → variety, how many, how long in the ground
 function openAddChoice(){
   showSheet(`<div class="sh-body"><div class="sh-sticky"><div class="sh-toprow"><div><div class="sh-heading">＋ Add to your garden</div><div class="sh-sub">What are you adding?</div></div><button class="sh-cancel" onclick="closeSheet()">✕ Cancel</button></div></div>
-    <button class="add-opt" onclick="openBedEditor()"><span class="add-opt-e">🥕</span><span><b>A veg bed, patch or pots</b><span>A grid of spots for veg, herbs and flowers</span></span></button>
+    <button class="add-opt" onclick="openBedQuick()"><span class="add-opt-e">🥕</span><span><b>A veg bed, patch or pots</b><span>Veg, herbs and flowers</span></span></button>
     <button class="add-opt" onclick="openTreePicker()"><span class="add-opt-e">🌳</span><span><b>A fruit tree, berry or vine</b><span>One card per type, however many you have</span></span></button></div>`);
 }
 let _tq='';
@@ -394,7 +394,7 @@ function openTreeSheet(bi){
   const bowl=f.unit==='bowl',x={bed,bi,ri:0,ci:0,cell:c},jobs=treeJobItems(curMonth(),'std').filter(j=>j.bis?.includes(bi));
   showSheet(`<div class="sh-plant-hdr"><div class="sh-pe">${cellEmoji(c)}</div><div><div class="sh-pn">${esc(bed.name)}${bed.n>1?` <span class="hlog-d">×${bed.n}</span>`:''}</div><span class="sh-stag tg-${st==='ready'?'ready':'growing'}">${se} ${sl}</span>${v?`<span class="sh-picks">${esc(v.n)}</span>`:''}</div></div>
   <div class="sh-body">
-    <div class="sh-chips"><div class="sh-chip"><div class="sh-cl">Fruit</div><div class="sh-cv" style="color:#C49010">${treeSeason(c)}</div></div><div class="sh-chip"><div class="sh-cl">In ground</div><div class="sh-cv">${treeAgeText(c)}</div></div><div class="sh-chip"><div class="sh-cl">This year</div><div class="sh-cv">${got?fruitUnits(k,got):'—'}</div></div></div>
+    <div class="sh-chips"><div class="sh-chip"><div class="sh-cl">Fruit</div><div class="sh-cv" style="color:var(--fg-C49010)">${treeSeason(c)}</div></div><div class="sh-chip"><div class="sh-cl">In ground</div><div class="sh-cv">${treeAgeText(c)}</div></div><div class="sh-chip"><div class="sh-cl">This year</div><div class="sh-cv">${got?fruitUnits(k,got):'—'}</div></div></div>
     ${st==='young'?`<div class="sh-tip">🌱 First fruit around ${firstFruitYear(c)}.</div>`:''}
     ${treeBadHere(k)?`<div class="hu-row bad" style="margin-bottom:10px">⚠️ ${f.badWhy}</div>`:''}
     ${st!=='young'?`<div class="stat-lbl">🧺 Log a harvest${bowl?' (bowls)':''}</div>
