@@ -2,7 +2,7 @@
 'use strict';
 function endSplash(){const s=$('splash');if(!s||s.classList.contains('out'))return;s.classList.add('out');setTimeout(()=>s.remove(),450);}
 // About 5.5 seconds: ends 2.2s after the tagline has appeared, so there's time to read it; never longer than 7.5s
-if(matchMedia('(prefers-reduced-motion: reduce)').matches)setTimeout(endSplash,1200);
+if(matchMedia('(prefers-reduced-motion: reduce)').matches)setTimeout(endSplash,2700);
 else{document.querySelector('.sp-sub')?.addEventListener('animationend',()=>setTimeout(endSplash,2200));setTimeout(endSplash,7500);}
 document.addEventListener('keydown',e=>{if(e.key==='Escape'&&sheetOpen())closeSheet();});
 // Leaving the app (switching tabs, locking the phone): remember where we were.
