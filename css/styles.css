@@ -604,3 +604,59 @@ button.sow-chip:hover{border-color:#5A9A3A}
 @keyframes spText{0%{opacity:0;transform:translateY(10px)}100%{opacity:1;transform:translateY(0)}}
 @media (prefers-reduced-motion:reduce){.sp-line,.sp-ground,.sp-wash,.sp-title,.sp-sub{animation-duration:.01s;animation-delay:0s}}
 .leg-sq{animation:none!important;border:none!important;box-shadow:none!important}
+/* ── Calm & classy: matches the line-drawn opening. One green accent, hairlines, quiet labels, line icons. ── */
+:root{--c-line:#E9E1CF;--c-sand:#EEE4D2;--c-sand-cell:#F8F3E9;--c-plant:#FFFFFF;--c-plant-bd:#B9D6A0;--c-on-accent:#FFFFFF}
+:root[data-theme=dark]{--c-line:rgba(255,255,255,.08);--c-sand:#2A2213;--c-sand-cell:#342A19;--c-plant:#1E2C14;--c-plant-bd:#3E6226;--c-on-accent:#0F1A08}
+@media (prefers-color-scheme:dark){:root[data-theme=auto]{--c-line:rgba(255,255,255,.08);--c-sand:#2A2213;--c-sand-cell:#342A19;--c-plant:#1E2C14;--c-plant-bd:#3E6226;--c-on-accent:#0F1A08}}
+.ico{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round;display:block}
+.hdr{background:var(--c-bg);border-bottom:1px solid var(--c-line)}
+.hdr-title{font-weight:800;color:var(--c-text)}
+.hdr-sub{color:var(--c-muted)}
+.settings-btn{color:var(--c-muted);display:flex;padding:4px}
+.nav{background:var(--c-card);border-top:1px solid var(--c-line)}
+.nav-btn{text-transform:none;letter-spacing:.1px;font-size:11px;font-weight:600;color:var(--c-muted);gap:3px}
+.nav-btn.active{color:var(--c-accent);font-weight:800}
+.nav-icon{font-size:0;line-height:0}
+/* Headings and labels: sentence case, quiet */
+.mv-heading{font-weight:800;letter-spacing:-.3px}
+.task-sec-title,.mv-st,.month-h,.lib-cat,.picker-cat,.stat-lbl,.fm-lbl,.ptc-q,.hu-t,.id-lead{text-transform:none;letter-spacing:0;font-size:13.5px;font-weight:700;color:var(--c-muted)}
+.sh-cl,.sh-nl,.bpc-harvest-lbl,.nudge-k{text-transform:none;letter-spacing:0;font-size:11.5px;font-weight:700}
+.story-badge,.sh-stag,.now-tag{text-transform:none;letter-spacing:0}
+.task-title{font-weight:700;font-size:13.5px}
+.task-detail{color:var(--c-muted)}
+.task-where{color:var(--c-muted);font-weight:600}
+/* Cards: hairline border, one accent stripe only for alerts */
+.task-card,.sum,.bed-card,.hv-list,.bpc,.story-card,.month-card,.nudge-card{border:1px solid var(--c-line)}
+.task-card{border-left:1px solid var(--c-line);background:var(--c-card)}
+.task-card.tc-alert{border-left:3px solid var(--c-alert-bd);background:var(--c-alert-bg)}
+.task-ico{font-size:0;display:flex;justify-content:center}
+.task-ico::before{content:'';width:7px;height:7px;margin-top:7px;border-radius:50%;background:var(--c-plant-bd)}
+.task-cb{border:1.5px solid var(--c-plant-bd);background:transparent}
+.task-btn{background:var(--c-accent);color:var(--c-on-accent);font-weight:700;border-radius:20px;padding:6px 14px}
+.task-more summary{color:var(--c-accent);font-weight:700}
+/* Summary */
+.sum .sum-c{background:transparent;border:1px solid var(--c-line);color:var(--c-muted);font-weight:600;border-radius:20px;padding:3px 10px}
+.sum .sum-c b{color:var(--c-text);font-weight:800}
+.sum-go{background:transparent;border:1px solid var(--c-line);color:var(--c-text);font-weight:700;border-radius:20px}
+.sum-go.hot{background:var(--c-alert-bg);border-color:var(--c-alert-bd);color:var(--c-text)}
+.sum-link{color:var(--c-accent)}
+/* Beds: light sand, white planted squares with a fine green line */
+.bt1,.bt2,.bt3{background:var(--c-card)}
+.bed-name{font-size:13.5px;font-weight:800}
+.grid-bg{background:var(--c-sand)}
+.s-empty{background:var(--c-sand-cell);border-color:transparent}
+.s-empty .cell-e{opacity:.22}
+.s-seed,.s-seedling,.s-growing{background:var(--c-plant);border:1.5px solid var(--c-plant-bd)}
+.cell-n{color:var(--c-muted);font-weight:600}
+.bed-edit{opacity:.5}
+/* Buttons: solid green for the main action, outlined for the second */
+.btn{font-weight:700;border-radius:24px}
+.btn-seed{background:var(--c-accent);color:var(--c-on-accent);border:none}
+.btn-sdlng{background:transparent;color:var(--c-accent);border:1.5px solid var(--c-accent)}
+.btn-cancel{background:transparent;border:1px solid var(--c-line);color:var(--c-muted)}
+.bed-edit{color:var(--c-muted);display:flex}.bed-edit .ico{width:17px;height:17px}
+.tree-hdr{color:var(--c-muted);font-weight:700}
+.maint-e{display:none}
+.seg-b{font-weight:700}
+.seg-b.on{color:var(--c-accent)}
+.id-num,.id-bar{background:var(--c-accent);color:var(--c-on-accent);border-color:var(--c-accent)}

@@ -6,6 +6,14 @@ function showSheet(html){if(html!=null)$('sh-content').innerHTML=html;$('overlay
 // First sentence of a longer text, for short summaries
 // The app logo: the line-drawn sprout from the opening screen
 const LOGO_SVG=cls=>`<svg class="logo ${cls||''}" viewBox="21 8 180 180" aria-hidden="true"><g class="lg-wash"><path d="M101 112 C114 92 138 86 156 90 C144 108 122 118 101 112 Z"/><path d="M100 52 C92 38 78 32 66 34 C72 46 86 54 100 52 Z"/></g><path class="lg-ground" d="M62 162 Q100 158 138 162"/><path class="lg-line" d="M100 162 C99 142 96 124 101 104 C105 86 104 68 100 52"/><path class="lg-line" d="M101 112 C114 92 138 86 156 90 C144 108 122 118 101 112"/><path class="lg-line lg-rib" d="M103 110 Q128 98 150 91"/><path class="lg-line" d="M100 52 C92 38 78 32 66 34 C72 46 86 54 100 52"/></svg>`;
+// Calm look: decorative emoji at the start of headings, job titles and buttons are dropped (plant emoji elsewhere stay)
+const LEAD_EMO=/^(\s*)(?:[\p{Extended_Pictographic}←-⇿☀-➿⬀-⯿](?:️|‍[\p{Extended_Pictographic}♀♂]️?)*\s*)+/u;
+const CALM_SEL='.tree-hdr,.seg-b,.sh-heading,.btn,.sow-sub,.task-sec-title,.mv-st,.month-h,.lib-cat,.picker-cat,.stat-lbl,.fm-lbl,.hu-t,.sh-cl,.sh-nl,.nudge-k,.task-title,.task-btn,.sum-go,.ptc-q,.wx-h,.set-h';
+function calmUI(root){root.querySelectorAll(CALM_SEL).forEach(el=>{if(el._calm)return;el._calm=1;
+  const w=document.createTreeWalker(el,NodeFilter.SHOW_TEXT);let t=w.nextNode();while(t&&!t.data.trim())t=w.nextNode();
+  if(t&&LEAD_EMO.test(t.data)){const r=t.data.replace(LEAD_EMO,'$1');if(r.trim()||el.textContent.trim()!==t.data.trim())t.data=r;}});}
+let _calmQ=0;
+new MutationObserver(()=>{if(_calmQ)return;_calmQ=1;queueMicrotask(()=>{_calmQ=0;calmUI(document);});}).observe(document.documentElement,{childList:true,subtree:true});
 function firstSentence(s){s=s||'';const i=s.search(/[.!?](\s|$)/);return i<0?s:s.slice(0,i+1);}
 function moreFold(html,label='More ›'){return html?`<details class="task-more"><summary>${label}</summary><div class="task-detail">${html}</div></details>`:'';}
 function closeSheet(){$('overlay').classList.remove('on');$('sheet').classList.remove('on');}

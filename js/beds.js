@@ -17,7 +17,7 @@ function renderBeds(){
       <button class="link-btn" onclick="openSettings()">Have a backup? Import it in Settings</button></div>`;
     return;
   }
-  w.innerHTML=ST.beds.map((bed,bi)=>isTreeBed(bed)?'':`<div class="bed-wrap"><div class="bed-card"><div class="bed-top bt${bi%3+1}"><div class="bed-name">${esc(bed.name)}${bed.low?' <span class="bed-tag">low crops</span>':''}${bed.pots?' <span class="bed-tag">pots</span>':''}${bed.auto?' <span class="bed-tag">💧 auto</span>':''}</div>${selectMode?'':`<button class="bed-edit" aria-label="Edit ${esc(bed.name)}" onclick="openBedEditor(${bi})">✏️</button>`}</div><div class="grid-bg${(bed.rows[0]?.length||0)>=8?' dense':''}">${bed.rows.map((row,ri)=>`<div class="grid-row">${row.map((cell,ci)=>renderCell(cell,bi,ri,ci)).join('')}</div>`).join('')}</div></div></div>`).join('')
+  w.innerHTML=ST.beds.map((bed,bi)=>isTreeBed(bed)?'':`<div class="bed-wrap"><div class="bed-card"><div class="bed-top bt${bi%3+1}"><div class="bed-name">${esc(bed.name)}${bed.low?' <span class="bed-tag">low crops</span>':''}${bed.pots?' <span class="bed-tag">pots</span>':''}${bed.auto?' <span class="bed-tag">💧 auto</span>':''}</div>${selectMode?'':`<button class="bed-edit" aria-label="Edit ${esc(bed.name)}" onclick="openBedEditor(${bi})"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20l1-4.5L16 4.5a2.1 2.1 0 0 1 3 3L8 18.5z M14 7l3 3"/></svg></button>`}</div><div class="grid-bg${(bed.rows[0]?.length||0)>=8?' dense':''}">${bed.rows.map((row,ri)=>`<div class="grid-row">${row.map((cell,ci)=>renderCell(cell,bi,ri,ci)).join('')}</div>`).join('')}</div></div></div>`).join('')
     +treesSectionHtml()+(selectMode?'':'<button class="add-bed" onclick="openAddChoice()">＋ Add a bed or fruit tree</button>');
 }
 
@@ -31,7 +31,7 @@ function renderSummary(){
   const urgent=alertItems().length,jobs=jobCount(),pests=pestsToWatch().length,mode=maint(),growing=plantedCells().some(x=>['growing','ready','bolting'].includes(x.cell.s)||isTreeBed(x.bed));
   el.innerHTML=`<div class="sum">
     ${wxLoc()?weatherLineHtml():`<button class="sum-wx sum-link" onclick="openSettings()">📍 Set your location for watering advice ›</button>`}
-    <div class="sum-counts">${counts.map(([s,e,l,n])=>`<span class="sum-c sc-${s}"><b>${n}</b> ${e} ${l}</span>`).join('')}${empty?`<span class="sum-c sc-empty"><b>${empty}</b> ${empty===1?'spot':'spots'} free 🌱</span>`:''}${trees?`<span class="sum-c sc-tree"><b>${trees}</b> 🌳 ${trees===1?'Tree':'Trees'}</span>`:''}</div>
+    <div class="sum-counts">${counts.map(([s,e,l,n])=>`<span class="sum-c sc-${s}"><b>${n}</b> ${l.toLowerCase()}</span>`).join('')}${empty?`<span class="sum-c sc-empty"><b>${empty}</b> ${empty===1?'spot':'spots'} free</span>`:''}${trees?`<span class="sum-c sc-tree"><b>${trees}</b> ${trees===1?'tree':'trees'}</span>`:''}</div>
     <div class="sum-links">
       <button class="sum-go${urgent?' hot':''}" onclick="setView('jobs')">🐝 ${mode==='none'?(jobs?`${jobs} to pick or water`:'Nothing to pick yet'):jobs?`${plural(jobs,'job')}${urgent?` · ⚠️ ${urgent}`:''}`:'No jobs yet'} ›</button>
       ${growing?`<button class="sum-go" onclick="setView('pests')">🐛 ${pests&&mode==='std'?`${plural(pests,'pest')} to watch`:'Pest guide'} ›</button>`:`<button class="sum-go" onclick="setView('plants')">🌱 What to plant ›</button>`}
