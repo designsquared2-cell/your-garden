@@ -578,17 +578,18 @@ button.sow-chip:hover{border-color:#5A9A3A}
 /* Opening animation (4 seconds) */
 .splash{position:fixed;inset:0;z-index:1000;background:var(--c-bg);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;transition:opacity .45s;cursor:pointer}
 .splash.out{opacity:0;pointer-events:none}
-.sp-soil{fill:var(--c-soil)}
-.sp-sprout{animation:spRise 1.6s cubic-bezier(.2,.8,.3,1) .2s both}
-.sp-stem{fill:none;stroke:var(--c-stem);stroke-width:11;stroke-linecap:round;stroke-dasharray:1;stroke-dashoffset:1;animation:spStem 1.3s ease-out .35s forwards}
-
-.sp-leaf-l{fill:var(--c-leaf1);transform-origin:100px 98px;animation:spLeaf .9s cubic-bezier(.3,1.5,.5,1) 1.25s both}
-.sp-leaf-r{fill:var(--c-leaf2);transform-origin:100px 96px;animation:spLeaf .9s cubic-bezier(.3,1.5,.5,1) 1.45s both}
-.sp-title{font-size:32px;font-weight:900;color:var(--c-text);letter-spacing:-.5px;animation:spText .7s ease-out 2.2s both}
-.sp-sub{font-size:15px;font-weight:700;color:var(--c-muted);animation:spText .7s ease-out 2.6s both}
-@keyframes spRise{0%{transform:translateY(46px)}100%{transform:translateY(0)}}
-@keyframes spStem{to{stroke-dashoffset:0}}
-@keyframes spLeaf{0%{transform:scale(0)}100%{transform:scale(1)}}
+.sp-line,.sp-ground{fill:none;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:1;stroke-dashoffset:1}
+.sp-line{stroke:var(--c-accent);stroke-width:2.4}
+.sp-ground{stroke:var(--c-muted);stroke-width:1.6;opacity:.55;animation:spDraw .8s ease-out .15s forwards}
+.sp-stem{animation:spDraw 1.4s cubic-bezier(.45,0,.3,1) .5s forwards}
+.sp-leaf1{animation:spDraw 1s ease-in-out 1.15s forwards}
+.sp-rib1{stroke-width:1.4;animation:spDraw .6s ease-out 1.85s forwards}
+.sp-leaf2{animation:spDraw .8s ease-in-out 1.65s forwards}
+.sp-wash{fill:var(--c-leaf1);opacity:0;animation:spWash .9s ease-out 2.1s forwards}
+.sp-title{font-size:32px;font-weight:800;color:var(--c-text);letter-spacing:-.3px;animation:spText .8s ease-out 2.35s both}
+.sp-sub{font-size:15px;font-weight:600;font-style:italic;color:var(--c-muted);animation:spText .8s ease-out 2.75s both}
+@keyframes spDraw{to{stroke-dashoffset:0}}
+@keyframes spWash{to{opacity:.22}}
 @keyframes spText{0%{opacity:0;transform:translateY(10px)}100%{opacity:1;transform:translateY(0)}}
-@media (prefers-reduced-motion:reduce){.sp-sprout,.sp-stem,.sp-leaf-l,.sp-leaf-r,.sp-title,.sp-sub{animation-duration:.01s;animation-delay:0s}}
+@media (prefers-reduced-motion:reduce){.sp-line,.sp-ground,.sp-wash,.sp-title,.sp-sub{animation-duration:.01s;animation-delay:0s}}
 .leg-sq{animation:none!important;border:none!important;box-shadow:none!important}
