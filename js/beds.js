@@ -10,7 +10,7 @@ function renderBeds(){
   if($('beds-hint'))$('beds-hint').textContent=any?'Press and hold a plant to move it · Tap Select to change several':'👆 Tap a square to plant something';
   $('view-beds').classList.toggle('no-beds',!ST.beds.length);
   if(!ST.beds.length){
-    w.innerHTML=`<div class="setup"><div class="setup-e">🌱</div><div class="setup-t">Let’s start your garden</div>
+    w.innerHTML=`<div class="setup">${LOGO_SVG('wl-logo')}<div class="setup-t">Let’s start your garden</div>
       <div class="setup-s">Add a bed or some pots, then tap a square to plant.</div>
       <button class="btn btn-seed" onclick="openAddChoice()">＋ Add your first bed or tree</button>
       ${ST.wx?'':'<button class="btn btn-cancel" onclick="openSettings()">📍 Set your location for watering advice</button>'}

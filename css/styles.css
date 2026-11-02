@@ -576,6 +576,17 @@ button.sow-chip:hover{border-color:#5A9A3A}
 .fp-e{font-size:72px;line-height:1.1;animation:fpPop .7s cubic-bezier(.3,1.6,.5,1) both}
 @keyframes fpPop{0%{transform:scale(.2) translateY(30px);opacity:0}100%{transform:scale(1) translateY(0);opacity:1}}
 /* Opening animation (4 seconds) */
+.logo{display:inline-block;vertical-align:middle;flex:none}
+.logo path{fill:none;stroke-linecap:round;stroke-linejoin:round}
+.logo .lg-line{stroke:var(--c-accent);stroke-width:var(--lw,6)}
+.logo .lg-rib{stroke-width:calc(var(--lw,6)*.6)}
+.logo .lg-ground{stroke:var(--c-muted);stroke-width:calc(var(--lw,6)*.7);opacity:.55}
+.logo .lg-wash path{fill:var(--c-leaf1);stroke:none;opacity:.25}
+.hdr-title{display:flex;align-items:center;gap:3px}
+.hdr-logo{width:28px;height:28px;--lw:10;margin:-3px 0 0 -6px}
+.hdr-logo .lg-rib{display:none}
+.var-logo{width:24px;height:24px;--lw:10;margin-right:6px}.var-logo .lg-rib{display:none}
+.wl-logo{display:block;width:76px;height:76px;--lw:5.5;margin:0 auto 2px}
 .splash{position:fixed;inset:0;z-index:1000;background:var(--c-bg);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;transition:opacity .45s;cursor:pointer}
 .splash.out{opacity:0;pointer-events:none}
 .sp-line,.sp-ground{fill:none;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:1;stroke-dashoffset:1}

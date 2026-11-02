@@ -149,7 +149,7 @@ async function afterSignIn(){
 // Choose which cloud garden to use, and what to do with this device's garden
 function chooseGarden(gardens,hasLocal){
   showSheet(`<div class="sh-body"><div class="sh-heading">☁️ Which garden?</div><div class="sh-sub">${hasLocal?'This device already has a garden. Choose how to combine them.':'Choose a garden to open on this device.'}</div>
-    ${gardens.map(g=>`<div class="var-card static" style="margin-top:8px"><div class="var-top"><span class="var-e">🌱</span><span class="var-n">${esc(g.name)}</span><span class="var-d">${g.role==='owner'?'yours':'shared with you'}</span></div>
+    ${gardens.map(g=>`<div class="var-card static" style="margin-top:8px"><div class="var-top">${LOGO_SVG('var-logo')}<span class="var-n">${esc(g.name)}</span><span class="var-d">${g.role==='owner'?'yours':'shared with you'}</span></div>
       <div class="btn-row" style="margin-top:8px"><button class="btn btn-seed" onclick="useGarden('${g.id}','cloud')">Open it here</button>${hasLocal?`<button class="btn btn-cancel" onclick="useGarden('${g.id}','upload')">Replace it with this device's</button>`:''}</div></div>`).join('')}
     ${hasLocal?`<button class="btn btn-cancel btn-full" style="margin-top:10px" onclick="useGarden(null,'new')">Keep this device's garden as a new one</button>`:''}
     <div class="set-txt" style="margin-top:8px">"Open it here" replaces what's on this device. Export a backup first in Settings if you're unsure.</div></div>`);

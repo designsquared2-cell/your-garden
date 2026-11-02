@@ -11,7 +11,7 @@ function welcomeDots(n){return`<div class="wl-dots">${[1,2,3].map(i=>`<span clas
 function openWelcome(step=1){
   if(step===1){
     _onLoc=()=>openWelcome(2);
-    showSheet(`<div class="sh-body wl">${welcomeDots(1)}<div class="wl-e">🌱</div><div class="wl-h">Welcome to Your Garden</div>
+    showSheet(`<div class="sh-body wl">${welcomeDots(1)}${LOGO_SVG('wl-logo')}<div class="wl-h">Welcome to Your Garden</div>
       <div class="wl-s">What to plant, when it’s ready, what to do. Three quick steps.</div>
       <div class="fm-lbl">📍 Where’s your garden?</div>
       <div class="set-txt">Sets your climate and planting times.</div>
